@@ -1,0 +1,4 @@
+${PODS_ROOT}/Target Support Files/Pods-Myanmar Lens/Pods-Myanmar Lens-frameworks.sh
+${BUILT_PRODUCTS_DIR}/GPUImage/GPUImage.framework
+${BUILT_PRODUCTS_DIR}/SwiftyTesseract/SwiftyTesseract.framework
+${BUILT_PRODUCTS_DIR}/SwiftyTesseractRTE/SwiftyTesseractRTE.framework
