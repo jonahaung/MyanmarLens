@@ -28,6 +28,7 @@
 		47E72C8F23895A51008210AF /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C8E23895A51008210AF /* SoundManager.swift */; };
 		47E72C9123895C99008210AF /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C9023895C99008210AF /* PaddingLabel.swift */; };
 		47E72C932389612C008210AF /* NanKhone Web Pro.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 47E72C922389612C008210AF /* NanKhone Web Pro.ttf */; };
+		47E72C952389BF78008210AF /* UserDefaultsManagar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C942389BF78008210AF /* UserDefaultsManagar.swift */; };
 		47FBB2C623855B87007E2645 /* MyanmarLensView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FBB2C523855B87007E2645 /* MyanmarLensView.swift */; };
 		C0F911258808621C5FDD59BC /* Pods_Myanmar_LensUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8669784314B53BD94C28DE0C /* Pods_Myanmar_LensUITests.framework */; };
 		C7C7ACD29D5851286ED6B125 /* Pods_Myanmar_LensTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC35B9A3B68F296D815EC53 /* Pods_Myanmar_LensTests.framework */; };
@@ -82,6 +83,7 @@
 		47E72C8E23895A51008210AF /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		47E72C9023895C99008210AF /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
 		47E72C922389612C008210AF /* NanKhone Web Pro.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NanKhone Web Pro.ttf"; sourceTree = "<group>"; };
+		47E72C942389BF78008210AF /* UserDefaultsManagar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManagar.swift; sourceTree = "<group>"; };
 		47FBB2C523855B87007E2645 /* MyanmarLensView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmarLensView.swift; sourceTree = "<group>"; };
 		4F7FEBAFDF5FF466ABC49884 /* Pods-Myanmar LensTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar LensTests.release.xcconfig"; path = "Target Support Files/Pods-Myanmar LensTests/Pods-Myanmar LensTests.release.xcconfig"; sourceTree = "<group>"; };
 		56692EC99886F7B3AE06AFB6 /* Pods-Myanmar LensUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar LensUITests.release.xcconfig"; path = "Target Support Files/Pods-Myanmar LensUITests/Pods-Myanmar LensUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -153,9 +155,9 @@
 		4750E33623845FE700438805 /* Myanmar Lens */ = {
 			isa = PBXGroup;
 			children = (
-				47E72C8923893284008210AF /* Models */,
 				471E55B62384BC6E00AB6A95 /* ContentView.swift */,
 				4750E36C2384602900438805 /* Controllers */,
+				47E72C8923893284008210AF /* Models */,
 				4750E36E2384604500438805 /* Managers */,
 				4750E36F2384604B00438805 /* Helpers */,
 				4750E36B2384600E00438805 /* App Delegates */,
@@ -223,6 +225,7 @@
 				4750E3762384660000438805 /* TextCorrector.swift */,
 				4750E3722384657200438805 /* MyMemoryTranslator.swift */,
 				47E72C8E23895A51008210AF /* SoundManager.swift */,
+				47E72C942389BF78008210AF /* UserDefaultsManagar.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -491,6 +494,7 @@
 			files = (
 				4750E37D2384689A00438805 /* MyanmarLensController.swift in Sources */,
 				471E55B72384BC6E00AB6A95 /* ContentView.swift in Sources */,
+				47E72C952389BF78008210AF /* UserDefaultsManagar.swift in Sources */,
 				4750E375238465CD00438805 /* Extensions.swift in Sources */,
 				4750E33823845FE700438805 /* AppDelegate.swift in Sources */,
 				4750E33A23845FE700438805 /* SceneDelegate.swift in Sources */,

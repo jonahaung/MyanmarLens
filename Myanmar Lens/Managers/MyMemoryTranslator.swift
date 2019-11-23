@@ -31,8 +31,8 @@ class MyMemoryTranslation {
         wifiiAddress = getWiFiAddress()
     }
     func translate(text: String, languagePair: LanguagePair, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
-        
-        if let existing = existing(text) {
+
+        if let existing = existing(text, language: languagePair.1.rawValue) {
             completion(existing, nil)
             return
         }
@@ -76,7 +76,7 @@ class MyMemoryTranslation {
                 return
             }
             let trimmed = translated.exclude(in: .removingCharacters)
-            self.save(text, trimmed)
+            self.save(text, trimmed, language: languagePair.1.rawValue)
             completion(trimmed, nil)
         }
         task.resume()
@@ -108,9 +108,9 @@ class MyMemoryTranslation {
         return address
     }
     
-    private func existing(_ text: String) -> String? {
+    private func existing(_ text: String, language: String) -> String? {
         let request: NSFetchRequest<TranslatePair> = TranslatePair.fetchRequest()
-        request.predicate = NSPredicate(format: "from ==[c] %@", text)
+        request.predicate = NSPredicate(format: "from ==[c] %@ && language ==[c] %@", argumentArray: [text, language])
         request.fetchLimit = 1
         request.propertiesToFetch = ["to"]
         do {
@@ -120,10 +120,11 @@ class MyMemoryTranslation {
         }
     }
     
-    private func save(_ from: String, _ to: String) {
+    private func save(_ from: String, _ to: String, language: String) {
         let x = TranslatePair(context: context)
         x.from = from
         x.to = to
+        x.language = language
         do {
             try context.save()
         }catch {

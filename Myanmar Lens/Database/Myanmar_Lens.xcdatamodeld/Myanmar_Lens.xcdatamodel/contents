@@ -2,9 +2,10 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="15508" systemVersion="19C32e" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
     <entity name="TranslatePair" representedClassName="TranslatePair" syncable="YES" codeGenerationType="class">
         <attribute name="from" optional="YES" attributeType="String"/>
+        <attribute name="language" optional="YES" attributeType="String"/>
         <attribute name="to" optional="YES" attributeType="String"/>
     </entity>
     <elements>
-        <element name="TranslatePair" positionX="-63" positionY="-18" width="128" height="73"/>
+        <element name="TranslatePair" positionX="-63" positionY="-18" width="128" height="88"/>
     </elements>
 </model>

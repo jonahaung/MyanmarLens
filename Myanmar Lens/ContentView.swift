@@ -12,34 +12,27 @@ struct ContentView: View {
     
     
     var body: some View {
-        NavigationView{
-            VStack(alignment: .leading) {
-                
+        ZStack {
+            Image("background").resizable().scaledToFill().brightness(0.1)
+            VStack(alignment: .center) {
+                Spacer()
+                Text("Myanmar Lens")
+                Spacer()
                 Button(action: {
                     self.start()
                 }) {
-                    HStack{
-                        Image(systemName: "camera.fill")
-                         Text("Camara")
-                    }
+                    Image(systemName: "camera.fill").padding().background(Color.secondary).cornerRadius(8)
                 }
-                Button(action: {
-                    self.start()
-                }) {
-                    HStack{
-                        Image(systemName: "photo")
-                        Text("Photo Library")
-                    }
-                }
-                
-            }
-            .navigationBarTitle("Myanmar Lens")
-        }.font(.title)
+                Spacer()
+            }.font(.largeTitle)
+        }
+        
     }
     
     private func start() {
+        SoundManager.playSound(tone: .Tock)
         let vc = MyanmarLensController()
-        vc.modalPresentationStyle = .fullScreen
+        vc.modalPresentationStyle = .overFullScreen
         UIApplication.topViewController()?.present(vc, animated: true, completion: nil)
     }
 }

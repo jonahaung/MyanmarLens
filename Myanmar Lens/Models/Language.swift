@@ -8,8 +8,8 @@
 
 import Foundation
 
-enum Language: String {
-    case my, en, none
+enum Language: String, CaseIterable {
+    case my, en, zh, ta, ko, ja, th
     
     var description: String {
         switch self {
@@ -17,8 +17,18 @@ enum Language: String {
             return "Myanmar"
         case .en:
             return "English"
-        case .none:
-            return "Select Language"
+        case .zh:
+            return "China"
+        case .ta:
+            return "Tamil"
+        case .ko:
+            return "Korea"
+        case .ja:
+            return "Japan"
+        case .th:
+            return "Thailand"
         }
     }
+    
+    static var all = Language.allCases
 }

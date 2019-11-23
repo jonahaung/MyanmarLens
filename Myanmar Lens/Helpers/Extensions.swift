@@ -188,13 +188,13 @@ extension UIFont {
     static let myanmarFont = UIFontMetrics.default.scaledFont(for: UIFont(name: "NamKhoneWebPro", size: UIFont.labelFontSize)!)
     
     static var monoSpacedFont: UIFont {
-        let defaultFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body)
+        let defaultFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .title3)
         let fontDescriptor = defaultFontDescriptor.withSymbolicTraits(.traitMonoSpace)
         fontDescriptor?.withDesign(.monospaced)
         let font: UIFont
 
         if let fontDescriptor = fontDescriptor {
-            font = UIFont(descriptor: fontDescriptor, size: UIFont.buttonFontSize)
+            font = UIFont(descriptor: fontDescriptor, size: UIFont.preferredFont(forTextStyle: .title3).pointSize)
         } else {
             font = UIFont.italicSystemFont(ofSize: 16)
         }

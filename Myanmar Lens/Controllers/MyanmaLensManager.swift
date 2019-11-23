@@ -24,14 +24,15 @@ final class MyanmaLensManager {
     private lazy var swiftyTesseract = SwiftyTesseract(language: .burmese)
     private lazy var myMemoryTranslator = MyMemoryTranslation.shared
     
-    var languagePair = LanguagePair(.none, .none)
+    var languagePair = LanguagePair(.my, .my)
     
     private var text: String? {
         didSet {
             guard text != oldValue else { return }
-            SoundManager.vibrate(vibration: .heavy)
+            
             DispatchQueue.main.async { [weak self] in
                 guard let `self` = self else { return }
+                SoundManager.vibrate(vibration: .success)
                 self.delegate?.lensManager(didGetResultText: self.text)
             }
         }
@@ -39,24 +40,41 @@ final class MyanmaLensManager {
     
     private var recognizedText: String? {
         didSet {
-            guard recognizedText != oldValue else { return }
-            SoundManager.vibrate(vibration: .medium)
+            guard recognizedText != oldValue, let recognizedText = self.recognizedText, !recognizedText.isEmpty else { return }
+            engineIsRunning = false
+            let clean = recognizedText.cleanUpMyanmarTexts()
             DispatchQueue.main.async { [weak self] in
                 guard let `self` = self else { return }
-                self.delegate?.lensManager(didGetRecognizedText: self.recognizedText)
+                 SoundManager.vibrate(vibration: .success)
+                self.delegate?.lensManager(didGetRecognizedText: clean)
+            }
+            if clean.isEmpty { return }
+            self.myMemoryTranslator.translate(text: clean, languagePair: self.languagePair) { [weak self] (result, err) in
+                guard let `self` = self else { return }
+                if let err = err {
+                    print(err.localizedDescription)
+                    self.text = "no translations"
+                    return
+                }
+                self.text = result
             }
         }
     }
     var engineIsRunning = false {
         didSet {
             guard oldValue != engineIsRunning else { return }
-            SoundManager.vibrate(vibration: .light)
+            
             engine.recognitionIsActive = engineIsRunning
             DispatchQueue.main.async { [weak self] in
                 guard let `self` = self else { return }
+                SoundManager.playSound(tone: .Tock)
                 self.delegate?.lensManager(engineIsRunning: self.engineIsRunning)
             }
         }
+    }
+    func reset() {
+        recognizedText = " "
+        text = "Press and hold the ● bottom to start"
     }
     
     init() {
@@ -64,25 +82,14 @@ final class MyanmaLensManager {
     }
     
     private func setupEngine() {
+    
         engine = RealTimeEngine(swiftyTesseract: swiftyTesseract, desiredReliability: .tentative) { [weak self] recognizedString in
             guard let `self` = self else { return }
-            if !recognizedString.isEmpty {
-                self.engineIsRunning = false
-                
-                let clean = recognizedString.cleanUpMyanmarTexts()
-                self.recognizedText = clean
-                self.myMemoryTranslator.translate(text: clean, languagePair: self.languagePair) { [weak self] (result, err) in
-                    guard let `self` = self else { return }
-                    if let err = err {
-                        self.text = err.localizedDescription.lowercased()
-                        return
-                    }
-                    self.text = result
-                }
-            }
+            self.recognizedText = recognizedString
         }
         engine.recognitionIsActive = false
         engine.startPreview()
+        engine.cameraQuality = .inputPriority
     }
     
     deinit {
