@@ -168,3 +168,38 @@ extension UIApplication {
         return viewController
     }
 }
+
+extension UIView {
+    /// SwifterSwift: Get view's parent view controller
+       var EXT_parentViewController: UIViewController? {
+           weak var parentResponder: UIResponder? = self
+           while parentResponder != nil {
+               parentResponder = parentResponder!.next
+               if let viewController = parentResponder as? UIViewController {
+                   return viewController
+               }
+           }
+           return nil
+       }
+}
+
+extension UIFont {
+    
+    static let myanmarFont = UIFontMetrics.default.scaledFont(for: UIFont(name: "NamKhoneWebPro", size: UIFont.labelFontSize)!)
+    
+    static var monoSpacedFont: UIFont {
+        let defaultFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body)
+        let fontDescriptor = defaultFontDescriptor.withSymbolicTraits(.traitMonoSpace)
+        fontDescriptor?.withDesign(.monospaced)
+        let font: UIFont
+
+        if let fontDescriptor = fontDescriptor {
+            font = UIFont(descriptor: fontDescriptor, size: UIFont.buttonFontSize)
+        } else {
+            font = UIFont.italicSystemFont(ofSize: 16)
+        }
+
+        return font
+    }
+    
+}

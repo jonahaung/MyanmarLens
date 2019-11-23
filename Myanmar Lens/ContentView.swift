@@ -13,15 +13,28 @@ struct ContentView: View {
     
     var body: some View {
         NavigationView{
-            VStack {
+            VStack(alignment: .leading) {
+                
                 Button(action: {
                     self.start()
                 }) {
-                    Image(systemName: "camera.viewfinder")
+                    HStack{
+                        Image(systemName: "camera.fill")
+                         Text("Camara")
+                    }
                 }
+                Button(action: {
+                    self.start()
+                }) {
+                    HStack{
+                        Image(systemName: "photo")
+                        Text("Photo Library")
+                    }
+                }
+                
             }
             .navigationBarTitle("Myanmar Lens")
-        }.font(.largeTitle)
+        }.font(.title)
     }
     
     private func start() {

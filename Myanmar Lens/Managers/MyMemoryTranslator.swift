@@ -20,7 +20,6 @@ class MyMemoryTranslation {
             static let method = "GET"
             static let url = API.base
         }
-    
     }
     
     private let session = URLSession(configuration: .default)
@@ -31,7 +30,7 @@ class MyMemoryTranslation {
     init() {
         wifiiAddress = getWiFiAddress()
     }
-    func translate(text: String, from: String, to: String, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
+    func translate(text: String, languagePair: LanguagePair, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
         
         if let existing = existing(text) {
             completion(existing, nil)
@@ -41,7 +40,7 @@ class MyMemoryTranslation {
             completion(nil, nil)
             return
         }
-        let pair = "\(from)|\(to)"
+        let pair = "\(languagePair.0.rawValue)|\(languagePair.1.rawValue)"
         
         var queryItems = [URLQueryItem]()
         queryItems.append(URLQueryItem(name: "q", value: text))
