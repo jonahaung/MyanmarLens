@@ -12,7 +12,6 @@ import SwiftUI
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
     
     static var sharedInstance: SceneDelegate? {
         struct Singleton {
@@ -22,16 +21,43 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
 
+    fileprivate func applyCustomUIThemes() {
+        let navBar = UINavigationBar.appearance()
+        navBar.barTintColor = .clear
+        navBar.setBackgroundImage(UIImage(), for: .default)
+        navBar.isTranslucent = false
+        navBar.prefersLargeTitles = true
+        navBar.largeTitleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
+        
+        let toolBar = UIToolbar.appearance()
+        toolBar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
+        toolBar.clipsToBounds = true
+        toolBar.barTintColor = .clear
+        
+        let tableView = UITableView.appearance()
+        tableView.backgroundColor = nil
+        tableView.separatorStyle = .none
+        
+        let tableCell = UITableViewCell.appearance()
+        tableCell.backgroundColor = nil
+
+    }
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use a UIHostingController as window root view controller.
+        
         if let windowScene = scene as? UIWindowScene {
-            let window = UIWindow(windowScene: windowScene)
-            window.rootViewController = UIHostingController(rootView: ContentView())
-            self.window = window
+            applyCustomUIThemes()
+            window = UIWindow(windowScene: windowScene)
+            window?.overrideUserInterfaceStyle = .dark
+            window?.tintColor = UIColor.lightText
+            window?.makeKeyAndVisible()
             PersistanceManager.shared.loadContainer {
-                self.window?.makeKeyAndVisible()
+                let context = PersistanceManager.shared.viewContext
+                let contentView = MainView().environment(\.managedObjectContext, context)
+                let rootViewController = UIHostingController(rootView: contentView)
+                self.window?.rootViewController = UINavigationController(rootViewController: rootViewController)
+                StartUpManager.checkVersion()
             }
-            
         }
     }
     

@@ -9,9 +9,10 @@
 import Foundation
 import CoreData
 
-class MyMemoryTranslation {
+class Translator {
     
-    static let shared = MyMemoryTranslation()
+    static let shared = Translator()
+    lazy var context = PersistanceManager.shared.container.newBackgroundContext()
     
     struct API {
         static let base = "https://api.mymemory.translated.net/get?"
@@ -20,19 +21,16 @@ class MyMemoryTranslation {
             static let method = "GET"
             static let url = API.base
         }
+    
     }
     
     private let session = URLSession(configuration: .default)
-    private lazy var context = PersistanceManager.shared.container.newBackgroundContext()
     
-    private var wifiiAddress: String?
     
-    init() {
-        wifiiAddress = getWiFiAddress()
-    }
-    func translate(text: String, languagePair: LanguagePair, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
-
-        if let existing = existing(text, language: languagePair.1.rawValue) {
+    
+    func translate(text: String, from: String, to: String, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
+        let text = text.lowercased()
+        if let existing = self.existing(text, language: to) {
             completion(existing, nil)
             return
         }
@@ -40,15 +38,17 @@ class MyMemoryTranslation {
             completion(nil, nil)
             return
         }
-        let pair = "\(languagePair.0.rawValue)|\(languagePair.1.rawValue)"
+        let pair = "\(from)|\(to)"
         
         var queryItems = [URLQueryItem]()
         queryItems.append(URLQueryItem(name: "q", value: text))
         queryItems.append(URLQueryItem(name: "langpair", value: pair))
         queryItems.append(URLQueryItem(name: "mt", value: "1"))
-        if let ip = wifiiAddress {
+        if let ip = self.getWiFiAddress() {
             queryItems.append(URLQueryItem(name: "ip", value: ip))
         }
+
+        queryItems.append(URLQueryItem(name: "de", value: Random.emailAddress))
         urlComponents.queryItems = queryItems
     
         guard let url = urlComponents.url else {
@@ -75,14 +75,13 @@ class MyMemoryTranslation {
                 completion(nil, nil)
                 return
             }
-            let trimmed = translated.exclude(in: .removingCharacters)
-            self.save(text, trimmed, language: languagePair.1.rawValue)
-            completion(trimmed, nil)
+            self.save(text, translated, language: to)
+            completion(translated, nil)
         }
         task.resume()
     }
     
-    private func getWiFiAddress() -> String? {
+    func getWiFiAddress() -> String? {
         var address: String?
         var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
         if getifaddrs(&ifaddr) == 0 {
@@ -112,7 +111,7 @@ class MyMemoryTranslation {
         let request: NSFetchRequest<TranslatePair> = TranslatePair.fetchRequest()
         request.predicate = NSPredicate(format: "from ==[c] %@ && language ==[c] %@", argumentArray: [text, language])
         request.fetchLimit = 1
-        request.propertiesToFetch = ["to"]
+        request.returnsObjectsAsFaults = false
         do {
             return try context.fetch(request).first?.to
         }catch {
@@ -121,14 +120,6 @@ class MyMemoryTranslation {
     }
     
     private func save(_ from: String, _ to: String, language: String) {
-        let x = TranslatePair(context: context)
-        x.from = from
-        x.to = to
-        x.language = language
-        do {
-            try context.save()
-        }catch {
-            print(error)
-        }
+        TranslatePair.save(from, to, language: language, date: Date(), isFavourite: false, context: context)
     }
 }

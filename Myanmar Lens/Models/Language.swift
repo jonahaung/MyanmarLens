@@ -6,29 +6,35 @@
 //  Copyright © 2019 Aung Ko Min. All rights reserved.
 //
 
-import Foundation
+import NaturalLanguage
+import Vision
+typealias LanguagePair = (NLLanguage, NLLanguage)
 
-enum Language: String, CaseIterable {
-    case my, en, zh, ta, ko, ja, th
+struct Languages {
+    static let all: [NLLanguage] = [.arabic, .arabic, .armenian, .bengali, .bulgarian, .burmese, .catalan, .czech, .cherokee, .croatian, .dutch, .danish, .dutch, .english, .french, .finnish, .german, .greek, .georgian, .gujarati, .hindi, .hebrew, .hungarian, .italian, .icelandic, .indonesian, .japanese, .khmer, .korean, .kannada, .lao, .malay, .marathi, .malayalam, .mongolian, .oriya, .polish, .persian, .punjabi, .portuguese, .russian, .romanian, .spanish, .slovak, .swedish, .sinhalese, .simplifiedChinese, .thai, .tamil, .telugu, .tibetan, .turkish, .traditionalChinese, .urdu, .ukrainian, .vietnamese]
+    static let source: [NLLanguage] = [.burmese, .english]
+//    static let source: [NLLanguage] = {
+//        let revision = VNRecognizeTextRequest.currentRevision
+//
+//        do {
+//            let possibleLanguages = try VNRecognizeTextRequest.supportedRecognitionLanguages(for: .accurate, revision: revision)
+//            print(possibleLanguages)
+//            var possibles = possibleLanguages.map{ NLLanguage($0 )}
+//            possibles.insert(.burmese, at: 0)
+//            return possibles
+//        } catch {
+//            return []
+//        }
+//    }()
+    
+    func visionLanguages() {
+        
+    }
+}
+
+extension NLLanguage {
     
     var description: String {
-        switch self {
-        case .my:
-            return "Myanmar"
-        case .en:
-            return "English"
-        case .zh:
-            return "China"
-        case .ta:
-            return "Tamil"
-        case .ko:
-            return "Korea"
-        case .ja:
-            return "Japan"
-        case .th:
-            return "Thailand"
-        }
+        return Locale.current.localizedString(forIdentifier: self.rawValue) ?? ""
     }
-    
-    static var all = Language.allCases
 }

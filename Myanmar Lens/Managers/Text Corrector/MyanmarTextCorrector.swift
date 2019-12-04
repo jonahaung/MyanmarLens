@@ -8,11 +8,11 @@
 
 import UIKit
 
-final class TextCorrector {
+final class MyanmarTextCorrector {
     
-    static var shared: TextCorrector {
+    static var shared: MyanmarTextCorrector {
         struct Singleton {
-            static let instance = TextCorrector()
+            static let instance = MyanmarTextCorrector()
         }
         return Singleton.instance
     }
@@ -29,7 +29,6 @@ final class TextCorrector {
         }
         return []
     }()
-
     
     func correct(text: String) -> String {
         let rule = correctingRules

@@ -5,16 +5,6 @@
 //  Created by Aung Ko Min on 23/11/19.
 //  Copyright © 2019 Aung Ko Min. All rights reserved.
 //
-
-import Foundation
-//
-//  SoundManager.swift
-//  mMsgr
-//
-//  Created by jonahaung on 13/8/18.
-//  Copyright © 2018 Aung Ko Min. All rights reserved.
-//
-
 import UIKit
 import AudioToolbox
 

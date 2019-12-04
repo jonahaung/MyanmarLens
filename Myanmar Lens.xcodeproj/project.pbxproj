@@ -7,9 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		47012543238CEEB2004C8403 /* ListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012542238CEEB2004C8403 /* ListCell.swift */; };
+		47012545238CEFCC004C8403 /* AlertPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012544238CEFCC004C8403 /* AlertPresenter.swift */; };
+		47012547238CFA48004C8403 /* Navigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012546238CFA48004C8403 /* Navigator.swift */; };
+		47012549238D1BA6004C8403 /* AboutDeveloper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012548238D1BA6004C8403 /* AboutDeveloper.swift */; };
+		4701254B238D1BB6004C8403 /* TermsAndConditions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4701254A238D1BB6004C8403 /* TermsAndConditions.swift */; };
+		4701254E238D4E6E004C8403 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DC27CE238BD0AA00037B90 /* SettingsView.swift */; };
+		47012552238D55D4004C8403 /* Setting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012551238D55D4004C8403 /* Setting.swift */; };
+		47012554238D56FB004C8403 /* SettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012553238D56FB004C8403 /* SettingCell.swift */; };
+		4702289F2396F73600E42ECB /* TranslateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4702289E2396F73600E42ECB /* TranslateService.swift */; };
+		471B5763238E363300378E0A /* StartUpManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471B5762238E363300378E0A /* StartUpManager.swift */; };
+		471B5765238E383500378E0A /* String+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471B5764238E383500378E0A /* String+Ext.swift */; };
+		471B5769238E3CEE00378E0A /* Pronounciation+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471B5768238E3CEE00378E0A /* Pronounciation+Ext.swift */; };
+		471B576B238E564E00378E0A /* SpellCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471B576A238E564E00378E0A /* SpellCorrector.swift */; };
+		471B576D238E60FA00378E0A /* MyanmarReSegment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471B576C238E60FA00378E0A /* MyanmarReSegment.swift */; };
 		471E557623847F6500AB6A95 /* PersistanceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471E557523847F6500AB6A95 /* PersistanceManager.swift */; };
 		471E55B52384BB9700AB6A95 /* tessdata in Resources */ = {isa = PBXBuildFile; fileRef = 471E55B42384BB9700AB6A95 /* tessdata */; };
-		471E55B72384BC6E00AB6A95 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471E55B62384BC6E00AB6A95 /* ContentView.swift */; };
+		471E55B72384BC6E00AB6A95 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471E55B62384BC6E00AB6A95 /* MainView.swift */; };
+		471E66F6238FD561008302E5 /* MyanmarSanpya.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */; };
+		471E66FA238FD7ED008302E5 /* MyanmarPhetsot.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */; };
+		473BBD9E2390EBAE00E2BB5A /* CameraController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473BBD9D2390EBAE00E2BB5A /* CameraController.swift */; };
+		473BBDA12390EC1300E2BB5A /* CameraViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473BBDA02390EC1300E2BB5A /* CameraViewController.swift */; };
+		473BBDA62390EC9500E2BB5A /* BoxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473BBDA32390EC9400E2BB5A /* BoxService.swift */; };
+		473BBDA82390EC9500E2BB5A /* VisionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473BBDA52390EC9500E2BB5A /* VisionService.swift */; };
+		473BBDAF2391062800E2BB5A /* ImageRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473BBDAE2391062800E2BB5A /* ImageRect.swift */; };
 		4750E33823845FE700438805 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E33723845FE700438805 /* AppDelegate.swift */; };
 		4750E33A23845FE700438805 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E33923845FE700438805 /* SceneDelegate.swift */; };
 		4750E34223845FE700438805 /* Myanmar_Lens.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4750E34023845FE700438805 /* Myanmar_Lens.xcdatamodeld */; };
@@ -19,17 +40,26 @@
 		4750E35D23845FEA00438805 /* Myanmar_LensUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E35C23845FEA00438805 /* Myanmar_LensUITests.swift */; };
 		4750E3732384657200438805 /* MyMemoryTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E3722384657200438805 /* MyMemoryTranslator.swift */; };
 		4750E375238465CD00438805 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E374238465CD00438805 /* Extensions.swift */; };
-		4750E3782384660000438805 /* TextCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E3762384660000438805 /* TextCorrector.swift */; };
+		4750E3782384660000438805 /* MyanmarTextCorrector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E3762384660000438805 /* MyanmarTextCorrector.swift */; };
 		4750E3792384660000438805 /* TextCorrect.json in Resources */ = {isa = PBXBuildFile; fileRef = 4750E3772384660000438805 /* TextCorrect.json */; };
 		4750E37B2384660C00438805 /* RegexParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E37A2384660C00438805 /* RegexParser.swift */; };
-		4750E37D2384689A00438805 /* MyanmarLensController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E37C2384689A00438805 /* MyanmarLensController.swift */; };
+		47583F8E2396224F0096F2EF /* LabelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47583F8D2396224F0096F2EF /* LabelService.swift */; };
+		47583F92239660350096F2EF /* RandomEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47583F91239660350096F2EF /* RandomEmail.swift */; };
+		47762C2E238A073F009AF2DD /* StringTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47762C2D238A073F009AF2DD /* StringTracker.swift */; };
+		4798346C2395363C00CFD614 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798346B2395363C00CFD614 /* OCRService.swift */; };
+		47CD7EF423904278009C1BCC /* VideoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CD7EEB23904277009C1BCC /* VideoManager.swift */; };
+		47CD7EF623904278009C1BCC /* AVManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CD7EED23904277009C1BCC /* AVManager.swift */; };
+		47CD7EF723904278009C1BCC /* RecognitionQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CD7EEE23904278009C1BCC /* RecognitionQueue.swift */; };
+		47CD7EF923904278009C1BCC /* RecognitionReliability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CD7EF023904278009C1BCC /* RecognitionReliability.swift */; };
+		47D76BE4238C18010027240A /* TranslatePair+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D76BE3238C18010027240A /* TranslatePair+Ext.swift */; };
+		47D76BE6238C24C00027240A /* AppUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D76BE5238C24C00027240A /* AppUtilities.swift */; };
+		47DC27CB238BD09300037B90 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DC27CA238BD09300037B90 /* HistoryView.swift */; };
+		47DC27CD238BD0A200037B90 /* Favourites.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DC27CC238BD0A200037B90 /* Favourites.swift */; };
+		47DCAABC23915E50000ACA24 /* CameraOverlayLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DCAABB23915E50000ACA24 /* CameraOverlayLayer.swift */; };
+		47E71D7A23925C980084B16E /* CameraController+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E71D7923925C980084B16E /* CameraController+Helpers.swift */; };
 		47E72C8B23893292008210AF /* Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C8A23893292008210AF /* Language.swift */; };
-		47E72C8D23893DEA008210AF /* MyanmaLensManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C8C23893DEA008210AF /* MyanmaLensManager.swift */; };
 		47E72C8F23895A51008210AF /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C8E23895A51008210AF /* SoundManager.swift */; };
-		47E72C9123895C99008210AF /* PaddingLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C9023895C99008210AF /* PaddingLabel.swift */; };
-		47E72C932389612C008210AF /* NanKhone Web Pro.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 47E72C922389612C008210AF /* NanKhone Web Pro.ttf */; };
 		47E72C952389BF78008210AF /* UserDefaultsManagar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C942389BF78008210AF /* UserDefaultsManagar.swift */; };
-		47FBB2C623855B87007E2645 /* MyanmarLensView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FBB2C523855B87007E2645 /* MyanmarLensView.swift */; };
 		C0F911258808621C5FDD59BC /* Pods_Myanmar_LensUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8669784314B53BD94C28DE0C /* Pods_Myanmar_LensUITests.framework */; };
 		C7C7ACD29D5851286ED6B125 /* Pods_Myanmar_LensTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC35B9A3B68F296D815EC53 /* Pods_Myanmar_LensTests.framework */; };
 		E76431D774C884034BA997DC /* Pods_Myanmar_Lens.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 737182E6736939A65D40D658 /* Pods_Myanmar_Lens.framework */; };
@@ -56,9 +86,29 @@
 		040DF5B6FF4D0D114A2A4548 /* Pods-Myanmar Lens.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar Lens.release.xcconfig"; path = "Target Support Files/Pods-Myanmar Lens/Pods-Myanmar Lens.release.xcconfig"; sourceTree = "<group>"; };
 		20565B653A3F1401DA2AB500 /* Pods-Myanmar LensTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar LensTests.debug.xcconfig"; path = "Target Support Files/Pods-Myanmar LensTests/Pods-Myanmar LensTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3DC35B9A3B68F296D815EC53 /* Pods_Myanmar_LensTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Myanmar_LensTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		47012542238CEEB2004C8403 /* ListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListCell.swift; sourceTree = "<group>"; };
+		47012544238CEFCC004C8403 /* AlertPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPresenter.swift; sourceTree = "<group>"; };
+		47012546238CFA48004C8403 /* Navigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Navigator.swift; sourceTree = "<group>"; };
+		47012548238D1BA6004C8403 /* AboutDeveloper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDeveloper.swift; sourceTree = "<group>"; };
+		4701254A238D1BB6004C8403 /* TermsAndConditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermsAndConditions.swift; sourceTree = "<group>"; };
+		47012551238D55D4004C8403 /* Setting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Setting.swift; sourceTree = "<group>"; };
+		47012553238D56FB004C8403 /* SettingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingCell.swift; sourceTree = "<group>"; };
+		4702289E2396F73600E42ECB /* TranslateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslateService.swift; sourceTree = "<group>"; };
+		471B5762238E363300378E0A /* StartUpManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartUpManager.swift; sourceTree = "<group>"; };
+		471B5764238E383500378E0A /* String+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Ext.swift"; sourceTree = "<group>"; };
+		471B5768238E3CEE00378E0A /* Pronounciation+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Pronounciation+Ext.swift"; sourceTree = "<group>"; };
+		471B576A238E564E00378E0A /* SpellCorrector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellCorrector.swift; sourceTree = "<group>"; };
+		471B576C238E60FA00378E0A /* MyanmarReSegment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmarReSegment.swift; sourceTree = "<group>"; };
 		471E557523847F6500AB6A95 /* PersistanceManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersistanceManager.swift; sourceTree = "<group>"; };
 		471E55B42384BB9700AB6A95 /* tessdata */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tessdata; sourceTree = SOURCE_ROOT; };
-		471E55B62384BC6E00AB6A95 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		471E55B62384BC6E00AB6A95 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarSanpya.ttf; sourceTree = "<group>"; };
+		471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarPhetsot.ttf; sourceTree = "<group>"; };
+		473BBD9D2390EBAE00E2BB5A /* CameraController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
+		473BBDA02390EC1300E2BB5A /* CameraViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraViewController.swift; sourceTree = "<group>"; };
+		473BBDA32390EC9400E2BB5A /* BoxService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoxService.swift; sourceTree = "<group>"; };
+		473BBDA52390EC9500E2BB5A /* VisionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisionService.swift; sourceTree = "<group>"; };
+		473BBDAE2391062800E2BB5A /* ImageRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRect.swift; sourceTree = "<group>"; };
 		4750E33423845FE700438805 /* Myanmar Lens.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Myanmar Lens.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4750E33723845FE700438805 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4750E33923845FE700438805 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -74,17 +124,28 @@
 		4750E35E23845FEA00438805 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4750E3722384657200438805 /* MyMemoryTranslator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyMemoryTranslator.swift; sourceTree = "<group>"; };
 		4750E374238465CD00438805 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
-		4750E3762384660000438805 /* TextCorrector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextCorrector.swift; sourceTree = "<group>"; };
+		4750E3762384660000438805 /* MyanmarTextCorrector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MyanmarTextCorrector.swift; sourceTree = "<group>"; };
 		4750E3772384660000438805 /* TextCorrect.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = TextCorrect.json; sourceTree = "<group>"; };
 		4750E37A2384660C00438805 /* RegexParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegexParser.swift; sourceTree = "<group>"; };
-		4750E37C2384689A00438805 /* MyanmarLensController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmarLensController.swift; sourceTree = "<group>"; };
+		47583F8D2396224F0096F2EF /* LabelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelService.swift; sourceTree = "<group>"; };
+		47583F91239660350096F2EF /* RandomEmail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RandomEmail.swift; sourceTree = "<group>"; };
+		47762C2D238A073F009AF2DD /* StringTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringTracker.swift; sourceTree = "<group>"; };
+		4798346B2395363C00CFD614 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
+		47CD7EEB23904277009C1BCC /* VideoManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoManager.swift; sourceTree = "<group>"; };
+		47CD7EED23904277009C1BCC /* AVManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AVManager.swift; sourceTree = "<group>"; };
+		47CD7EEE23904278009C1BCC /* RecognitionQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecognitionQueue.swift; sourceTree = "<group>"; };
+		47CD7EF023904278009C1BCC /* RecognitionReliability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecognitionReliability.swift; sourceTree = "<group>"; };
+		47CD7EFF23904C51009C1BCC /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		47D76BE3238C18010027240A /* TranslatePair+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TranslatePair+Ext.swift"; sourceTree = "<group>"; };
+		47D76BE5238C24C00027240A /* AppUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUtilities.swift; sourceTree = "<group>"; };
+		47DC27CA238BD09300037B90 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		47DC27CC238BD0A200037B90 /* Favourites.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Favourites.swift; sourceTree = "<group>"; };
+		47DC27CE238BD0AA00037B90 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		47DCAABB23915E50000ACA24 /* CameraOverlayLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraOverlayLayer.swift; sourceTree = "<group>"; };
+		47E71D7923925C980084B16E /* CameraController+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraController+Helpers.swift"; sourceTree = "<group>"; };
 		47E72C8A23893292008210AF /* Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
-		47E72C8C23893DEA008210AF /* MyanmaLensManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmaLensManager.swift; sourceTree = "<group>"; };
 		47E72C8E23895A51008210AF /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
-		47E72C9023895C99008210AF /* PaddingLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddingLabel.swift; sourceTree = "<group>"; };
-		47E72C922389612C008210AF /* NanKhone Web Pro.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NanKhone Web Pro.ttf"; sourceTree = "<group>"; };
 		47E72C942389BF78008210AF /* UserDefaultsManagar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManagar.swift; sourceTree = "<group>"; };
-		47FBB2C523855B87007E2645 /* MyanmarLensView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyanmarLensView.swift; sourceTree = "<group>"; };
 		4F7FEBAFDF5FF466ABC49884 /* Pods-Myanmar LensTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar LensTests.release.xcconfig"; path = "Target Support Files/Pods-Myanmar LensTests/Pods-Myanmar LensTests.release.xcconfig"; sourceTree = "<group>"; };
 		56692EC99886F7B3AE06AFB6 /* Pods-Myanmar LensUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar LensUITests.release.xcconfig"; path = "Target Support Files/Pods-Myanmar LensUITests/Pods-Myanmar LensUITests.release.xcconfig"; sourceTree = "<group>"; };
 		737182E6736939A65D40D658 /* Pods_Myanmar_Lens.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Myanmar_Lens.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -121,13 +182,91 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4701253D238CEE50004C8403 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				47DC27CE238BD0AA00037B90 /* SettingsView.swift */,
+				47012548238D1BA6004C8403 /* AboutDeveloper.swift */,
+				4701254A238D1BB6004C8403 /* TermsAndConditions.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		4701253E238CEE62004C8403 /* Favorites */ = {
+			isa = PBXGroup;
+			children = (
+				47DC27CC238BD0A200037B90 /* Favourites.swift */,
+			);
+			path = Favorites;
+			sourceTree = "<group>";
+		};
+		4701253F238CEE6D004C8403 /* History */ = {
+			isa = PBXGroup;
+			children = (
+				47DC27CA238BD09300037B90 /* HistoryView.swift */,
+			);
+			path = History;
+			sourceTree = "<group>";
+		};
+		47012540238CEE74004C8403 /* MainPage */ = {
+			isa = PBXGroup;
+			children = (
+				471E55B62384BC6E00AB6A95 /* MainView.swift */,
+			);
+			path = MainPage;
+			sourceTree = "<group>";
+		};
+		47012541238CEE9F004C8403 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				47012542238CEEB2004C8403 /* ListCell.swift */,
+				47012553238D56FB004C8403 /* SettingCell.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		471E557423847F5400AB6A95 /* Database */ = {
 			isa = PBXGroup;
 			children = (
 				471E557523847F6500AB6A95 /* PersistanceManager.swift */,
+				47D76BE3238C18010027240A /* TranslatePair+Ext.swift */,
+				471B5768238E3CEE00378E0A /* Pronounciation+Ext.swift */,
 				4750E34023845FE700438805 /* Myanmar_Lens.xcdatamodeld */,
 			);
 			path = Database;
+			sourceTree = "<group>";
+		};
+		473BBD9F2390EBFD00E2BB5A /* CameraController */ = {
+			isa = PBXGroup;
+			children = (
+				47DCAABA23915DE0000ACA24 /* Controllers */,
+				473BBDA22390EC8600E2BB5A /* Services */,
+				47CD7EFA2390447B009C1BCC /* Protocols */,
+				47DCAAB923915DCF000ACA24 /* Helpers */,
+				473BBDB42391135800E2BB5A /* Views */,
+			);
+			path = CameraController;
+			sourceTree = "<group>";
+		};
+		473BBDA22390EC8600E2BB5A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				47CD7EEB23904277009C1BCC /* VideoManager.swift */,
+				473BBDA52390EC9500E2BB5A /* VisionService.swift */,
+				4798346B2395363C00CFD614 /* OCRService.swift */,
+				473BBDA32390EC9400E2BB5A /* BoxService.swift */,
+				47583F8D2396224F0096F2EF /* LabelService.swift */,
+				4702289E2396F73600E42ECB /* TranslateService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		473BBDB42391135800E2BB5A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				47DCAABB23915E50000ACA24 /* CameraOverlayLayer.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		4750E32B23845FE700438805 = {
@@ -155,15 +294,15 @@
 		4750E33623845FE700438805 /* Myanmar Lens */ = {
 			isa = PBXGroup;
 			children = (
-				471E55B62384BC6E00AB6A95 /* ContentView.swift */,
 				4750E36C2384602900438805 /* Controllers */,
-				47E72C8923893284008210AF /* Models */,
 				4750E36E2384604500438805 /* Managers */,
+				47012541238CEE9F004C8403 /* Views */,
+				47E72C8923893284008210AF /* Models */,
 				4750E36F2384604B00438805 /* Helpers */,
 				4750E36B2384600E00438805 /* App Delegates */,
 				4750E36A2384600400438805 /* Resources */,
-				4750E34823845FEA00438805 /* Info.plist */,
 				471E557423847F5400AB6A95 /* Database */,
+				4750E34823845FEA00438805 /* Info.plist */,
 			);
 			path = "Myanmar Lens";
 			sourceTree = "<group>";
@@ -189,7 +328,8 @@
 		4750E36A2384600400438805 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				47E72C922389612C008210AF /* NanKhone Web Pro.ttf */,
+				471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */,
+				471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */,
 				471E55B42384BB9700AB6A95 /* tessdata */,
 				4750E34323845FEA00438805 /* Assets.xcassets */,
 				4750E34523845FEA00438805 /* LaunchScreen.storyboard */,
@@ -209,10 +349,11 @@
 		4750E36C2384602900438805 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				4750E37C2384689A00438805 /* MyanmarLensController.swift */,
-				47E72C8C23893DEA008210AF /* MyanmaLensManager.swift */,
-				47FBB2C523855B87007E2645 /* MyanmarLensView.swift */,
-				47E72C9023895C99008210AF /* PaddingLabel.swift */,
+				473BBD9F2390EBFD00E2BB5A /* CameraController */,
+				47012540238CEE74004C8403 /* MainPage */,
+				4701253F238CEE6D004C8403 /* History */,
+				4701253E238CEE62004C8403 /* Favorites */,
+				4701253D238CEE50004C8403 /* Settings */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -220,12 +361,18 @@
 		4750E36E2384604500438805 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				47DC27D1238BD33200037B90 /* Text Corrector */,
 				4750E37A2384660C00438805 /* RegexParser.swift */,
-				4750E3772384660000438805 /* TextCorrect.json */,
-				4750E3762384660000438805 /* TextCorrector.swift */,
 				4750E3722384657200438805 /* MyMemoryTranslator.swift */,
+				47CD7EEE23904278009C1BCC /* RecognitionQueue.swift */,
 				47E72C8E23895A51008210AF /* SoundManager.swift */,
 				47E72C942389BF78008210AF /* UserDefaultsManagar.swift */,
+				47762C2D238A073F009AF2DD /* StringTracker.swift */,
+				47012544238CEFCC004C8403 /* AlertPresenter.swift */,
+				47012546238CFA48004C8403 /* Navigator.swift */,
+				471B5762238E363300378E0A /* StartUpManager.swift */,
+				471B576C238E60FA00378E0A /* MyanmarReSegment.swift */,
+				47583F91239660350096F2EF /* RandomEmail.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -234,13 +381,53 @@
 			isa = PBXGroup;
 			children = (
 				4750E374238465CD00438805 /* Extensions.swift */,
+				471B5764238E383500378E0A /* String+Ext.swift */,
+				47D76BE5238C24C00027240A /* AppUtilities.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		47CD7EFA2390447B009C1BCC /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				47CD7EED23904277009C1BCC /* AVManager.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		47DC27D1238BD33200037B90 /* Text Corrector */ = {
+			isa = PBXGroup;
+			children = (
+				4750E3772384660000438805 /* TextCorrect.json */,
+				4750E3762384660000438805 /* MyanmarTextCorrector.swift */,
+				471B576A238E564E00378E0A /* SpellCorrector.swift */,
+			);
+			path = "Text Corrector";
+			sourceTree = "<group>";
+		};
+		47DCAAB923915DCF000ACA24 /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				47E71D7923925C980084B16E /* CameraController+Helpers.swift */,
+			);
+			path = Helpers;
+			sourceTree = "<group>";
+		};
+		47DCAABA23915DE0000ACA24 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				473BBDA02390EC1300E2BB5A /* CameraViewController.swift */,
+				473BBD9D2390EBAE00E2BB5A /* CameraController.swift */,
+			);
+			path = Controllers;
 			sourceTree = "<group>";
 		};
 		47E72C8923893284008210AF /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				47CD7EF023904278009C1BCC /* RecognitionReliability.swift */,
+				473BBDAE2391062800E2BB5A /* ImageRect.swift */,
+				47012551238D55D4004C8403 /* Setting.swift */,
 				47E72C8A23893292008210AF /* Language.swift */,
 			);
 			path = Models;
@@ -378,10 +565,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				4750E3792384660000438805 /* TextCorrect.json in Resources */,
-				47E72C932389612C008210AF /* NanKhone Web Pro.ttf in Resources */,
 				471E55B52384BB9700AB6A95 /* tessdata in Resources */,
 				4750E34723845FEA00438805 /* LaunchScreen.storyboard in Resources */,
+				471E66F6238FD561008302E5 /* MyanmarSanpya.ttf in Resources */,
 				4750E34423845FEA00438805 /* Assets.xcassets in Resources */,
+				471E66FA238FD7ED008302E5 /* MyanmarPhetsot.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -492,22 +680,51 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4750E37D2384689A00438805 /* MyanmarLensController.swift in Sources */,
-				471E55B72384BC6E00AB6A95 /* ContentView.swift in Sources */,
+				473BBDA12390EC1300E2BB5A /* CameraViewController.swift in Sources */,
+				471B5763238E363300378E0A /* StartUpManager.swift in Sources */,
+				471E55B72384BC6E00AB6A95 /* MainView.swift in Sources */,
 				47E72C952389BF78008210AF /* UserDefaultsManagar.swift in Sources */,
+				47762C2E238A073F009AF2DD /* StringTracker.swift in Sources */,
 				4750E375238465CD00438805 /* Extensions.swift in Sources */,
+				47012547238CFA48004C8403 /* Navigator.swift in Sources */,
+				471B5769238E3CEE00378E0A /* Pronounciation+Ext.swift in Sources */,
+				4702289F2396F73600E42ECB /* TranslateService.swift in Sources */,
 				4750E33823845FE700438805 /* AppDelegate.swift in Sources */,
+				47DCAABC23915E50000ACA24 /* CameraOverlayLayer.swift in Sources */,
 				4750E33A23845FE700438805 /* SceneDelegate.swift in Sources */,
 				47E72C8F23895A51008210AF /* SoundManager.swift in Sources */,
-				47E72C9123895C99008210AF /* PaddingLabel.swift in Sources */,
+				4701254B238D1BB6004C8403 /* TermsAndConditions.swift in Sources */,
+				47D76BE4238C18010027240A /* TranslatePair+Ext.swift in Sources */,
 				471E557623847F6500AB6A95 /* PersistanceManager.swift in Sources */,
-				47FBB2C623855B87007E2645 /* MyanmarLensView.swift in Sources */,
+				473BBD9E2390EBAE00E2BB5A /* CameraController.swift in Sources */,
+				473BBDA82390EC9500E2BB5A /* VisionService.swift in Sources */,
 				4750E37B2384660C00438805 /* RegexParser.swift in Sources */,
-				4750E3782384660000438805 /* TextCorrector.swift in Sources */,
+				47CD7EF423904278009C1BCC /* VideoManager.swift in Sources */,
+				4750E3782384660000438805 /* MyanmarTextCorrector.swift in Sources */,
+				47CD7EF623904278009C1BCC /* AVManager.swift in Sources */,
+				47012549238D1BA6004C8403 /* AboutDeveloper.swift in Sources */,
+				4798346C2395363C00CFD614 /* OCRService.swift in Sources */,
 				47E72C8B23893292008210AF /* Language.swift in Sources */,
+				471B5765238E383500378E0A /* String+Ext.swift in Sources */,
+				47012552238D55D4004C8403 /* Setting.swift in Sources */,
+				47E71D7A23925C980084B16E /* CameraController+Helpers.swift in Sources */,
+				47012554238D56FB004C8403 /* SettingCell.swift in Sources */,
+				47CD7EF723904278009C1BCC /* RecognitionQueue.swift in Sources */,
 				4750E3732384657200438805 /* MyMemoryTranslator.swift in Sources */,
+				473BBDAF2391062800E2BB5A /* ImageRect.swift in Sources */,
+				47012545238CEFCC004C8403 /* AlertPresenter.swift in Sources */,
 				4750E34223845FE700438805 /* Myanmar_Lens.xcdatamodeld in Sources */,
-				47E72C8D23893DEA008210AF /* MyanmaLensManager.swift in Sources */,
+				47CD7EF923904278009C1BCC /* RecognitionReliability.swift in Sources */,
+				47DC27CB238BD09300037B90 /* HistoryView.swift in Sources */,
+				47583F92239660350096F2EF /* RandomEmail.swift in Sources */,
+				47012543238CEEB2004C8403 /* ListCell.swift in Sources */,
+				47583F8E2396224F0096F2EF /* LabelService.swift in Sources */,
+				47DC27CD238BD0A200037B90 /* Favourites.swift in Sources */,
+				471B576D238E60FA00378E0A /* MyanmarReSegment.swift in Sources */,
+				47D76BE6238C24C00027240A /* AppUtilities.swift in Sources */,
+				471B576B238E564E00378E0A /* SpellCorrector.swift in Sources */,
+				4701254E238D4E6E004C8403 /* SettingsView.swift in Sources */,
+				473BBDA62390EC9500E2BB5A /* BoxService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,6 +764,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				4750E34623845FEA00438805 /* Base */,
+				47CD7EFF23904C51009C1BCC /* en */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -604,7 +822,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -658,7 +876,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -674,12 +892,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1.9;
 				DEVELOPMENT_TEAM = HJ9L53D9PB;
 				INFOPLIST_FILE = "Myanmar Lens/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jonahaung.Myanmar-Lens";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -693,12 +914,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1.9;
 				DEVELOPMENT_TEAM = HJ9L53D9PB;
 				INFOPLIST_FILE = "Myanmar Lens/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jonahaung.Myanmar-Lens";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

@@ -9,7 +9,7 @@
 import Foundation
 import CoreData
 
-class PersistanceManager {
+final class PersistanceManager {
     
     static let shared = PersistanceManager()
     var viewContext: NSManagedObjectContext {
@@ -48,5 +48,36 @@ class PersistanceManager {
             }
         }
     }
+}
 
+extension NSManagedObjectContext {
+    
+    func saveIfHasChanges() {
+        if hasChanges {
+            try? save()
+            if parent != nil {
+                parent?.saveIfHasChanges()
+            }
+        }
+    }
+    
+    func executeAndMergeChanges(using batchDeleteRequest: NSBatchDeleteRequest) throws {
+        batchDeleteRequest.resultType = .resultTypeObjectIDs
+        let result = try execute(batchDeleteRequest) as? NSBatchDeleteResult
+        let changes: [AnyHashable: Any] = [NSDeletedObjectsKey: result?.result as? [NSManagedObjectID] ?? []]
+        NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [self])
+    }
+    
+    func deleteAllData(entityName: String) -> Bool {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: entityName)
+        let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        do {
+            try executeAndMergeChanges(using: batchDeleteRequest)
+            return true
+        }catch {
+            print(error)
+            return false
+        }
+        
+    }
 }
