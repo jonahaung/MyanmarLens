@@ -10,7 +10,6 @@ import Foundation
 
 class MyanmarReSegment {
     
-    static let shared = MyanmarReSegment()
     private static let RESEGMENT_REGULAR_EX = "(?:(?<!္)([က-ဪဿ၊-၏]|[၀-၉]+|[^က-၏]+)(?![ှျ]?[့္်]))"
     
     static func segment(_ text : String) -> [String] {

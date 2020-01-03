@@ -15,9 +15,10 @@ struct MainView: View {
     @State private var notDoneEULA = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
     @State private var sourceLanguage: String = "Source Language"
     private var isMyanmar: Bool { return sourceLanguage == "Burmese" }
+    @State private var isCamera = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
+    
     var body: some View {
-        
-        VStack(alignment: .center) {
+        VStack {
             HStack{
                 NavigationLink(destination: SettingsView()) {
                     Image(systemName: "scribble").padding()
@@ -26,27 +27,20 @@ struct MainView: View {
                 
                 Button(action: {
                     userDefaults.toggleSourceLanguage()
-                    self.sourceLanguage = userDefaults.sourceLanguage.description
+                    self.sourceLanguage = userDefaults.languagePair.source.localName
                 }) {
                     Text(self.sourceLanguage)
                 }
             }.font(.largeTitle)
             Spacer()
+            
             HStack{
-                
-                NavigationLink(destination: HistoryView().environment(\.managedObjectContext, context)) {
-                    Image(systemName: "eyeglasses").padding().padding()
-                }
-                
-                Spacer()
-                
-                Button(action: {
-                    SoundManager.vibrate(vibration: .light)
-                    let vc = CameraViewController()
-                    Navigator.push(vc)
-                }) {
+//                NavigationLink(destination: HistoryView().environment(\.managedObjectContext, context), isActive: $isCamera) {
+//                    Image(systemName: "camera.fill").padding()
+//                }.font(.largeTitle)
+                NavigationLink(destination: CameraView(), isActive: $isCamera) {
                     Image(systemName: "camera.fill").padding()
-                }.font(.largeTitle).padding()
+                }.font(.largeTitle)
                 
                 Spacer()
                 
@@ -56,6 +50,7 @@ struct MainView: View {
             }.font(.title)
             
         }
+        
         .background(Image("background").resizable().scaledToFill())
         .navigationBarTitle("Myanmar Lens")
         .sheet(isPresented: $notDoneEULA, onDismiss: {
@@ -64,7 +59,7 @@ struct MainView: View {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
         .onAppear {
-                self.sourceLanguage = userDefaults.sourceLanguage.description
+            self.sourceLanguage = userDefaults.languagePair.source.localName
         }
     }
 }

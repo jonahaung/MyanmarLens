@@ -27,11 +27,13 @@ class Translator {
     private let session = URLSession(configuration: .default)
     
     
-    
     func translate(text: String, from: String, to: String, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
         let text = text.lowercased()
-        if let existing = self.existing(text, language: to) {
-            completion(existing, nil)
+        if let existing = existing(text, language: to) {
+            DispatchQueue.main.async {
+                completion(existing.lowercased(), nil)
+            }
+            
             return
         }
         guard var urlComponents = URLComponents(string: API.translate.url) else {
@@ -49,6 +51,7 @@ class Translator {
         }
 
         queryItems.append(URLQueryItem(name: "de", value: Random.emailAddress))
+       
         urlComponents.queryItems = queryItems
     
         guard let url = urlComponents.url else {
@@ -75,8 +78,13 @@ class Translator {
                 completion(nil, nil)
                 return
             }
-            self.save(text, translated, language: to)
-            completion(translated, nil)
+            let lower = translated.exclude(in: .removingCharacters).lowercased()
+            guard !lower.isWhitespace else {
+                completion(text, nil)
+                return
+            }
+            self.save(text, lower, language: to)
+            completion(lower, nil)
         }
         task.resume()
     }
@@ -108,18 +116,11 @@ class Translator {
     }
     
     private func existing(_ text: String, language: String) -> String? {
-        let request: NSFetchRequest<TranslatePair> = TranslatePair.fetchRequest()
-        request.predicate = NSPredicate(format: "from ==[c] %@ && language ==[c] %@", argumentArray: [text, language])
-        request.fetchLimit = 1
-        request.returnsObjectsAsFaults = false
-        do {
-            return try context.fetch(request).first?.to
-        }catch {
-            return nil
-        }
+        return TranslatePair.find(from: text, language: language, context: context)?.to
     }
     
     private func save(_ from: String, _ to: String, language: String) {
         TranslatePair.save(from, to, language: language, date: Date(), isFavourite: false, context: context)
     }
+
 }

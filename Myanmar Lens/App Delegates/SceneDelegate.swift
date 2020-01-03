@@ -21,6 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
 
+
     fileprivate func applyCustomUIThemes() {
         let navBar = UINavigationBar.appearance()
         navBar.barTintColor = .clear

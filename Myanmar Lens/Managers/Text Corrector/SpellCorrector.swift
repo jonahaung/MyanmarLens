@@ -12,7 +12,7 @@ final class SpellCorrector {
     
     var knownWords: [String: Int] = [:]
     
-    static let shared = SpellCorrector(["aung"])
+    static let shared: SpellCorrector = SpellCorrector(url: Bundle.main.url(forResource: "words", withExtension: "txt")!)
     
     init(_ words: [String]) {
         

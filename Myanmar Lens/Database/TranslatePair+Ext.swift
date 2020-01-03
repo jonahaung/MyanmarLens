@@ -25,7 +25,6 @@ extension TranslatePair {
         return x
     }()
     
-    
     static func save(_ from: String, _ to: String, language: String, date: Date, isFavourite: Bool, context: NSManagedObjectContext) {
         let x = TranslatePair(context: context)
         x.from = from
@@ -40,8 +39,8 @@ extension TranslatePair {
         let requeset: NSFetchRequest<TranslatePair> = TranslatePair.fetchRequest()
         requeset.predicate = NSPredicate(format: "from ==[c] %@ && language ==[c] %@", argumentArray: [from, language])
         requeset.fetchLimit = 1
+        requeset.returnsObjectsAsFaults = false
         requeset.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
-        
         
         do {
             return try context.fetch(requeset).first

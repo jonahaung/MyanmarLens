@@ -20,8 +20,11 @@ final class UserDefaultsManager {
     let hasDoneEULA = "hasDoneEULA"
     private let canSpeakResults = "canSpeakResults"
     private let hasOpenedBefore = "hasOpenedBefore"
-    
-    var language: NLLanguage {
+    private let NumberOfTimePerRecognition = "NumberOfTimePerRecognition"
+    private let canRepeat = "CanRepeat"
+    private let regionOfInterestHeightt = "regionOfInterestHeightt"
+    private let _isAttentionBased = "isAttentionBased"
+    private var targetLanguage: NLLanguage {
         get {
             if let x = defaults.string(forKey: toLanguage) {
                 return NLLanguage(rawValue: x)
@@ -36,7 +39,7 @@ final class UserDefaultsManager {
         
     }
     
-    var sourceLanguage: NLLanguage {
+    private var sourceLanguage: NLLanguage {
         get {
             if let x = defaults.string(forKey: fromLanguage) {
                 return NLLanguage(rawValue: x)
@@ -45,7 +48,7 @@ final class UserDefaultsManager {
             return .burmese
         }
         set {
-            language = newValue == .english ? .burmese : .english
+            targetLanguage = newValue == .english ? .burmese : .english
             updateObject(for: fromLanguage, with: newValue.rawValue)
         }
         
@@ -53,12 +56,12 @@ final class UserDefaultsManager {
     
     var languagePair: LanguagePair {
         get {
-            return (sourceLanguage, language)
+            return (sourceLanguage, targetLanguage)
         }
         set {
             guard newValue.0 != newValue.1 else { return }
             sourceLanguage = newValue.0
-            language = newValue.1
+            targetLanguage = newValue.1
         }
     }
     
@@ -76,6 +79,25 @@ final class UserDefaultsManager {
             SoundManager.playSound(tone: .Typing)
         }
     }
+    var isRepeat: Bool {
+        get {
+            return defaults.bool(forKey: canRepeat)
+        }
+        set {
+            updateObject(for: canRepeat, with: newValue)
+            SoundManager.playSound(tone: .Typing)
+        }
+    }
+    
+    var isAttentionBased: Bool {
+        get {
+            return defaults.bool(forKey: _isAttentionBased)
+        }
+        set {
+            updateObject(for: _isAttentionBased, with: newValue)
+            SoundManager.playSound(tone: .Tock)
+        }
+    }
     
     var openedBefore: Bool {
         get {
@@ -85,7 +107,16 @@ final class UserDefaultsManager {
             updateObject(for: hasOpenedBefore, with: newValue)
         }
     }
-    
+
+    var regionOfInterestHeght: Float {
+        get {
+            let value = defaults.float(forKey: regionOfInterestHeightt)
+            return value == 0 ? 150 : value
+        }
+        set {
+            updateObject(for: regionOfInterestHeightt, with: newValue)
+        }
+    }
 }
 
 extension UserDefaultsManager {

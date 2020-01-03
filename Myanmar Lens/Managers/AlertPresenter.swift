@@ -48,26 +48,3 @@ struct AlertPresenter {
     
 }
 
-extension UIAlertController {
-    
-    func setDefaultTheme() {
-        
-        let isPad: Bool = UIDevice.current.userInterfaceIdiom == .pad
-        
-        if isPad, let source = UIApplication.topViewController()?.view {
-           
-            self.popoverPresentationController?.sourceView = source
-            self.popoverPresentationController?.sourceRect = CGRect(x: source.bounds.midX, y: source.bounds.midY, width: 0, height: 0)
-            self.popoverPresentationController?.permittedArrowDirections = .init(rawValue: 0)
-        }
-        view.tintColor = .brown
-        if let title = title {
-            let attrTitle = NSAttributedString(string: title, attributes: [.font: UIFont.monospacedSystemFont(ofSize: UIFont.buttonFontSize, weight: .medium), .foregroundColor: UIColor.label])
-            setValue(attrTitle, forKey: "attributedTitle")
-        }
-        if let subtitle = message {
-            let attrTitle = NSAttributedString(string: subtitle, attributes: [.font: UIFont.monospacedSystemFont(ofSize: UIFont.buttonFontSize, weight: .regular), .foregroundColor: UIColor.secondaryLabel])
-            setValue(attrTitle, forKey: "attributedMessage")
-        }
-    }
-}

@@ -30,7 +30,6 @@ struct ListCell: View {
             }.font(.system(size: 14, weight: .thin, design: .monospaced))
         }
         .padding(.vertical)
-        .foregroundColor(Color.secondary)
         .onTapGesture(perform: ontap)
     }
     
@@ -59,8 +58,9 @@ struct ListCell: View {
         }
         actions.append(("Delete this Record", delete))
         
-        AlertPresenter.presentActionSheet(title: item.nlLanguage.description, message: item.date?.relativeString, actions: actions)
+        AlertPresenter.presentActionSheet(title: item.nlLanguage.localName, message: item.date?.relativeString, actions: actions)
     }
     
 }
+
 

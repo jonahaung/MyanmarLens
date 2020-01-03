@@ -7,12 +7,13 @@
 //
 
 import Foundation
+import NaturalLanguage
 
 extension CharacterSet {
     
-    static let removingCharacters = CharacterSet(charactersIn: "()|+*#%;:&^$@!~.,'`|_ၤ()”“")
+    static let removingCharacters = CharacterSet(charactersIn: "|+*#%;:&^$@!~.,'`|_ၤ”“")
     
-    static let myanmarAlphabets = CharacterSet(charactersIn: "ကခဂဃငစဆဇဈညတဒဍဓဎထဋဌနဏပဖဗဘမယရလ၀သဟဠအဣဧဤဩဥ။")
+    static let myanmarAlphabets = CharacterSet(charactersIn: "ကခဂဃငစဆဇဈညတဒဍဓဎထဋဌနဏပဖဗဘမယရလ၀သဟဠအ").union(.whitespacesAndNewlines)
     static let myanmarCharacters2 = CharacterSet(charactersIn: "ါာိီုူေဲဳဴဵံ့း္်ျြွှ")
     static var englishAlphabets = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890 ")
     static var lineEnding = CharacterSet(charactersIn: ".,?!;:။…\n\t")
@@ -20,10 +21,13 @@ extension CharacterSet {
 
 extension String {
     
+    var language: String {
+        return NSLinguisticTagger.dominantLanguage(for: self) ?? ""
+    }
     func cleanUpMyanmarTexts() -> String {
-        let words = self.words()
-        let filtered = words.filter{ RegexParser.regularExpression(for: RegexParser.unicodePattern)!.matches($0)}
-        return MyanmarTextCorrector.shared.correct(text: filtered.joined(separator: " ")).exclude(in: .removingCharacters)
+        let words = self.trimmingCharacters(in: CharacterSet.decimalDigits.union(CharacterSet.illegalCharacters)).words()
+        let filtered = words.filter{ $0.utf16.count > 2 }.joined(separator: " ")
+        return MyanmarTextCorrector.shared.correct(text: filtered).exclude(in: .removingCharacters)
     }
     
     var trimmed: String {
@@ -65,7 +69,7 @@ extension String {
     
     func words() -> [String] {
         let comps = components(separatedBy: CharacterSet.whitespacesAndNewlines)
-        return comps.filter { !$0.isEmpty }
+        return comps.filter { !$0.isWhitespace }
     }
     
     public func contains(_ string: String, caseSensitive: Bool = true) -> Bool {
@@ -114,5 +118,10 @@ extension String {
     }
     var lastWord: String {
         return words().last ?? self
+    }
+    
+    var firstLetterCapitalized: String {
+        guard !isEmpty else { return self }
+        return prefix(1).capitalized + dropFirst()
     }
 }

@@ -9,175 +9,254 @@
 import Vision
 import AVFoundation
 import UIKit
+import TesseractOCR
 
 protocol VisionServiceDelegate: class {
-    func visionService(_ service: VisionService, drawBoxes rects: [CGRect])
-    func visionService(_ service: VisionService, didGetImageRects imageRects: [ImageRect])
+    func visionService(_ service: VisionService, didUpdate box: Box)
     func visionService(_ service: VisionService, didGetTextRects textRects: [TextRect])
+    func visionService(_ service: VisionService, didGetStableTextRects textRects: [TextRect])
+    
 }
 
-final class VisionService {
+final class VisionService: NSObject {
     
-    weak var delegate: VisionServiceDelegate?
-    private var queue: RecognitionQueue<Int> = RecognitionQueue(desiredReliability: .tentative)
-    private let context = CIContext.init(options: nil)
-    private var requests = [VNRequest]()
-    var isActive = false
-    var parentBounds = CGRect.zero
-    private(set) weak var cvImageBuffer: CVImageBuffer?
-    var languagePair = LanguagePair(.burmese, .burmese) {
-        didSet {
-            let textRequest = requests.filter{ $0 is VNRecognizeTextRequest }
-            if let x = textRequest.first as? VNRecognizeTextRequest {
-                x.recognitionLanguages = [languagePair.0.rawValue]
-            }
-            isMyanmar = languagePair.0 == .burmese
-        }
-    }
-    private var isMyanmar = true
-    var regionOfInterest = CGRect.zero
-    
-    init() {
+    private lazy var rectangelRequest: VNDetectTextRectanglesRequest = {
+        let x = VNDetectTextRectanglesRequest(completionHandler: textRectangleHandler(request:error:))
+        x.reportCharacterBoxes = true
         
-        let rectangelRequest = VNDetectTextRectanglesRequest(completionHandler: rectangleHandler(request:error:))
-        rectangelRequest.reportCharacterBoxes = true
-        rectangelRequest.usesCPUOnly = true
-        rectangelRequest.preferBackgroundProcessing = true
-        
-        
-        let textRequest = VNRecognizeTextRequest(completionHandler: textHandler(request:error:))
-        textRequest.usesLanguageCorrection = true
-        textRequest.usesCPUOnly = true
-        textRequest.preferBackgroundProcessing = true
-        textRequest.recognitionLevel = .fast
-        requests = [rectangelRequest, textRequest]
-    }
-    
-    
-    func handle(sampleBuffer: CMSampleBuffer) {
-        
-        guard isActive, let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {return}
-        cvImageBuffer = pixelBuffer
-        var requestOptions:[VNImageOption : Any] = [:]
-        
-        if let camData = CMGetAttachment(sampleBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil) {
-            requestOptions = [.cameraIntrinsics: camData]
-        }
-        
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: requestOptions)
-        
-        do {
-            try handler.perform(self.requests)
-        } catch {
-            print(error)
-        }
-    }
-    
-    private func rectangleHandler(request: VNRequest, error: Error?) {
-        guard isActive, let rectangleResults = request.results as? [VNTextObservation] else { return }
-        let confidents = rectangleResults.filter({ $0.confidence > 0.5 })
-        
-        let regionsRects = confidents.map{ getRect(box: $0, for: parentBounds)}.filter{regionOfInterest.contains($0)}
-        delegate?.visionService(self, drawBoxes: regionsRects)
-        
-        guard isMyanmar else { return }
-        
+        x.usesCPUOnly = true
+        x.preferBackgroundProcessing = false
+        return x
+    }()
 
-        let count = CGRect.sum(rects: regionsRects).area
-        queue.enqueue(Int(count))
-        guard queue.allValuesMatch, let stable = queue.dequeue(), stable > 0 else { return }
-        isActive = false
-        
-        
-        if let cvBuffer = self.cvImageBuffer {
-            let ciImage = CIImage(cvImageBuffer: cvBuffer)
-            
-            guard
-                let cgImage = context.createCGImage(ciImage, from: ciImage.extent)
-                else {
-                    return
-            }
-            
-            
-            
-            let uiImage = UIImage(cgImage: cgImage)
-            let imageSize = uiImage.size
-            
-            var imageRects = [ImageRect]()
-            
-            for x in confidents {
-                
-                let labelRect = getRect(box: x, for: parentBounds)
-                guard regionOfInterest.contains(labelRect) else { continue }
-                let croppingRect = imageSize.getNormalRect(for: x.normalized)
-                if let cropped = uiImage.cgImage?.cropping(to: croppingRect) {
-                    let croppedImage = UIImage(
-                        cgImage: cropped,
-                        scale: uiImage.scale,
-                        orientation: uiImage.imageOrientation)
-                    imageRects.append(ImageRect(croppedImage, labelRect))
-                }
-            }
-            delegate?.visionService(self, didGetImageRects: imageRects)
+    private lazy var textRequest: VNRecognizeTextRequest = {
+        let x = VNRecognizeTextRequest(completionHandler: textHandler(request:error:))
+        x.usesLanguageCorrection = true
+        x.usesCPUOnly = true
+        x.preferBackgroundProcessing = false
+        x.recognitionLevel = .fast
+        return x
+    }()
+    
+   
+    weak var delegate: VisionServiceDelegate?
+    private let context = CIContext(options: nil)
+    var isMyanmar = true {
+        didSet {
+            let reliability: Accurcy = isMyanmar ? .verifiable : .solid
+            boxTracker.updateReliability(reliability: reliability)
         }
-        
     }
+    var regionOfInterest = CGRect.zero {
+        didSet {
+            updateRegionOfInterest()
+        }
+    }
+    private var isStopped = true
+    var parentBounds = CGRect.zero
+    private(set) weak var currentSampleBuffer: CMSampleBuffer?
+    private let tessrect = SwiftyTesseract(language: .burmese)
+    private var boxTracker: RecognitionQueue<Box> = RecognitionQueue(reliability: .diamond)
+    private let sentenceTracker: ObjectTracker<String> = ObjectTracker(reliability: .verifiable)
+    override init() {
+        super.init()
+        tessrect.preserveInterwordSpaces = false
+        tessrect.minimumCharacterHeight = Int(12)
+    }
+}
+
+// Text
+extension VisionService {
     
     private func textHandler(request: VNRequest, error: Error?) {
-        guard isActive && !isMyanmar, let results = request.results as? [VNRecognizedTextObservation] else { return }
-        let confidents = results.filter({ $0.confidence > 0.8 })
+        guard var results = request.results as? [VNRecognizedTextObservation], results.count > 0 else { return }
+        results = results.filter{ $0.confidence > 0.5 }
+        let videoSize = parentBounds.size
+        let rects = results.map{VNImageRectForNormalizedRect($0.boundingBox.normalized(), videoSize.width.int, videoSize.height.int).integral}
+        var box = rects.reduce(CGRect.null) { $0.union($1)}.box 
+        box.update(.Unstable)
+        
+        delegate?.visionService(self, didUpdate: box)
+        guard !isStopped else { return }
+        
+        boxTracker.enqueue(box)
+        
+        guard boxTracker.allValuesMatch, var stableBox = boxTracker.dequeue() else { return }
+        stableBox.update(.Stable)
+        delegate?.visionService(self, didUpdate: stableBox)
         
         var textRects = [TextRect]()
-        for region in confidents {
-            
-            let rect = self.getRect(box: region)
-            guard regionOfInterest.contains(rect), let top = region.topCandidates(1).first else { continue }
-            let textRect = TextRect(top.string, rect)
-            textRects.append(textRect)
+        
+        results.forEach { result in
+            if let top = result.topCandidates(1).first {
+                
+                let rect = VNImageRectForNormalizedRect(result.boundingBox.normalized(), videoSize.width.int, videoSize.height.int).integral
+                let text = top.string
+                textRects.append(TextRect(text, rect))
+            }
         }
-        let rects = textRects.map{ $0.1 }
-        let count = CGRect.sum(rects: rects).area
+        stop()
+        self.delegate?.visionService(self, didGetStableTextRects: textRects)
         
-        queue.enqueue(Int(count))
-        guard queue.allValuesMatch, let stable = queue.dequeue(), stable > 0 else { return }
-        isActive = false
-        
-        delegate?.visionService(self, didGetTextRects: textRects)
-    }
-    
-
-    func getRect(box: VNTextObservation, for frame: CGRect) -> CGRect {
-        guard let boxes = box.characterBoxes else {return .zero}
-        var xMin: CGFloat = 9999.0
-        var xMax: CGFloat = 0.0
-        var yMin: CGFloat = 9999.0
-        var yMax: CGFloat = 0.0
-        
-        for char in boxes {
-            if char.bottomLeft.x < xMin {xMin = char.bottomLeft.x}
-            if char.bottomRight.x > xMax {xMax = char.bottomRight.x}
-            if char.bottomRight.y < yMin {yMin = char.bottomRight.y}
-            if char.topRight.y > yMax {yMax = char.topRight.y}
-        }
-        
-        let xCoord = xMin * frame.size.width
-        let yCoord = (1 - yMax) * frame.size.height
-        let width = (xMax - xMin) * frame.size.width
-        let height = (yMax - yMin) * frame.size.height
-        return CGRect(x: xCoord, y: yCoord, width: width, height: height).integral
     }
     
     func getRect(box: VNRecognizedTextObservation) -> CGRect {
+
+      
+        let xCoord = box.topLeft.x * parentBounds.width
+        let yCoord = (1 - box.topLeft.y) * parentBounds.height
+        let width = (box.topRight.x - box.bottomLeft.x) * parentBounds.width
+        let height = (box.topLeft.y - box.bottomLeft.y) * parentBounds.height
+        return CGRect(x: xCoord, y: yCoord, width: width, height: height)
         
-        let xCoord = box.topLeft.x * parentBounds.size.width
-        let yCoord = (1 - box.topLeft.y) * parentBounds.size.height
-        let width = (box.topRight.x - box.bottomLeft.x) * parentBounds.size.width
-        let height = (box.topLeft.y - box.bottomLeft.y) * parentBounds.size.height
-        return CGRect(x: xCoord, y: yCoord, width: width, height: height).integral
+    }
+}
+
+// Rectangle
+extension VisionService: MLHelpingProtocol {
+    
+    private func textRectangleHandler(request: VNRequest, error: Error?) {
+        guard var results = request.results as? [VNTextObservation], results.count > 0 else { return }
+        results = results.filter{ $0.confidence > 0.5 }
+        let videoSize = parentBounds.size
+        var rects = results.map{VNImageRectForNormalizedRect(self.normalise(box: $0), videoSize.width.int, videoSize.height.int).integral}
+        rects = rects.filter{ $0.width > 30 && $0.height > 10 && $0.width > $0.height }
+        
+        let sumRect = rects.reduce(CGRect.null) { $0.union($1)}
+        var box = sumRect.box
+       
+
+        boxTracker.enqueue(box)
+        guard boxTracker.allValuesMatch, var stable = boxTracker.dequeue() else {
+            box.update(.Unstable)
+            delegate?.visionService(self, didUpdate: box)
+            return
+        }
+        stable.update(.Stable)
+        delegate?.visionService(self, didUpdate: stable)
+         guard !isStopped else { return }
+        
+        guard let cgImage = getCurrentCgImage() else { return }
+        self.stop()
+        
+        let uiImage = UIImage(cgImage: cgImage)
+
+        if let image = cropImages(cgImage: cgImage, uiImage: uiImage, rect: VNNormalizedRectForImageRect(stable.cgrect, videoSize.width.int, videoSize.height.int))?.greysCaled {
+            tessrect.performOCR(on: image) { [weak self] result in
+                guard let self = self else { return }
+                guard self.isStopped else { return }
+                if let sentence = result, sentence.isWhitespace == false {
+                     let lines = sentence.lines().map{ $0.cleanUpMyanmarTexts() }.filter{ !$0.isWhitespace && $0.utf16.count > 3}
+                    
+                     let totalFramesCount = CGFloat(rects.count)
+                    let averageX = stable.cgrect.minX - 4
+                    let averageHeight = min(25, stable.cgrect.height / totalFramesCount)
+                    
+    
+                    var y = stable.cgrect.minY
+                    
+                    var textRects = [TextRect]()
+                    lines.forEach { line in
+                        y += averageHeight + 3
+                        textRects.append(TextRect(line, CGRect(origin: CGPoint(x: averageX, y: y), size: CGSize(width: self.regionOfInterest.width, height: averageHeight))))
+                    }
+                    self.delegate?.visionService(self, didGetStableTextRects: textRects)
+        
+                }
+            }
+        }
+    }
+    
+    private func normalise(box: VNTextObservation) -> CGRect {
+       return CGRect(
+         x: box.boundingBox.origin.x,
+         y: 1 - box.boundingBox.origin.y - box.boundingBox.height,
+         width: box.boundingBox.size.width,
+         height: box.boundingBox.size.height
+       )
+     }
+    
+    private func getCurrentCgImage() -> CGImage? {
+        guard let sample = self.currentSampleBuffer, let cm = CMSampleBufferGetImageBuffer(sample) else { return nil }
+        let ciImage = CIImage(cvImageBuffer: cm)
+        return context.createCGImage(ciImage, from: ciImage.extent)
+    }
+    
+    
+}
+
+
+// Buffer
+extension VisionService: AVCaptureVideoDataOutputSampleBufferDelegate {
+    
+    func handle(sampleBuffer: CMSampleBuffer) {
+        currentSampleBuffer = sampleBuffer
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+        if isMyanmar {
+            do {
+                try handler.perform([rectangelRequest])
+
+            }catch { print(error.localizedDescription )}
+        } else {
+         
+            do {
+                try handler.perform([textRequest])
+            }catch { print(error.localizedDescription )}
+        }
+        
+    }
+    
+    func handle(cgImage: CGImage) {
+
+        let handler = VNImageRequestHandler(cgImage: cgImage, orientation: .up, options: [:])
+        if isMyanmar {
+            do {
+                try handler.perform([rectangelRequest])
+
+            }catch { print(error.localizedDescription )}
+        } else {
+         
+            do {
+                try handler.perform([textRequest])
+            }catch { print(error.localizedDescription )}
+        }
+        
+    }
+    
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        
+        
+        handle(sampleBuffer: sampleBuffer)
+    }
+    
+    func start(){
+        isStopped = false
+        reset()
+    }
+    
+    private func updateRegionOfInterest() {
+        print(parentBounds)
+        let roi = VNNormalizedRectForImageRect(regionOfInterest, parentBounds.width.int, parentBounds.height.int)
+        textRequest.regionOfInterest = roi
+        rectangelRequest.regionOfInterest = roi
+    }
+    func stop() {
+        isStopped = true
+        reset()
     }
     
     func reset() {
-        cvImageBuffer = nil
-        queue.clear()
+        textRequest.cancel()
+        rectangelRequest.cancel()
+        textRequest.cancel()
+        boxTracker.dequeue()
+        currentSampleBuffer = nil
+        
+        print("restart")
     }
 }
+
+
+
+
