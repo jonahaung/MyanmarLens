@@ -131,7 +131,7 @@ extension DropDownMessageBar {
         label.frame.size = labelSize
         let width = labelSize.width + insets.horizontal
         let height = labelSize.height + insets.vertical
-        let ySpacing: CGFloat = 70
+        let ySpacing: CGFloat = 100
         
         frame = CGSize(width: width, height: height).bma_rect(inContainer: window.bounds, xAlignament: .center, yAlignment: .top, dx: 0, dy: ySpacing)
         

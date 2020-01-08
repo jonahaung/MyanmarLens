@@ -8,26 +8,74 @@
 
 import UIKit
 
+
 struct TranslateTextRect {
     var translatedText: String?
     var textRect: TextRect
 }
 
-struct TextRect: Hashable {
-    let text: String
+class TextRect {
+    
+    var text: String
+    var translatedText: String?
+    private var trashole: CGFloat = 10
     var rect: CGRect
     let id: String
+    let isMyanmar: Bool
+
+    
+    var displayText: String { return translatedText ?? text }
     
     init(_ text: String, _ rect: CGRect) {
         self.text = text
         self.rect = rect
-        self.id = text.withoutSpacesAndNewLines.include(in: .myanmarAlphabets)
+        self.isMyanmar = text.EXT_isMyanmarCharacters
+        if isMyanmar {
+            id = text.include(in: .myanmarAlphabets)
+        }else {
+            id = text.include(in: .englishAlphabets).lowercased().withoutSpacesAndNewLines
+        }
     }
-    
+}
+// Hashable / Equable
+extension TextRect: Hashable {
     func hash(into hasher: inout Hasher) {
         id.hashValue.hash(into: &hasher)
     }
+    
+    static func == (lhs: TextRect, rhs: TextRect) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
+// Helpers
+extension TextRect {
+    
+    func isSimilterText( _text: String) -> Bool {
+        var newId: String
+        if isMyanmar {
+            newId = _text.include(in: .myanmarAlphabets)
+        }else {
+            newId = _text.withoutSpacesAndNewLines
+        }
+        return id == newId
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 enum BoxType {
     case Unstable, Stable, Busy, Unknown
@@ -49,7 +97,7 @@ enum BoxType {
 
 struct Box {
     
-  
+    
     var type: BoxType = .Unknown
     
     let cgrect: CGRect

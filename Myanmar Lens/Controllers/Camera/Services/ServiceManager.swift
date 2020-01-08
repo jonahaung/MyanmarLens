@@ -8,12 +8,18 @@
 
 import Foundation
 import AVKit
-import Vision
 import SwiftUI
 import Combine
 
 class ServiceManager: ObservableObject {
-
+    @Published var isRepeat : Bool = userDefaults.isRepeat {
+        didSet {
+            userDefaults.isRepeat = self.isRepeat
+            dropDownMessageBar.show(text: "Auto-Repeat \(self.isRepeat ? "ON" : "Off")", duration: 3)
+            objectWillChange.send()
+        }
+    }
+    
     @Published var source: String = "" {
         willSet {
             objectWillChange.send()
@@ -24,17 +30,8 @@ class ServiceManager: ObservableObject {
             objectWillChange.send()
         }
     }
-    @Published var progress: CGFloat = 0 {
-        willSet {
-            objectWillChange.send()
-        }
-    }
-    @Published var image: UIImage = UIImage() {
-        willSet {
-            objectWillChange.send()
-        }
-    }
-    @Published var zoom: CGFloat = 5 {
+    
+    @Published var zoom: CGFloat = 0 {
         willSet {
             SoundManager.vibrate(vibration: .medium)
             videoService.sliderValueDidChange(Float(zoom/20))
@@ -42,27 +39,27 @@ class ServiceManager: ObservableObject {
         }
     }
     
-    var selectedNSTModel: NSTDemoModel = .starryNight
-    
     let videoService: VideoService = VideoService()
     let ocrService: OcrService
     let boxService: BoxService
     let overlayView: OverlayView
-    private let queue = DispatchQueue(label: "ServiceManager.queue", attributes: .concurrent)
-
+    
+    private let queue = DispatchQueue(label: "com.jonahaung.ServiceManager", qos: .userInitiated)
+    
     private let translateService = TranslateService()
+    
     @Published var isStopped: Bool = true {
         didSet {
             guard oldValue != self.isStopped else { return }
             videoService.canOutputBuffer = !isStopped
+            videoService.isMyanmar = self.source == "Burmese"
             isStopped ? ocrService.stop() : ocrService.start()
-        }
-        willSet {
-            DispatchQueue.main.async {
-                self.objectWillChange.send()
-            }
             
         }
+        willSet {
+            objectWillChange.send()
+        }
+        
     }
     init() {
         overlayView = OverlayView()
@@ -72,15 +69,17 @@ class ServiceManager: ObservableObject {
         ocrService.delegate = self
         videoService.configure(layer: overlayView.videoPreviewLayer)
         updateLanguagePair()
+        
     }
     
     
     func configure() {
-        queue.async {
+        queue.async {[weak self] in
+            guard let self = self else { return }
             self.videoService.captureSession?.startRunning()
-            self.videoService.videoServiceDelegate = self
+            self.videoService.videoServiceDelegate = self.ocrService
         }
-
+        
     }
     
     func stop() {
@@ -95,15 +94,6 @@ class ServiceManager: ObservableObject {
 
 extension ServiceManager: OcrServiceDelegate {
     
-    func ocrService(_ service: OcrService, didUpdate progress: CGFloat) {
-        Async.main {
-            print(progress)
-            self.progress = progress
-        }
-    }
-    
-    
-    
     func ocrService(_ service: OcrService, didUpdate box: Box) {
         Async.main {[weak self] in
             guard let self = self else { return }
@@ -111,56 +101,41 @@ extension ServiceManager: OcrServiceDelegate {
         }
     }
     
-    func ocrService(_ service: OcrService, didGetTextRects textRects: [TextRect]) {
-        Async.main{[weak self] in
-            guard let self = self else { return }
-            self.boxService.handle(textRects)
-            
-        }
-    }
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect]) {
         
-        
-        Async.main{[weak self] in
-        guard let self = self else { return }
-//           self.isStopped = true
-//             self.boxService.handle(textRects)
+        Async.utility {[weak self] in
+            guard let self = self else { return }
              self.translateService.handle(textRects: textRects)
+        }.main {[weak self] in
+            guard let self = self else { return }
+            if self.isRepeat {
+                service.isBusy = false
+                service.semaphore.signal()
+            }else {
+                self.isStopped = true
+            }
         }
     }
 }
 
 extension ServiceManager: TranslateServiceDelegate {
     
-    func translateService(_ service: TranslateService, didFinishTranslation translateTextRects: [TranslateTextRect]) {
-        DispatchQueue.main.async {
-            self.overlayView.highlightLayer.lineWidth = 0
-            self.boxService.handle(translateTextRects)
-            self.ocrService.isBusy = false
-        }
-    }
-}
-
-extension ServiceManager: VideoServiceDelegate {
     
-    func videoService(_ service: VideoService, didCaptureVideoFrame pixelBuffer: CVPixelBuffer?, timestamp: CMTime) {
+    func translateService(_ service: TranslateService, didFinishTranslation translateTextRects: [TranslateTextRect]) {
         
-        if let buffer = pixelBuffer {
-            
-            ocrService.handle(pixelBuffer: buffer)
-        }
+        self.boxService.handle(translateTextRects)
+        
     }
 }
-
 
 // Others
 
 extension ServiceManager {
     
     func didTapActionButton() {
-        self.overlayView.highlightLayer.lineWidth = 1.5
         SoundManager.vibrate(vibration: .heavy)
-        self.isStopped.toggle()
+        self.ocrService.stop()
+        isStopped.toggle()
     }
     func toggleLanguagePair() {
         let languagePair = userDefaults.languagePair
@@ -176,49 +151,20 @@ extension ServiceManager {
         source = lp.source.localName
         target = lp.target.localName
     }
-    func getPercentage(value: CGFloat) -> String {
-           let intValue = Int(ceil(progress * 100))
-           if intValue == 0 {
-               return String()
-           }
-           return "\(intValue) %"
-       }
-
-       func didTapFlashLight() {
-           SoundManager.playSound(tone: .Tock)
-        DispatchQueue.global(qos: .background).async {
-            if let cg = self.ocrService.getCurrentCgImage() {
-                let image = UIImage(cgImage: cg)
-                
-                do {
-                    let modelProvider = try self.selectedNSTModel.modelProvider()
-                    let outputImage = try modelProvider.prediction(inputImage: image)
-                    Async.main {
-                        self.image = outputImage
-                        UIImageWriteToSavedPhotosAlbum(outputImage, self, nil, nil)
-                    }
-                    
-                } catch let error {
-                    print(error.localizedDescription)
-                }
-            }
+    
+    func didTapFlashLight() {
+        SoundManager.playSound(tone: .Tock)
+        
+        guard let device = AVCaptureDevice.default(for: AVMediaType.video), device.hasTorch else { return }
+        let isOn = device.torchMode == .on
+        do {
+            try device.lockForConfiguration()
+            
+            device.torchMode = isOn ? .off : .on
+            device.unlockForConfiguration()
+        } catch {
+            print("Torch could not be used")
         }
-//           guard let device = AVCaptureDevice.default(for: AVMediaType.video), device.hasTorch else { return }
-//           let isOn = device.torchMode == .on
-//           do {
-//               try device.lockForConfiguration()
-//
-//               device.torchMode = isOn ? .off : .on
-//               device.unlockForConfiguration()
-//               let onImage = UIImage(systemName: "lightbulb.fill")
-//               let offImage = UIImage(systemName: "lightbulb.slash.fill")
-//           } catch {
-//               print("Torch could not be used")
-//           }
-           
-       }
-       
-       func handleZoom() {
-           
-       }
+    }
+    
 }

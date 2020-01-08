@@ -21,16 +21,18 @@ final class TranslateService {
     
     func handle(textRects: [TextRect]) {
         var results = [TranslateTextRect]()
+        let pair = languagePair
+        let isMyanmar = pair.source == .burmese
         textRects.asyncForEach(completion: {[weak self] in
             guard let self = self else { return }
             self.delegate?.translateService(self, didFinishTranslation: results)
         }) { [unowned self] (textRect, next) in
-            let text = textRect.text.trimmed
+            let text = textRect.displayText.trimmed
             guard !text.isWhitespace else {
                 next()
                 return
             }
-            Translator.shared.translate(text: text, from: languagePair.0.rawValue, to: languagePair.1.rawValue) { [weak self] (result, err) in
+            Translator.shared.translate(text: text, from: pair.0.rawValue, to: pair.1.rawValue) { [weak self] (result, err) in
                 guard let self = self else { return }
                 if let err = err {
                     print(err.localizedDescription)
@@ -38,7 +40,10 @@ final class TranslateService {
                     return
                 }
                 
-                if let result = result, !result.isWhitespace {
+                if var result = result, !result.isWhitespace {
+                    if isMyanmar {
+                        result = result.cleanUpMyanmarTexts()
+                    }
                     results.append(TranslateTextRect(translatedText: result, textRect: textRect))
                     self.cached[text] = result
                 }

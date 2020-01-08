@@ -14,15 +14,6 @@ extension CGRect {
         return self.width * self.height
     }
     
-    static func sum(rects: [CGRect]) -> CGRect {
-        var result = CGRect.zero
-        
-        for x in rects {
-            result = x.union(result)
-        }
-        return result
-    }
-    
     func scaleUp(scaleUp: CGFloat) -> CGRect {
         let biggerRect = self.insetBy(
             dx: -self.size.width * scaleUp,
@@ -110,37 +101,4 @@ extension UIImage {
         return result
     }
 
-}
-extension Character {
-    func getSimilarCharacterIfNotIn(allowedChars: String) -> Character {
-        let conversionTable = [
-            "s": "S",
-            "S": "5",
-            "5": "S",
-            "o": "O",
-            "Q": "O",
-            "O": "0",
-            "0": "O",
-            "l": "I",
-            "I": "1",
-            "1": "I",
-            "B": "8",
-            "8": "B"
-        ]
-        // Allow a maximum of two substitutions to handle 's' -> 'S' -> '5'.
-        let maxSubstitutions = 2
-        var current = String(self)
-        var counter = 0
-        while !allowedChars.contains(current) && counter < maxSubstitutions {
-            if let altChar = conversionTable[current] {
-                current = altChar
-                counter += 1
-            } else {
-                // Doesn't match anything in our table. Give up.
-                break
-            }
-        }
-        
-        return current.first!
-    }
 }

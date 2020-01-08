@@ -15,7 +15,7 @@ class ObjectTracker<T: Hashable> {
     
     var seenStrings = [T: Observation]()
     var bestCount = Int64(0)
-    var bestString: [T] = []
+    var bestString: T?
     var quality = 0 {
         didSet {
             resetLoop = Int64(quality * 5)
@@ -48,7 +48,7 @@ class ObjectTracker<T: Hashable> {
             let count = obs.count
             if !obsoleteStrings.contains(string) && count > bestCount {
                 bestCount = Int64(count)
-                bestString.append(string)
+                bestString = string
             }
         }
        
@@ -59,7 +59,7 @@ class ObjectTracker<T: Hashable> {
         frameIndex += 1
     }
     
-    func getStableItem() -> [T]? {
+    func getStableItem() -> T? {
         if bestCount >= quality {
             return bestString
         } else {
@@ -70,11 +70,11 @@ class ObjectTracker<T: Hashable> {
     func reset(object: T) {
         seenStrings.removeValue(forKey: object)
         bestCount = 0
-        bestString = []
+        bestString = nil
     }
     func resetAll() {
         seenStrings.removeAll()
         bestCount = 0
-        bestString = []
+        bestString = nil
     }
 }

@@ -11,12 +11,12 @@ import UIKit
 class BoundingBox: Equatable {
     
     static func == (lhs: BoundingBox, rhs: BoundingBox) -> Bool {
-        return lhs.textRect?.text == rhs.textRect?.text
+        return lhs.textRect?.displayText == rhs.textRect?.displayText
     }
     
-    
     let textLayer = CATextLayer()
-   
+    var textRect: TextRect?
+    
     init() {
         textLayer.shadowOpacity = 0.4
         textLayer.shadowOffset = .zero
@@ -29,15 +29,15 @@ class BoundingBox: Equatable {
     func addToLayer(_ parent: CALayer) {
         parent.addSublayer(textLayer)
     }
-    var textRect: TextRect?
+    
     
     func show(textRect: TextRect, within region: CGRect) {
         self.textRect = textRect
-        let text = textRect.text.trimmed
-        let frame = textRect.rect.integral
-        let isMyanmar = text.EXT_isMyanmarCharacters
+        let text = textRect.displayText
+        let frame = textRect.rect
+        let isMyanmar = textRect.isMyanmar
         
-        var textSize = min(30, frame.height*0.8)
+        var textSize = frame.height * 0.8
         var font = isMyanmar ? UIFont.myanmarFont : UIFont.engFont
         font = font.withSize(textSize)
         
@@ -46,22 +46,22 @@ class BoundingBox: Equatable {
         ]
         
         let preferredSize = text.boundingRect(with: CGSize(width: .infinity, height: textSize), options: .usesFontLeading, attributes: attributes, context: nil).size
-       
-//        calculated.origin = frame.origin
         
-//        if calculated.maxX > superBounds.maxX {
-//            calculated.origin.x = superBounds.maxX - calculated.width
-//            if calculated.origin.x < 0 {
-//                calculated.size.width = superBounds.width - 6
-//                calculated.size.height = 17
-//                textLayer.fontSize = 15
-//                textLayer.font = (textLayer.font as? UIFont)?.withSize(15)
-//            }
-//        }
-//        print(frame, preferredSize)
+        //        calculated.origin = frame.origin
+        
+        //        if calculated.maxX > superBounds.maxX {
+        //            calculated.origin.x = superBounds.maxX - calculated.width
+        //            if calculated.origin.x < 0 {
+        //                calculated.size.width = superBounds.width - 6
+        //                calculated.size.height = 17
+        //                textLayer.fontSize = 15
+        //                textLayer.font = (textLayer.font as? UIFont)?.withSize(15)
+        //            }
+        //        }
+        //        print(frame, preferredSize)
         var newFrame = frame
-//        newFrame.size = preferredSize
-
+        //        newFrame.size = preferredSize
+        
         while newFrame.size.height > preferredSize.height {
             newFrame.size.height -= 0.5
             textSize = min(30, newFrame.height*0.6)
@@ -70,11 +70,11 @@ class BoundingBox: Equatable {
         while newFrame.maxX >= region.maxX {
             newFrame.origin.x -= 0.5
             if newFrame.origin.x <= region.origin.x {
-            
+                
             }
         }
         CATransaction.begin()
-        
+         CATransaction.setDisableActions(true)
         textLayer.fontSize = textSize
         textLayer.font = font.withSize(textSize)
         
@@ -82,13 +82,16 @@ class BoundingBox: Equatable {
         textLayer.string = text
         textLayer.isHidden = false
         
-        CATransaction.setDisableActions(true)
+       
         textLayer.shadowPath = CGPath(roundedRect: textLayer.bounds.inset(by: UIEdgeInsets(top: 0, left: -5, bottom: 0, right: -5)), cornerWidth: 5, cornerHeight: 5, transform: nil)
         CATransaction.commit()
     }
     
     func updateFrame(frame: CGRect) {
-        textLayer.position = frame.center
+        if !textLayer.frame.intersects(frame) {
+            textLayer.position = frame.center
+        }
+        
     }
     func hide() {
         
@@ -107,5 +110,5 @@ class BoundingBox: Equatable {
         }while boundingBox.height < size
         return size
     }
-
+    
 }

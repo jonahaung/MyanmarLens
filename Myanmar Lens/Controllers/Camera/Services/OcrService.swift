@@ -1,58 +1,51 @@
 //
-//  OcrService.swift
+//  VisionService.swift
 //  Myanmar Lens
 //
-//  Created by Aung Ko Min on 29/12/19.
-//  Copyright © 2019 Aung Ko Min. All rights reserved.
+//  Created by Aung Ko Min on 4/1/20.
+//  Copyright © 2020 Aung Ko Min. All rights reserved.
 //
+
+
 import Foundation
 import Vision
 import AVKit
 import SwiftyTesseract
 
 protocol OcrServiceDelegate: class {
-    func ocrService(_ service: OcrService, didGetTextRects textRects: [TextRect])
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect])
     func ocrService(_ service: OcrService, didUpdate box: Box)
-    func ocrService(_ service: OcrService, didUpdate progress: CGFloat)
 }
 
 final class OcrService: NSObject {
     
     weak var delegate: OcrServiceDelegate?
     
-    private let context = CIContext(options: nil)
-    var isMyanmar = false {
-        didSet {
-            boxTracker.updateReliability(reliability: isMyanmar ? .stable : .verifiable)
-            if !isMyanmar {
-                Async.main {
-                    self.overlayView.highlightLayer.frame = self.overlayView.bounds
-                }
-            }
-        }
-    }
-    
+    let context = CIContext(options: nil)
     
     
     private var queue = DispatchQueue(label: "OcrService.queue", attributes: .concurrent)
     
-    static var roi = CGRect(x: 0, y: 0.4, width: 1, height: 0.6)
+    static var roi = CGRect(x: 0, y: 0.5, width: 1, height: 0.5)
     private var tessrect = SwiftyTesseract(language: .burmese)
     private var boxTracker: RecognitionQueue<Box> = RecognitionQueue(reliability: .stable)
     private let sentenceTracker: ObjectTracker<String> = ObjectTracker(reliability: .raw)
     private let overlayView: OverlayView
     private let requestHandler = VNSequenceRequestHandler()
-  weak var pixelBuffer: CVPixelBuffer?
+    weak var pixelBuffer: CVPixelBuffer?
     var isBusy = false
     private let videoLayer: AVCaptureVideoPreviewLayer
-    private var texts = [String: Int]()
-    private var isSatisfied = false
-    private var semaphore = DispatchSemaphore(value: 1)
-    private var engTexts: Set<String> = Set<String>()
+    private var currentImage: CGImage?
+    var semaphore = DispatchSemaphore(value: 1)
+    
+    var objects: Set<TextRect> = Set<TextRect>()
+    
+    private var lastObservation: VNRectangleObservation?
+    
     init(_overlayView: OverlayView) {
         overlayView = _overlayView
         videoLayer = _overlayView.videoPreviewLayer
+        tessrect.preserveInterwordSpaces = true
         super.init()
         
     }
@@ -82,102 +75,121 @@ final class OcrService: NSObject {
     }()
     
     private var currentBox = CGRect.zero.box
-    
-    
-    private func textHandler(request: VNRequest, error: Error?) {
-        guard let results = request.results as? [VNRecognizedTextObservation], results.count > 0 else { return }
-        let boundingBoxes = results.map{ $0.boundingBox.trashole(trashold: 0.005).scaleUp(scaleUp: 0.02)}
-        let rects = boundingBoxes.map{ $0.applying(transform)}
-        
-//        let sumRect = rects.reduce(CGRect.null) { $0.union($1)}.scaleUp(scaleUp: 0.02)
-//        if sumRect.area > currentBox.cgrect.area {
-//            var box = Box(sumRect, trashold: 5)
-//            currentBox = box
-//            box.update(isBusy ? .Busy : .Unstable)
-//            delegate?.ocrService(self, didUpdate: box)
-//            boxTracker.clear()
-//        }
-//
-//
-//        guard isBusy == false else { return }
-//
-//        boxTracker.enqueue(currentBox)
-//        guard boxTracker.allValuesMatch, var stable = boxTracker.dequeue() else { return }
-//        boxTracker.clear()
-//
-//        queue.async {
-//            self.isBusy = true
-//        }
-//        stable.update(.Stable)
-//        delegate?.ocrService(self, didUpdate: stable)
-//        var textRects = [TextRect]()
-//
-//        guard self.isBusy else { return }
-//        let absoluteHeight = rects.reduce(0, {$0 + $1.height })
-//        let avHeight = (absoluteHeight / rects.count.cgFloat).rounded()
-//        let spacing = CGFloat(3)
-//
-//        var y = CGFloat.zero
-        var textRects = [TextRect]()
-        for tur in zip(results, rects) {
-            if let top = tur.0.topCandidates(1).first {
-                let string = top.string
-                textRects.append(TextRect(string, tur.1))
-                
-            }
-            
+    var isMyanmar = false {
+        didSet {
+            boxTracker.updateReliability(reliability: isMyanmar ? .stable : .verifiable)
         }
-//        for result in results {
-//            if let top = result.topCandidates(1).first, !top.string.isWhitespace {
-////                let text = top.string
-////                y += avHeight + spacing
-////                var origin = CGPoint.zero
-////                origin.y = y
-////                var size = UIFont.myanmarFont.withSize(avHeight*0.8).sizeOfString(string: text, constrainedToWidth: stable.cgrect.width)
-////                size.height = avHeight
-//                let frame = result.boundingBox.applying(self.transform)
-//                textRects.append(TextRect(top.string, frame))
-//            }
-//        }
-//
-        guard textRects.count > 0 else { return }
-        self.delegate?.ocrService(self, didGetStableTextRects: textRects)
-        
-//        queue.async {
-//            self.isBusy = false
-//        }
     }
-    
-    
-    func cropImage(cgImage: CGImage, rect: CGRect) -> UIImage? {
-        if let cropped = cgImage.cropping(to: rect.viewRect(for: VideoService.videoSize)) {
-            return UIImage(cgImage: cropped, scale: CGFloat(1), orientation: .up)
-        }
-        return nil
-    }
-    func getCurrentCgImage() -> CGImage? {
-        guard let cm = pixelBuffer else { return nil }
-        let ciImage = CIImage(cvImageBuffer: cm)
-        return context.createCGImage(ciImage, from: ciImage.extent)
-    }
-    
     var transform = CGAffineTransform.identity
 }
 
-extension OcrService: MLHelpingProtocol {
-    
-    func updateTransform() {
-        let outputRect = CGRect(x: 0, y: 0, width: 1, height: 1)
-        let videoRect = videoLayer.layerRectConverted(fromMetadataOutputRect: outputRect)
-        let visible = videoRect.intersection(videoLayer.visibleRect)
-        let scaleT = CGAffineTransform(scaleX: visible.width, y: -visible.height)
-        let translateT = CGAffineTransform(translationX: 0, y: visible.height)
-        transform = scaleT.concatenating(translateT)
+// Eng
+extension OcrService {
+    private func textHandler(request: VNRequest, error: Error?) {
+        guard var results = request.results as? [VNRecognizedTextObservation], results.count > 0 else {
+            semaphore.signal()
+            return }
+        results = results.filter{ rectangelRequest.regionOfInterest.normalized().contains($0.boundingBox )}
+        
+        
+        var textRects = [TextRect]()
+        for result in results {
+            if let top = result.topCandidates(1).first {
+                let text = top.string.include(in: .englishAlphabets)
+                
+                let xMin = result.topLeft.x
+                let xMax = result.topRight.x
+                let yMin = result.topLeft.y
+                let ymax = result.bottomLeft.y
+                
+                let frame = CGRect(x: xMin, y: ymax, width: abs(xMin - xMax), height: abs(yMin-ymax)).applying(transform)
+                
+                let newTextRect = TextRect(text, frame)
+                textRects.append(newTextRect)
+            }
+        }
+        
+        let sumRect = textRects.map{$0.rect}.reduce(CGRect.null) { $0.union($1)}.inset(by: UIEdgeInsets(top: -7, left: -5, bottom: -7, right: -10))
+        if sumRect.area > currentBox.cgrect.area {
+            var box = Box(sumRect, trashold: 5)
+            currentBox = box
+            box.update(isBusy ? .Busy : .Unstable)
+            delegate?.ocrService(self, didUpdate: box)
+            boxTracker.clear()
+        }
+        
+        
+        guard isBusy == false else {
+            semaphore.signal()
+            return
+        }
+        
+        boxTracker.enqueue(currentBox)
+        guard boxTracker.allValuesMatch, var stable = boxTracker.dequeue() else {
+            semaphore.signal()
+            return
+        }
+        
+        stable.update(.Stable)
+        delegate?.ocrService(self, didUpdate: stable)
+
+        queue.async {
+            self.isBusy = true
+        }
+        
+        self.delegate?.ocrService(self, didGetStableTextRects: textRects)
+        
     }
+}
+
+// Mya
+extension OcrService {
+    
+    func nonMaxSuppression(rects: [CGRect], threshold: Float, limit: Int) -> [CGRect] {
+        // Do an argsort on the confidence scores, from high to low.
+        let sortedIndices = rects.indices.sorted { rects[$0].area > rects[$1].area }
+        
+        var selected: [CGRect] = []
+        var active = [Bool](repeating: true, count: rects.count)
+        var numActive = active.count
+        
+        outer: for i in 0..<rects.count {
+            if active[i] {
+                let boxA = rects[sortedIndices[i]]
+                selected.append(boxA)
+                if selected.count >= limit { break }
+                
+                for j in i+1..<rects.count {
+                    if active[j] {
+                        let boxB = rects[sortedIndices[j]]
+                        if boxB.intersects(boxA) {
+                            active[j] = false
+                            numActive -= 1
+                            if numActive <= 0 { break outer }
+                        }
+                    }
+                }
+            }
+        }
+        return selected
+    }
+    
     private func textRectangleHandler(request: VNRequest, error: Error?) {
-        guard let results = request.results as? [VNTextObservation], results.count > 0 else { return }
-        let boundingBoxes = results.map{ $0.boundingBox.scaleUp(scaleUp: 0.03)}
-        let rects = boundingBoxes.map{ $0.applying(transform).integral}
+        guard let results = request.results as? [VNTextObservation], results.count > 0 else {
+            semaphore.signal()
+            return
+        }
+        var rects = [CGRect]()
+       
+        for result in results {
+
+            let xMin = result.topLeft.x
+            let xMax = result.topRight.x
+            let yMin = result.topLeft.y
+            let ymax = result.bottomLeft.y
+            let rect = CGRect(x: xMin, y: ymax, width: abs(xMin - xMax), height: abs(yMin-ymax)).applying(transform)
+            rects.append(rect)
+        }
         
         let sumRect = rects.reduce(CGRect.null) { $0.union($1)}.inset(by: UIEdgeInsets(top: -7, left: -5, bottom: -7, right: -10))
         if sumRect.area > currentBox.cgrect.area {
@@ -189,343 +201,216 @@ extension OcrService: MLHelpingProtocol {
         }
         
         
-        guard isBusy == false else { return }
-        
-        boxTracker.enqueue(currentBox)
-        guard boxTracker.allValuesMatch, var stable = boxTracker.dequeue() else { return }
-        
-        
-        queue.async {
-            self.isBusy = true
-        }
-        
-        guard let cgImage = self.getCurrentCgImage(), let cropped = self.cropImage(cgImage: cgImage, rect: stable.cgrect.applying(transform.inverted()).normalized())?.greysCaled  else {
-            isBusy = false
+        guard isBusy == false else {
+            semaphore.signal()
             return
         }
         
-        stable.update(.Stable)
-        delegate?.ocrService(self, didUpdate: stable)
-        autoreleasepool {
-            tessrect.performOCR(on: cropped) {[weak self] result in
-                guard let self = self else { return }
-                var lines: [String] = []
-                if let sentence = result, sentence.isWhitespace == false {
-                    lines = sentence.lines().map{ $0.cleanUpMyanmarTexts() }.filter{ $0.isWhitespace == false && $0.utf16.count > 3 }
-                }
-                guard self.isBusy else { return }
-                let absoluteHeight = rects.reduce(0, {$0 + $1.height })
-                let avHeight = (absoluteHeight / rects.count.cgFloat).rounded()
-                let spacing = CGFloat(5)
-                var textRects = [TextRect]()
-                
-                var y = CGFloat.zero - avHeight+spacing
-                for text in lines {
-                    y += avHeight + spacing
-                    var origin = CGPoint.zero
-                    
-                    origin.y = y
-                    var size = UIFont.myanmarFont.withSize(avHeight*0.8).sizeOfString(string: text, constrainedToWidth: stable.cgrect.width)
-                    origin.x = (stable.cgrect.width - size.width) / 2
-                    size.height = avHeight
-                    let frame = CGRect(origin: origin, size: size).integral
-                    textRects.append(TextRect(text, frame))
-                }
-                self.delegate?.ocrService(self, didGetStableTextRects: textRects)
-                
-                
+        boxTracker.enqueue(currentBox)
+        guard boxTracker.allValuesMatch, var stable = boxTracker.dequeue() else {
+            semaphore.signal()
+            return
+        }
+        boxTracker.clear()
+        
+        queue.async { [weak self] in
+            guard let self = self else { return }
+            self.isBusy = true
+            
+            guard let cgImage = self.getCurrentCgImage(), let cropped = self.cropImage(cgImage: cgImage, rect: stable.cgrect.applying(self.transform.inverted()).normalized())?.greysCaled  else {
+                self.isBusy = false
+                self.semaphore.signal()
+                return
             }
             
+            stable.update(.Stable)
+            self.delegate?.ocrService(self, didUpdate: stable)
+            autoreleasepool {
+                self.tessrect.performOCR(on: cropped) {[weak self] result in
+                    guard let self = self else { return }
+                    var lines: [String] = []
+                    if let sentence = result, sentence.isWhitespace == false {
+                        lines = sentence.lines().map{ $0.cleanUpMyanmarTexts() }.filter{ $0.isWhitespace == false && $0.utf16.count > 3 }
+                    }
+                    guard self.isBusy else {
+                        self.semaphore.signal()
+                        return
+                    }
+                    let filtered = rects.filter{ stable.cgrect.contains($0.origin)}
+                    let sorted = self.nonMaxSuppression(rects: filtered, threshold: 0.1, limit: lines.count).sorted{ $0.origin.y < $1.origin.y }
+                    guard let first = sorted.first, let last = sorted.last else { return }
+                    let absoluteHeight = last.maxY - first.minY
+                    let avHeight = (absoluteHeight / sorted.count.cgFloat) * 0.8
+                    let spacing = avHeight * 0.2
+                    var textRects = [TextRect]()
+                    
+                    var y = first.origin.y
+                    for (i, text) in lines.enumerated() {
+                
+                        if i > sorted.count - 1 {
+                            break
+                        }
+                        var frame = sorted[i]
+                        
+                        frame.origin.y = y
+                        var size = UIFont.myanmarFont.withSize(avHeight * 1.2).sizeOfString(string: text, constrainedToWidth: stable.cgrect.width)
+                        size.height = avHeight
+                        frame.size = size
+                        frame.origin.x = max(stable.cgrect.origin.x, frame.origin.x)
+                        if frame.maxX > stable.cgrect.maxX {
+                            frame.origin.x = stable.cgrect.minX
+                        }
+                        
+                        y += avHeight + spacing
+                        
+                        let existings = self.objects.filter{ $0.isSimilterText(_text: text)}
+                        if let existing = existings.first {
+                
+                            existing.rect = frame
+                            textRects.append(existing)
+                            self.objects.update(with: existing)
+                        }else {
+                            let newTextRect = TextRect(text, frame)
+                            textRects.append(newTextRect)
+                            self.objects.insert(newTextRect)
+                        }
+                    }
+                    self.delegate?.ocrService(self, didGetStableTextRects: textRects)
+                }
+                
+            }
         }
         
+        
+        
+    }
+}
+
+// Video Input
+extension OcrService: VideoServiceDelegate {
+    func handle(ciImage: CIImage) {
+        _ = semaphore.wait(wallTimeout: .distantFuture)
+        queue.sync { [weak self] in
+            let cgImage = context.createCGImage(ciImage, from: ciImage.extent)
+            self?.currentImage = cgImage
+            guard let self = self else { return }
+            self.pixelBuffer = pixelBuffer
+            let request = isMyanmar ? rectangelRequest : textRequest
+            var requestOptions: [VNImageOption : Any] = [:]
+            
+            if let cameraIntrinsicData = CMGetAttachment(ciImage, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil) {
+                requestOptions = [.cameraIntrinsics: cameraIntrinsicData]
+            }
+            
+            let imageRequestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: .up, options: requestOptions)
+            do {
+                try imageRequestHandler.perform([request])
+            } catch {
+                print(error)
+            }
+        }
+    }
+    func videoService(_ service: VideoService, didCaptureVideoFrame pixelBuffer: CVPixelBuffer?, timestamp: CMTime) {
+        _ = semaphore.wait(wallTimeout: .distantFuture)
+        if isBusy {
+            service.fps = 1
+        }
+        
+        if let buffer = pixelBuffer {
+            queue.sync { [weak self] in
+                
+                guard let self = self else { return }
+                self.pixelBuffer = pixelBuffer
+                let request = isMyanmar ? rectangelRequest : textRequest
+                var requestOptions: [VNImageOption : Any] = [:]
+                
+                if let cameraIntrinsicData = CMGetAttachment(buffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil) {
+                    requestOptions = [.cameraIntrinsics: cameraIntrinsicData]
+                }
+                
+                let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: .up, options: requestOptions)
+                do {
+                    try imageRequestHandler.perform([request])
+                } catch {
+                    print(error)
+                }
+            }
+        }
     }
     
-    private func getStableText() -> [String]? {
-        if let x = self.sentenceTracker.getStableItem() {
-            x.forEach{ self.sentenceTracker.reset(object: $0)}
-            return x
+    func handleSequenceRequestUpdate(request: VNRequest, error: Error?) {
+        DispatchQueue.main.async {
+            guard let newObservation = request.results?.first as? VNRectangleObservation else {
+                return}
+            
+            self.lastObservation = newObservation
+            
+            let rect = newObservation.boundingBox.applying(self.transform)
+            self.overlayView.highlightLayer.frame = rect
+        }
+    }
+    
+    private func drawBoundingBox(_ points: [CGPoint], color: CGColor) -> CAShapeLayer {
+        let layer = CAShapeLayer()
+        layer.fillColor = #colorLiteral(red: 0, green: 0.4784313725, blue: 1, alpha: 1)
+        layer.strokeColor = color
+        layer.lineWidth = 2
+        let path = UIBezierPath()
+        path.move(to: points.last!)
+        points.forEach { point in
+            path.addLine(to: point)
+        }
+        layer.path = path.cgPath
+        return layer
+    }
+}
+
+// Others
+extension OcrService {
+    
+    func cropImage(cgImage: CGImage, rect: CGRect) -> UIImage? {
+        if let cropped = cgImage.cropping(to: rect.viewRect(for: VideoService.videoSize)) {
+            return UIImage(cgImage: cropped, scale: CGFloat(1), orientation: .up)
         }
         return nil
     }
     
-    func performOCR(image: UIImage, rects: [CGRect], _ completion: @escaping ([String]) -> Void) {
-        
-        
+    func getCurrentCgImage() -> CGImage? {
+        guard let cm = pixelBuffer else { return nil }
+        let ciImage = CIImage(cvImageBuffer: cm)
+        return context.createCGImage(ciImage, from: ciImage.extent)
     }
     
-    private func resume() {
-        self.queue.async {[weak self] in
-            guard let self = self else { return }
-            self.isSatisfied = true
-            self.isBusy = false
-        }
+    func updateTransform() {
+        let videoRect = self.videoLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
+        let visible = videoRect.intersection(self.videoLayer.visibleRect)
+        let scaleT = CGAffineTransform(scaleX: visible.width, y: -visible.height)
+        let translateT = CGAffineTransform(translationX: visible.minX, y: visible.maxY)
+        transform = scaleT.concatenating(translateT)
     }
-    
-    func handle(pixelBuffer: CVPixelBuffer) {
-        
-        self.pixelBuffer = pixelBuffer
-        let request = isMyanmar ? rectangelRequest : textRequest
-        do {
-            try requestHandler.perform([request], on: pixelBuffer, orientation: .up)
-            
-        }catch { print(error.localizedDescription )}
-    }
-}
-
-extension OcrService {
-    
     func start(){
-        texts.removeAll()
         rectangelRequest.regionOfInterest = OcrService.roi.normalized()
-//        textRequest.regionOfInterest = OcrService.roi.normalized()
-        updateTransform()
         self.reset()
+        updateTransform()
         queue.async {
             self.isBusy = false
-            
         }
     }
     
     func stop() {
-        
-        isSatisfied = true
+        objects.removeAll()
         textRequest.cancel()
         rectangelRequest.cancel()
-        self.isBusy = true
+        queue.async {
+            self.isBusy = true
+        }
     }
     
     func reset() {
-        isSatisfied = false
         currentBox = CGRect.zero.box
         
-        textRequest.cancel()
-        rectangelRequest.cancel()
         boxTracker.clear()
         semaphore.signal()
         print("restart")
-    }
-}
-
-extension UIFont {
-    func sizeOfString (string: String, constrainedToWidth width: CGFloat) -> CGSize {
-        let attributes = [NSAttributedString.Key.font: self.fontName,]
-        let attString = NSAttributedString(string: string,attributes: attributes)
-        let framesetter = CTFramesetterCreateWithAttributedString(attString)
-        return CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRange(location: 0,length: 0), nil, CGSize(width: width, height: .greatestFiniteMagnitude), nil)
-    }
-}
-/*
- 
- return
- while !self.isSatisfied {
- let _ = semaphore.wait(timeout: .distantFuture)
- self.performOCR(image: cropped, rects: rects) {[weak self] lines in
- guard let self = self else { return }
- guard self.isBusy else { return }
- self.sentenceTracker.logFrame(objects: lines)
- if let stableTexts = self.getStableText() {
- stableTexts.forEach { stableText in
- if let index = lines.firstIndex(of: stableText) {
- self.texts[stableText] = index
- }
- let linesCount = lines.count
- 
- if self.texts.count >= linesCount {
- self.isSatisfied = true
- let sorted = self.texts.sorted{ $0.value < $1.value }.map{ $0.key }
- let absoluteHeight = rects.reduce(0, {$0 + $1.height })
- let avHeight = (absoluteHeight / rects.count.cgFloat).rounded()
- let spacing = CGFloat(3)
- var textRects = [TextRect]()
- 
- var y = CGFloat.zero
- for text in sorted {
- y += avHeight + spacing
- var origin = CGPoint.zero
- origin.y = y
- var size = UIFont.myanmarFont.withSize(avHeight*0.8).sizeOfString(string: text, constrainedToWidth: stable.cgrect.width)
- size.height = avHeight
- let frame = CGRect(origin: origin, size: size).integral
- textRects.append(TextRect(text, frame))
- }
- self.delegate?.ocrService(self, didGetStableTextRects: textRects)
- self.delegate?.ocrService(self, didUpdate: 0)
- }else {
- self.delegate?.ocrService(self, didUpdate: self.texts.count.cgFloat/linesCount.cgFloat)
- }
- }
- }
- 
- 
- 
- self.semaphore.signal()
- }
- }
- private func textRectangleHandler(request: VNRequest, error: Error?) {
- guard !isBusy, let results = request.results as? [VNTextObservation], results.count > 0 else { return }
- let rects = results.map{ $0.boundingBox.trashole(trashold: 0.01)}
- 
- let sumRect = OcrService.roi.intersection(rects.reduce(CGRect.null) { $0.union($1)}.scaleUp(scaleUp: 0.03))
- 
- var box = Box(sumRect, trashold: 0.01)
- box.update(.Unstable)
- delegate?.ocrService(self, didUpdate: box)
- 
- 
- boxTracker.enqueue(box)
- guard boxTracker.allValuesMatch, var stable = boxTracker.dequeue() else { return }
- 
- boxTracker.clear()
- self.isBusy = true
- 
- stable.update(.Stable)
- delegate?.ocrService(self, didUpdate: stable)
- 
- guard let cgImage = self.getCurrentCgImage(), let cropped = self.cropImage(cgImage: cgImage, rect: stable.cgrect.normalized())?.greysCaled  else {
- isBusy = false
- return
- }
- 
- //        while !self.isSatisfied {
- //            self.performOCR(image: cropped, rects: rects)
- //            if self.isSatisfied {
- //                self.queue.async {
- //                    self.delegate?.ocrService(self, didGetStableTextRects: self.textRects.array)
- //                }
- //            }
- //        }
- //        return
- queue.async {
- self.isBusy = true
- 
- self.tessrect.performOCR(on: cropped) { [weak self] result in
- guard let self = self else { return }
- 
- if let sentence = result, sentence.isWhitespace == false {
- let lines = sentence.lines().map{ $0.cleanUpMyanmarTexts() }.filter{ $0.isWhitespace == false && $0.utf16.count > 3 }
- self.sentenceTracker.logFrame(objects: lines)
- 
- self.isBusy = false
- let sortedRects = rects.sorted{ $0.width > $1.width }
- let sortedTexts = lines.sorted{ $0.count > $1.count }
- let textCount = sortedTexts.count
- 
- var unorderedTextRects = [String: CGSize]()
- for turple in sortedRects.enumerated() {
- let i = turple.offset
- let element = turple.element
- if i < textCount {
- unorderedTextRects[sortedTexts[i]] = element.size
- }
- }
- var orderedTextRects = [TextRect]()
- zip(lines, rects).forEach {
- let text = $0.0
- var rect = $0.1
- rect.size = unorderedTextRects[text] ?? .zero
- orderedTextRects.append( TextRect(text, rect))
- }
- 
- self.delegate?.ocrService(self, didGetTextRects: orderedTextRects)
- 
- self.queue.async {
- self.isBusy = false
- }
- 
- }
- }
- }
- 
- 
- 
- }
- */
-
-
-extension CGImage {
-    var uiImage: UIImage { return UIImage(cgImage: self)}
-}
-
-extension UIImage {
-    var greysCaled: UIImage {
-        
-        let saturationFilter = Luminance()
-        //        let adaptive = AdaptiveThreshold()
-        //        adaptive.blurRadiusInPixels = 15
-        
-        return self.filterWithOperation(saturationFilter)
-    }
-}
-
-
-extension CGFloat {
-    func roundToNearest(_ x : CGFloat) -> CGFloat {
-        return x * (self / x).rounded()
-    }
-    var int: Int { return Int(self)}
-}
-extension Int {
-    var cgFloat: CGFloat { return CGFloat(self) }
-}
-
-extension Set {
-    var array: [Element] { return Array(self)}
-}
-
-
-extension BidirectionalCollection where Iterator.Element: Equatable {
-    
-    typealias Element = Self.Iterator.Element
-    
-    func after(_ item: Element, loop: Bool = false) -> Element? {
-        if let itemIndex = self.firstIndex(of: item) {
-            let lastItem: Bool = (index(after:itemIndex) == endIndex)
-            if loop && lastItem {
-                return self.first
-            } else if lastItem {
-                return nil
-            } else {
-                return self[index(after:itemIndex)]
-            }
-        }
-        return nil
-    }
-    
-    func before(_ item: Element) -> Element? {
-        if let itemIndex = self.firstIndex(of: item) {
-            guard itemIndex != startIndex else { return nil }
-            return self[index(before: itemIndex)]
-        }
-        return nil
-    }
-}
-
-extension CGAffineTransform {
-    func scale() -> Double {
-        return sqrt(Double(self.a * self.a + self.c * self.c))
-    }
-    
-    func translation() -> CGPoint {
-        return CGPoint(x: self.tx, y: self.ty)
-    }
-}
-extension UIImage {
-    // 2
-    func scaledImage(_ maxDimension: CGFloat) -> UIImage? {
-        // 3
-        var scaledSize = CGSize(width: maxDimension, height: maxDimension)
-        // 4
-        if size.width > size.height {
-            scaledSize.height = size.height / size.width * scaledSize.width
-        } else {
-            scaledSize.width = size.width / size.height * scaledSize.height
-        }
-        // 5
-        UIGraphicsBeginImageContext(scaledSize)
-        draw(in: CGRect(origin: .zero, size: scaledSize))
-        let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        // 6
-        return scaledImage
     }
 }

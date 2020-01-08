@@ -18,8 +18,6 @@ struct CameraUIViewRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: OverlayView, context: Context) {
-        uiView.videoPreviewLayer.frame = uiView.bounds
-        uiView.updateLayerTransform()
-        uiView.roiLayer.frame =  OcrService.roi.applying(uiView.visionTransform)
+//        uiView.videoPreviewLayer.frame = uiView.bounds
     }
 }
