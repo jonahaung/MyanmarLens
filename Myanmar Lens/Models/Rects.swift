@@ -18,22 +18,21 @@ class TextRect {
     
     var text: String
     var translatedText: String?
-    private var trashole: CGFloat = 10
     var rect: CGRect
     let id: String
     let isMyanmar: Bool
-
+    var isStable = false
     
     var displayText: String { return translatedText ?? text }
     
-    init(_ text: String, _ rect: CGRect) {
+    init(_ text: String, _ rect: CGRect, _isMyanmar: Bool) {
         self.text = text
         self.rect = rect
-        self.isMyanmar = text.EXT_isMyanmarCharacters
+        isMyanmar = _isMyanmar
         if isMyanmar {
-            id = text.include(in: .myanmarAlphabets)
+            id = text.trimmingCharacters(in: .whitespaces).include(in: .myanmarAlphabets)
         }else {
-            id = text.include(in: .englishAlphabets).lowercased().withoutSpacesAndNewLines
+            id = text.trimmingCharacters(in: .removingCharacters).include(in: .englishAlphabets).withoutSpacesAndNewLines
         }
     }
 }
@@ -83,9 +82,9 @@ enum BoxType {
     var stokeColor: UIColor {
         switch self {
         case .Unstable:
-            return #colorLiteral(red: 0.8078431487, green: 0.02745098062, blue: 0.3333333433, alpha: 1)
+            return #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)
         case .Stable:
-            return #colorLiteral(red: 0, green: 0.4784313725, blue: 1, alpha: 1)
+            return #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
         case .Busy:
             return #colorLiteral(red: 0.1960784346, green: 0.3411764801, blue: 0.1019607857, alpha: 1)
         default:
@@ -98,29 +97,18 @@ enum BoxType {
 struct Box {
     
     
-    var type: BoxType = .Unknown
+    var type: BoxType = .Stable
     
     let cgrect: CGRect
     
     init(_ _rect: CGRect, trashold: CGFloat = 1) {
-        cgrect = CGRect(x: _rect.minX.roundToNearest(trashold), y: _rect.minY.roundToNearest(trashold), width: _rect.size.width.roundToNearest(trashold), height: _rect.height.roundToNearest(trashold))
+        cgrect = _rect
     }
     mutating func update(_ _type: BoxType) {
         type = _type
     }
 }
 
-extension Box: Hashable {
-    func hash(into hasher: inout Hasher) {
-        cgrect.height.hashValue.hash(into: &hasher)
-        cgrect.width.hashValue.hash(into: &hasher)
-        cgrect.origin.x.hashValue.hash(into: &hasher)
-        cgrect.origin.y.hashValue.hash(into: &hasher)
-    }
-    func union(_ box: Box) -> Box {
-        return Box(cgrect.union(box.cgrect))
-    }
-}
 
 extension CGRect {
     

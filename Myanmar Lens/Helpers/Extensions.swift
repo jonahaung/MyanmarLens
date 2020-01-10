@@ -89,17 +89,28 @@ extension CGImage {
     var uiImage: UIImage { return UIImage(cgImage: self)}
 }
 
+//extension UIImage {
+//    var greysCaled: UIImage {
+//
+//        let saturationFilter = Luminance()
+//        //        let adaptive = AdaptiveThreshold()
+//        //        adaptive.blurRadiusInPixels = 15
+//
+//        return self.filterWithOperation(saturationFilter)
+//    }
+//}
 extension UIImage {
-    var greysCaled: UIImage {
-        
-        let saturationFilter = Luminance()
-        //        let adaptive = AdaptiveThreshold()
-        //        adaptive.blurRadiusInPixels = 15
-        
-        return self.filterWithOperation(saturationFilter)
+    var noir: UIImage? {
+        let context = CIContext(options: nil)
+        guard let currentFilter = CIFilter(name: "CIPhotoEffectNoir") else { return nil }
+        currentFilter.setValue(CIImage(image: self), forKey: kCIInputImageKey)
+        if let output = currentFilter.outputImage,
+            let cgImage = context.createCGImage(output, from: output.extent) {
+            return UIImage(cgImage: cgImage, scale: scale, orientation: imageOrientation)
+        }
+        return nil
     }
 }
-
 
 extension CGFloat {
     func roundToNearest(_ x : CGFloat) -> CGFloat {

@@ -14,8 +14,8 @@ struct MainView: View {
     @Environment(\.managedObjectContext) var context: NSManagedObjectContext
     @State private var notDoneEULA = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
     @State private var sourceLanguage: String = "Source Language"
+    @State private var showCamera: Bool = false
     private var isMyanmar: Bool { return sourceLanguage == "Burmese" }
-    @State private var isCamera = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
     
     var body: some View {
         VStack {
@@ -35,19 +35,19 @@ struct MainView: View {
             Spacer()
             
             HStack{
-//                NavigationLink(destination: HistoryView().environment(\.managedObjectContext, context), isActive: $isCamera) {
-//                    Image(systemName: "camera.fill").padding()
-//                }.font(.largeTitle)
-                NavigationLink(destination: CameraView(), isActive: $isCamera) {
-                    Image(systemName: "camera.fill").padding()
-                }.font(.largeTitle)
-                
+                NavigationLink(destination: HistoryView().environment(\.managedObjectContext, context)) {
+                    Image(systemName: "eyeglasses")
+                }
+                Spacer()
+                Image(systemName: "camera.fill").onTapGesture {
+                                       self.showCamera = true
+                    }.font(.largeTitle).padding()
                 Spacer()
                 
                 NavigationLink(destination: FavouritesView().environment(\.managedObjectContext, context)) {
-                    Image(systemName: "heart").padding()
+                    Image(systemName: "heart")
                 }
-            }.font(.title)
+            }.padding().font(.title)
             
         }
         
@@ -58,6 +58,9 @@ struct MainView: View {
         }, content: {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
+            .sheet(isPresented: $showCamera, content: {
+                CameraView()
+            })
         .onAppear {
             self.sourceLanguage = userDefaults.languagePair.source.localName
         }

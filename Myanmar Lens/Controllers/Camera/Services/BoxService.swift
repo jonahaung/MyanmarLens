@@ -20,13 +20,12 @@ final class BoxService {
     
   
     func handle(_ textRects: [TextRect]) {
-        overlayView.highlightLayer.strokeColor = UIColor.clear.cgColor
         let existings = boxes.filter{ $0.textRect != nil }
         let frame = self.overlayView.bounds
         var currentBoxes = [BoundingBox]()
         for tr in textRects {
             if let existing = (existings.filter{ $0.textRect!.displayText == tr.displayText }).first {
-                existing.updateFrame(frame: tr.rect)
+                existing.show(textRect: tr, within: frame)
                 currentBoxes.append(existing)
             } else {
                 let box = BoundingBox()
@@ -45,32 +44,7 @@ final class BoxService {
                 }
             }
         }
-//        let frame = overlayView.highlightLayer.frame
-//        for (i, texRect) in textRects.enumerated() {
-//            if let box = boxes[exist: i] {
-//                box.show(textRect: texRect, within: frame)
-//            }else {
-//                let box = BoundingBox()
-//                box.addToLayer(overlayView.highlightLayer)
-//                box.show(textRect: texRect, within: frame)
-//                boxes.append(box)
-//            }
-//        }
-//        overlayView.highlightLayer.strokeColor = UIColor.tertiarySystemFill.cgColor
-        
     }
-    
-    func handle(_ ttrs: [TranslateTextRect]) {
-        var textRects = [TextRect]()
-        
-        for ttr in ttrs {
-             let originalText = ttr.textRect.displayText
-            let text = ttr.translatedText ?? originalText
-            textRects.append(TextRect(text, ttr.textRect.rect))
-        }
-        handle(textRects)
-    }
-
     
     func clearlayers() {
         boxes.forEach{ $0.hide() }

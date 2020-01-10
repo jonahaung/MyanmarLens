@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>test</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Test</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -39,6 +35,10 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Myanmar Lens needs to access your camera. Your permession is need in order to perform perform Live Camera Translations.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Test</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>test</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MyanmarSanpya.ttf</string>

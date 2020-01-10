@@ -9,47 +9,51 @@
 import Foundation
 
 protocol TranslateServiceDelegate: class {
-    func translateService(_ service: TranslateService, didFinishTranslation translateTextRects: [TranslateTextRect])
+    func translateService(_ service: TranslateService, didFinishTranslation textRects: [TextRect])
+    var languagePair: LanguagePair { get }
 }
 
 
 final class TranslateService {
     
     weak var delegate: TranslateServiceDelegate?
-    var languagePair: LanguagePair { return userDefaults.languagePair }
+    
     private var cached: [String: String] = [:]
     
     func handle(textRects: [TextRect]) {
-        var results = [TranslateTextRect]()
-        let pair = languagePair
+        guard let pair = delegate?.languagePair else { return }
         let isMyanmar = pair.source == .burmese
         textRects.asyncForEach(completion: {[weak self] in
             guard let self = self else { return }
-            self.delegate?.translateService(self, didFinishTranslation: results)
+            self.delegate?.translateService(self, didFinishTranslation: textRects)
         }) { [unowned self] (textRect, next) in
-            let text = textRect.displayText.trimmed
-            guard !text.isWhitespace else {
+            if let found = self.cached[textRect.id] {
+                textRect.translatedText = found
                 next()
-                return
-            }
-            Translator.shared.translate(text: text, from: pair.0.rawValue, to: pair.1.rawValue) { [weak self] (result, err) in
-                guard let self = self else { return }
-                if let err = err {
-                    print(err.localizedDescription)
-                    next()
-                    return
-                }
-                
-                if var result = result, !result.isWhitespace {
-                    if isMyanmar {
-                        result = result.cleanUpMyanmarTexts()
+            }else {
+                if textRect.isStable && textRect.translatedText == nil {
+                    let text = textRect.text.trimmed
+                    Translator.shared.translate(text: text, from: pair.0.rawValue, to: pair.1.rawValue) { [weak self] (result, err) in
+                        guard let self = self else { return }
+                        if let err = err {
+                            print(err.localizedDescription)
+                            next()
+                            return
+                        }
+                        
+                        if var result = result, !result.isWhitespace {
+                            if isMyanmar {
+                                result = result.cleanUpMyanmarTexts()
+                            }
+                            textRect.translatedText = result
+                            self.cached[textRect.id] = result
+                        }
+                        next()
                     }
-                    results.append(TranslateTextRect(translatedText: result, textRect: textRect))
-                    self.cached[text] = result
+                } else {
+                    next()
                 }
-                next()
             }
-            
         }
     }
 }

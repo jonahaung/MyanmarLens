@@ -16,29 +16,97 @@ struct CameraView: View {
         ZStack {
             
             CameraUIViewRepresentable(serviceManager: serviceManager)
-           
             
-            CameraControlView(serviceManager: serviceManager).foregroundColor(.white)
+            
+            CameraControlView(serviceManager: serviceManager)
             
             .navigationBarTitle(serviceManager.source)
-            .navigationBarItems(trailing:
-                HStack{
-                    Text(serviceManager.source)
-                    Button(action: {
-                        self.serviceManager.toggleLanguagePair()
-                    }) {
-                        Image(systemName: "chevron.right.2")
-                    }
-                    
-                    Text(serviceManager.target)
-            })
         }
         .onAppear {
             self.serviceManager.configure()
-           
-            
         }
-        .onDisappear { self.serviceManager.stop() }
+        .onDisappear {
+            self.serviceManager.stop()
+        }
     }
 
+}
+
+struct CameraControlView: View {
+    
+    @ObservedObject var serviceManager: ServiceManager
+    
+    var body: some View {
+        VStack {
+            
+            Spacer()
+            VStack {
+                HStack {
+                    Text(serviceManager.source).onTapGesture {
+                        self.serviceManager.didTapSourceLanguage()
+                    }
+                    Spacer()
+                    ZStack {
+                        if !self.serviceManager.isStopped {
+                            CircularProgressIndicator()
+                        }
+                        Circle().fill(Color.white).frame(width: 55, height: 55, alignment: .center).onTapGesture {
+                            self.serviceManager.didTapActionButton()
+                        }
+                        
+                    }
+                    Spacer()
+                    Text(serviceManager.target).onTapGesture {
+                        self.serviceManager.didTapTargetLanguage()
+                    }
+                }.font(.system(size: 18, weight: .medium, design: .monospaced))
+                
+                Toggle(isOn: $serviceManager.isRepeat) {
+                    HStack(spacing: 15){
+                        Image(systemName: "lightbulb.slash.fill").onTapGesture {
+                            self.serviceManager.didTapFlashLight()
+                        }
+                        Slider(value: $serviceManager.zoom, in: 0...20)
+                    }
+                    
+                }
+            }.padding()
+        }
+        
+    }
+}
+struct CircularProgressIndicator: View {
+    
+    @State var spinCircle = false
+    
+    var body: some View {
+        Circle()
+            .trim(from: 0.5, to: 1)
+            .stroke(lineWidth: 3)
+            .fill(Color.blue)
+            .frame(width: 63, height: 63
+                , alignment: .center)
+            .rotationEffect(.degrees(spinCircle ? 0 : -360), anchor: .center)
+            .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false))
+            
+            .onAppear {
+                self.spinCircle = true
+        }
+        
+    }
+    
+}
+
+
+struct CameraUIViewRepresentable: UIViewRepresentable {
+    
+    let serviceManager: ServiceManager
+
+    func makeUIView(context: Context) -> OverlayView {
+        return serviceManager.overlayView
+    }
+
+    func updateUIView(_ uiView: OverlayView, context: Context) {
+
+    }
 }
