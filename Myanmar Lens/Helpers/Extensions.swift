@@ -56,9 +56,9 @@ extension UIColor {
 }
 extension UIFont {
     
-    static let myanmarFont = UIFont(name:"MyanmarSansPro", size: UIFont.labelFontSize)!
+    static let myanmarFont = UIFont(name:"MyanmarSansPro", size: 35)!
     static let engFont = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .regular)
-    static let myanmarFontBold = UIFontMetrics.default.scaledFont(for: UIFont(name: "MyanmarPhetsot", size: 25)!)
+    static let myanmarFontBold = UIFontMetrics.default.scaledFont(for: UIFont(name: "MyanmarPhetsot", size: 35)!)
     
     static var monoSpacedFont: UIFont {
         let defaultFontDescriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .body)
@@ -86,7 +86,7 @@ extension UIFont {
 }
 
 extension CGImage {
-    var uiImage: UIImage { return UIImage(cgImage: self)}
+    var uiImage: UIImage { return UIImage(cgImage: self, scale: UIScreen.main.scale, orientation: .up)}
 }
 
 //extension UIImage {

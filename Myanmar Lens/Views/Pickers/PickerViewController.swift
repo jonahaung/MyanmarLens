@@ -51,8 +51,8 @@ final class PickerViewViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = nil
-        modalPresentationStyle = .pageSheet
+//        view.backgroundColor = nil
+        modalPresentationStyle = .formSheet
         pickerView.dataSource = self
         pickerView.delegate = self
     }
@@ -80,7 +80,7 @@ extension PickerViewViewController: UIPickerViewDataSource, UIPickerViewDelegate
         let language = values[component][row]
         pickerView.subviews[1].isHidden = true
         pickerView.subviews[2].isHidden = true
-        return NSAttributedString(string: language, attributes: [.foregroundColor: UIColor.link])
+        return NSAttributedString(string: language, attributes: [.foregroundColor: UIColor.systemYellow, .font: UIFont.monoSpacedFont])
     }
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         action?(self, pickerView, Index(column: component, row: row), values)

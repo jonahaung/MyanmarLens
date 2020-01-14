@@ -21,6 +21,8 @@
 		470228B12397AC2600E42ECB /* CVPixelBuffer+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470228A92397AC2600E42ECB /* CVPixelBuffer+Helpers.swift */; };
 		470228B42397B75F00E42ECB /* BoundingBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470228B32397B75F00E42ECB /* BoundingBox.swift */; };
 		47105ABD23BB3BB500A99920 /* UnionFind.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47105ABC23BB3BB500A99920 /* UnionFind.swift */; };
+		47178E4023CA319800F72124 /* LoadingIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47178E3F23CA319800F72124 /* LoadingIndicator.swift */; };
+		47178E4223CA3E5000F72124 /* FlipperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47178E4123CA3E5000F72124 /* FlipperView.swift */; };
 		471A88A123B75BEB0036FE83 /* ServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A88A023B75BEB0036FE83 /* ServiceManager.swift */; };
 		471A904523C61A4D00C7979E /* Predictions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A904423C61A4D00C7979E /* Predictions.swift */; };
 		471B5763238E363300378E0A /* StartUpManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471B5762238E363300378E0A /* StartUpManager.swift */; };
@@ -32,9 +34,11 @@
 		471E66F6238FD561008302E5 /* MyanmarSanpya.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */; };
 		471E66FA238FD7ED008302E5 /* MyanmarPhetsot.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */; };
 		471F237B23B72F1E005D9070 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471F237A23B72F1E005D9070 /* CameraView.swift */; };
-		47323D8923BD0ED1004EFE64 /* UIImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47323D8823BD0ED1004EFE64 /* UIImage+Extensions.swift */; };
+		4729DF7A23CC9708009BE23D /* ResizableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4729DF7923CC9708009BE23D /* ResizableView.swift */; };
+		4729DF7C23CCC9AA009BE23D /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */; };
 		47323D8B23BD4106004EFE64 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47323D8A23BD4106004EFE64 /* Async.swift */; };
-		473BBDAF2391062800E2BB5A /* Rects.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473BBDAE2391062800E2BB5A /* Rects.swift */; };
+		4737B42D23CC49E20022B2B2 /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4737B42C23CC49E20022B2B2 /* SwiftUIView.swift */; };
+		473BBDAF2391062800E2BB5A /* TextRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473BBDAE2391062800E2BB5A /* TextRect.swift */; };
 		4750E33823845FE700438805 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E33723845FE700438805 /* AppDelegate.swift */; };
 		4750E33A23845FE700438805 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4750E33923845FE700438805 /* SceneDelegate.swift */; };
 		4750E34223845FE700438805 /* Myanmar_Lens.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4750E34023845FE700438805 /* Myanmar_Lens.xcdatamodeld */; };
@@ -58,6 +62,8 @@
 		47762C2E238A073F009AF2DD /* ObjectTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47762C2D238A073F009AF2DD /* ObjectTracker.swift */; };
 		4789C93723A2BBF800CCCD85 /* MyanmarTagu.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4789C93423A2BBF800CCCD85 /* MyanmarTagu.ttf */; };
 		4789C93923A2BD6C00CCCD85 /* MyanmarAngoun.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4789C93823A2BD6C00CCCD85 /* MyanmarAngoun.ttf */; };
+		47B8CB3023CA21B6001DF2EC /* ClockSUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B8CB2F23CA21B6001DF2EC /* ClockSUIView.swift */; };
+		47B8CB3323CA2AA5001DF2EC /* WaveTextModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B8CB3223CA2AA5001DF2EC /* WaveTextModifier.swift */; };
 		47BDDAC323A4769E0039A401 /* BoxService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BDDAB923A4769D0039A401 /* BoxService.swift */; };
 		47BDDAC423A4769E0039A401 /* TranslateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BDDABC23A4769D0039A401 /* TranslateService.swift */; };
 		47BDDAC923A4769E0039A401 /* VideoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BDDAC123A4769E0039A401 /* VideoService.swift */; };
@@ -75,6 +81,18 @@
 		47E72C8B23893292008210AF /* Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C8A23893292008210AF /* Language.swift */; };
 		47E72C8F23895A51008210AF /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C8E23895A51008210AF /* SoundManager.swift */; };
 		47E72C952389BF78008210AF /* UserDefaultsManagar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E72C942389BF78008210AF /* UserDefaultsManagar.swift */; };
+		47F31A1B23CDCE7700D33E22 /* CGRect+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1123CDCE7500D33E22 /* CGRect+Utils.swift */; };
+		47F31A1C23CDCE7700D33E22 /* CGPoint+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1223CDCE7500D33E22 /* CGPoint+Utils.swift */; };
+		47F31A1D23CDCE7700D33E22 /* UIImage+Orientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1323CDCE7500D33E22 /* UIImage+Orientation.swift */; };
+		47F31A1E23CDCE7700D33E22 /* UIImage+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1423CDCE7600D33E22 /* UIImage+Utils.swift */; };
+		47F31A1F23CDCE7700D33E22 /* CGSize+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1523CDCE7600D33E22 /* CGSize+Utils.swift */; };
+		47F31A2023CDCE7700D33E22 /* CIImage+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1623CDCE7600D33E22 /* CIImage+Utils.swift */; };
+		47F31A2123CDCE7700D33E22 /* AVCaptureVideoOrientation+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1723CDCE7600D33E22 /* AVCaptureVideoOrientation+Utils.swift */; };
+		47F31A2223CDCE7700D33E22 /* CGAffineTransform+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1823CDCE7600D33E22 /* CGAffineTransform+Utils.swift */; };
+		47F31A2323CDCE7700D33E22 /* Array+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1923CDCE7700D33E22 /* Array+Utils.swift */; };
+		47F31A2423CDCE7700D33E22 /* CGImagePropertyOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A1A23CDCE7700D33E22 /* CGImagePropertyOrientation.swift */; };
+		47F31A2623CDCF1C00D33E22 /* Quadrilateral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A2523CDCF1C00D33E22 /* Quadrilateral.swift */; };
+		47F31A2823CDCF5800D33E22 /* Transformable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F31A2723CDCF5800D33E22 /* Transformable.swift */; };
 		47F5273D23BE2439008894D7 /* tessdata in Resources */ = {isa = PBXBuildFile; fileRef = 47F5273C23BE2439008894D7 /* tessdata */; };
 		C0F911258808621C5FDD59BC /* Pods_Myanmar_LensUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8669784314B53BD94C28DE0C /* Pods_Myanmar_LensUITests.framework */; };
 		C7C7ACD29D5851286ED6B125 /* Pods_Myanmar_LensTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC35B9A3B68F296D815EC53 /* Pods_Myanmar_LensTests.framework */; };
@@ -115,6 +133,8 @@
 		470228A92397AC2600E42ECB /* CVPixelBuffer+Helpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Helpers.swift"; sourceTree = "<group>"; };
 		470228B32397B75F00E42ECB /* BoundingBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoundingBox.swift; sourceTree = "<group>"; };
 		47105ABC23BB3BB500A99920 /* UnionFind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnionFind.swift; sourceTree = "<group>"; };
+		47178E3F23CA319800F72124 /* LoadingIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingIndicator.swift; sourceTree = "<group>"; };
+		47178E4123CA3E5000F72124 /* FlipperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlipperView.swift; sourceTree = "<group>"; };
 		471A887E23B746B40036FE83 /* Pods_Myanmar_Lens.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Pods_Myanmar_Lens.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		471A88A023B75BEB0036FE83 /* ServiceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceManager.swift; sourceTree = "<group>"; };
 		471A904423C61A4D00C7979E /* Predictions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Predictions.swift; sourceTree = "<group>"; };
@@ -128,9 +148,11 @@
 		471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarSanpya.ttf; sourceTree = "<group>"; };
 		471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarPhetsot.ttf; sourceTree = "<group>"; };
 		471F237A23B72F1E005D9070 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
-		47323D8823BD0ED1004EFE64 /* UIImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extensions.swift"; sourceTree = "<group>"; };
+		4729DF7923CC9708009BE23D /* ResizableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResizableView.swift; sourceTree = "<group>"; };
+		4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageColors.swift; sourceTree = "<group>"; };
 		47323D8A23BD4106004EFE64 /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
-		473BBDAE2391062800E2BB5A /* Rects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rects.swift; sourceTree = "<group>"; };
+		4737B42C23CC49E20022B2B2 /* SwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIView.swift; sourceTree = "<group>"; };
+		473BBDAE2391062800E2BB5A /* TextRect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRect.swift; sourceTree = "<group>"; };
 		4750E33423845FE700438805 /* Myanmar Lens.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Myanmar Lens.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4750E33723845FE700438805 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		4750E33923845FE700438805 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -161,6 +183,8 @@
 		47762C2D238A073F009AF2DD /* ObjectTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectTracker.swift; sourceTree = "<group>"; };
 		4789C93423A2BBF800CCCD85 /* MyanmarTagu.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarTagu.ttf; sourceTree = "<group>"; };
 		4789C93823A2BD6C00CCCD85 /* MyanmarAngoun.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarAngoun.ttf; sourceTree = "<group>"; };
+		47B8CB2F23CA21B6001DF2EC /* ClockSUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockSUIView.swift; sourceTree = "<group>"; };
+		47B8CB3223CA2AA5001DF2EC /* WaveTextModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveTextModifier.swift; sourceTree = "<group>"; };
 		47BCB6E423BF40C700731F88 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		47BDDAB923A4769D0039A401 /* BoxService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoxService.swift; sourceTree = "<group>"; };
 		47BDDABC23A4769D0039A401 /* TranslateService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TranslateService.swift; sourceTree = "<group>"; };
@@ -179,6 +203,18 @@
 		47E72C8A23893292008210AF /* Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Language.swift; sourceTree = "<group>"; };
 		47E72C8E23895A51008210AF /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
 		47E72C942389BF78008210AF /* UserDefaultsManagar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsManagar.swift; sourceTree = "<group>"; };
+		47F31A1123CDCE7500D33E22 /* CGRect+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGRect+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1223CDCE7500D33E22 /* CGPoint+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGPoint+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1323CDCE7500D33E22 /* UIImage+Orientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Orientation.swift"; sourceTree = "<group>"; };
+		47F31A1423CDCE7600D33E22 /* UIImage+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1523CDCE7600D33E22 /* CGSize+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGSize+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1623CDCE7600D33E22 /* CIImage+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CIImage+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1723CDCE7600D33E22 /* AVCaptureVideoOrientation+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVCaptureVideoOrientation+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1823CDCE7600D33E22 /* CGAffineTransform+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CGAffineTransform+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1923CDCE7700D33E22 /* Array+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Array+Utils.swift"; sourceTree = "<group>"; };
+		47F31A1A23CDCE7700D33E22 /* CGImagePropertyOrientation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGImagePropertyOrientation.swift; sourceTree = "<group>"; };
+		47F31A2523CDCF1C00D33E22 /* Quadrilateral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Quadrilateral.swift; sourceTree = "<group>"; };
+		47F31A2723CDCF5800D33E22 /* Transformable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transformable.swift; sourceTree = "<group>"; };
 		47F5273C23BE2439008894D7 /* tessdata */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tessdata; sourceTree = "<group>"; };
 		4F7FEBAFDF5FF466ABC49884 /* Pods-Myanmar LensTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar LensTests.release.xcconfig"; path = "Target Support Files/Pods-Myanmar LensTests/Pods-Myanmar LensTests.release.xcconfig"; sourceTree = "<group>"; };
 		56692EC99886F7B3AE06AFB6 /* Pods-Myanmar LensUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Myanmar LensUITests.release.xcconfig"; path = "Target Support Files/Pods-Myanmar LensUITests/Pods-Myanmar LensUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -253,6 +289,7 @@
 		47012541238CEE9F004C8403 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				47B8CB3123CA2A72001DF2EC /* ViewModifiers */,
 				47012542238CEEB2004C8403 /* ListCell.swift */,
 				47012553238D56FB004C8403 /* SettingCell.swift */,
 				47606769239BFF4200274A07 /* Pickers */,
@@ -276,12 +313,12 @@
 		471A88A623B79EA80036FE83 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				473BBDAE2391062800E2BB5A /* TextRect.swift */,
 				471A88A023B75BEB0036FE83 /* ServiceManager.swift */,
 				47BDDAC123A4769E0039A401 /* VideoService.swift */,
 				47BDDAB923A4769D0039A401 /* BoxService.swift */,
 				47C499CB23BFC8A20084F70D /* OcrService.swift */,
 				47BDDABC23A4769D0039A401 /* TranslateService.swift */,
-				47323D8823BD0ED1004EFE64 /* UIImage+Extensions.swift */,
 				47323D8A23BD4106004EFE64 /* Async.swift */,
 			);
 			path = Services;
@@ -300,6 +337,7 @@
 		471F237723B72F0B005D9070 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
+				47F31A1023CDCE6100D33E22 /* Extensions */,
 				47DCA51023C09151003B15F6 /* Views */,
 				471A88A623B79EA80036FE83 /* Services */,
 			);
@@ -429,6 +467,7 @@
 				47E71D7923925C980084B16E /* CameraController+Helpers.swift */,
 				47D76BE5238C24C00027240A /* AppUtilities.swift */,
 				47105ABC23BB3BB500A99920 /* UnionFind.swift */,
+				4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -440,6 +479,18 @@
 				4760676A239BFF5900274A07 /* Pickers+Ext.swift */,
 			);
 			path = Pickers;
+			sourceTree = "<group>";
+		};
+		47B8CB3123CA2A72001DF2EC /* ViewModifiers */ = {
+			isa = PBXGroup;
+			children = (
+				47B8CB2F23CA21B6001DF2EC /* ClockSUIView.swift */,
+				47B8CB3223CA2AA5001DF2EC /* WaveTextModifier.swift */,
+				47178E3F23CA319800F72124 /* LoadingIndicator.swift */,
+				47178E4123CA3E5000F72124 /* FlipperView.swift */,
+				4737B42C23CC49E20022B2B2 /* SwiftUIView.swift */,
+			);
+			path = ViewModifiers;
 			sourceTree = "<group>";
 		};
 		47DC27D1238BD33200037B90 /* Text Corrector */ = {
@@ -460,6 +511,7 @@
 				470228B32397B75F00E42ECB /* BoundingBox.swift */,
 				476BC56E23A2C7230012386B /* PreviewView.swift */,
 				476FA25E23BBB1F400B6DF49 /* FireworkLayer.swift */,
+				4729DF7923CC9708009BE23D /* ResizableView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -468,11 +520,29 @@
 			isa = PBXGroup;
 			children = (
 				47CD7EF023904278009C1BCC /* Accurcy.swift */,
-				473BBDAE2391062800E2BB5A /* Rects.swift */,
 				47012551238D55D4004C8403 /* Setting.swift */,
 				47E72C8A23893292008210AF /* Language.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		47F31A1023CDCE6100D33E22 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				47F31A2723CDCF5800D33E22 /* Transformable.swift */,
+				47F31A1923CDCE7700D33E22 /* Array+Utils.swift */,
+				47F31A1723CDCE7600D33E22 /* AVCaptureVideoOrientation+Utils.swift */,
+				47F31A1823CDCE7600D33E22 /* CGAffineTransform+Utils.swift */,
+				47F31A1A23CDCE7700D33E22 /* CGImagePropertyOrientation.swift */,
+				47F31A1223CDCE7500D33E22 /* CGPoint+Utils.swift */,
+				47F31A1123CDCE7500D33E22 /* CGRect+Utils.swift */,
+				47F31A1523CDCE7600D33E22 /* CGSize+Utils.swift */,
+				47F31A1623CDCE7600D33E22 /* CIImage+Utils.swift */,
+				47F31A1323CDCE7500D33E22 /* UIImage+Orientation.swift */,
+				47F31A1423CDCE7600D33E22 /* UIImage+Utils.swift */,
+				47F31A2523CDCF1C00D33E22 /* Quadrilateral.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		6BBE5D46262256D5390902F5 /* Frameworks */ = {
@@ -728,36 +798,48 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				47F31A2423CDCE7700D33E22 /* CGImagePropertyOrientation.swift in Sources */,
 				471B5763238E363300378E0A /* StartUpManager.swift in Sources */,
 				471E55B72384BC6E00AB6A95 /* MainView.swift in Sources */,
+				47F31A1F23CDCE7700D33E22 /* CGSize+Utils.swift in Sources */,
+				47F31A2223CDCE7700D33E22 /* CGAffineTransform+Utils.swift in Sources */,
 				470228AF2397AC2600E42ECB /* Array.swift in Sources */,
+				47F31A1B23CDCE7700D33E22 /* CGRect+Utils.swift in Sources */,
 				476FA25F23BBB1F400B6DF49 /* FireworkLayer.swift in Sources */,
+				47B8CB3323CA2AA5001DF2EC /* WaveTextModifier.swift in Sources */,
 				47105ABD23BB3BB500A99920 /* UnionFind.swift in Sources */,
 				47E72C952389BF78008210AF /* UserDefaultsManagar.swift in Sources */,
+				47F31A1C23CDCE7700D33E22 /* CGPoint+Utils.swift in Sources */,
 				47762C2E238A073F009AF2DD /* ObjectTracker.swift in Sources */,
 				470228B02397AC2600E42ECB /* NonMaxSuppression.swift in Sources */,
 				4750E375238465CD00438805 /* Extensions.swift in Sources */,
 				47606766239BFD9800274A07 /* Layout+Extenstions.swift in Sources */,
 				47012547238CFA48004C8403 /* Navigator.swift in Sources */,
+				47178E4023CA319800F72124 /* LoadingIndicator.swift in Sources */,
+				47F31A2823CDCF5800D33E22 /* Transformable.swift in Sources */,
 				47D0B08123ABA9E600AA7FA9 /* DroupDownMessageBar.swift in Sources */,
+				47F31A2623CDCF1C00D33E22 /* Quadrilateral.swift in Sources */,
 				4750E33823845FE700438805 /* AppDelegate.swift in Sources */,
 				4750E33A23845FE700438805 /* SceneDelegate.swift in Sources */,
 				470228AB2397AC2600E42ECB /* Math.swift in Sources */,
 				47E72C8F23895A51008210AF /* SoundManager.swift in Sources */,
 				470228B12397AC2600E42ECB /* CVPixelBuffer+Helpers.swift in Sources */,
 				4701254B238D1BB6004C8403 /* TermsAndConditions.swift in Sources */,
+				47F31A1D23CDCE7700D33E22 /* UIImage+Orientation.swift in Sources */,
 				47D76BE4238C18010027240A /* TranslatePair+Ext.swift in Sources */,
 				471E557623847F6500AB6A95 /* PersistanceManager.swift in Sources */,
 				4760676B239BFF5900274A07 /* Pickers+Ext.swift in Sources */,
 				4750E37B2384660C00438805 /* RegexParser.swift in Sources */,
 				47BDDAC423A4769E0039A401 /* TranslateService.swift in Sources */,
 				47606768239BFF1B00274A07 /* PickerViewController.swift in Sources */,
+				4737B42D23CC49E20022B2B2 /* SwiftUIView.swift in Sources */,
 				470228B42397B75F00E42ECB /* BoundingBox.swift in Sources */,
 				47BDDAC923A4769E0039A401 /* VideoService.swift in Sources */,
 				47323D8B23BD4106004EFE64 /* Async.swift in Sources */,
 				4750E3782384660000438805 /* MyanmarTextCorrector.swift in Sources */,
 				47012549238D1BA6004C8403 /* AboutDeveloper.swift in Sources */,
 				47E72C8B23893292008210AF /* Language.swift in Sources */,
+				4729DF7C23CCC9AA009BE23D /* UIImageColors.swift in Sources */,
 				471A904523C61A4D00C7979E /* Predictions.swift in Sources */,
 				471B5765238E383500378E0A /* String+Ext.swift in Sources */,
 				47012552238D55D4004C8403 /* Setting.swift in Sources */,
@@ -767,10 +849,11 @@
 				47012554238D56FB004C8403 /* SettingCell.swift in Sources */,
 				47CD7EF723904278009C1BCC /* RecognitionQueue.swift in Sources */,
 				4750E3732384657200438805 /* MyMemoryTranslator.swift in Sources */,
-				473BBDAF2391062800E2BB5A /* Rects.swift in Sources */,
+				473BBDAF2391062800E2BB5A /* TextRect.swift in Sources */,
 				471F237B23B72F1E005D9070 /* CameraView.swift in Sources */,
 				47012545238CEFCC004C8403 /* AlertPresenter.swift in Sources */,
 				4750E34223845FE700438805 /* Myanmar_Lens.xcdatamodeld in Sources */,
+				47F31A2023CDCE7700D33E22 /* CIImage+Utils.swift in Sources */,
 				47CD7EF923904278009C1BCC /* Accurcy.swift in Sources */,
 				47DC27CB238BD09300037B90 /* HistoryView.swift in Sources */,
 				47BDDAC323A4769E0039A401 /* BoxService.swift in Sources */,
@@ -778,14 +861,19 @@
 				47583F92239660350096F2EF /* RandomEmail.swift in Sources */,
 				471A88A123B75BEB0036FE83 /* ServiceManager.swift in Sources */,
 				47DCA53A23C092E4003B15F6 /* OverlayView.swift in Sources */,
+				47F31A2123CDCE7700D33E22 /* AVCaptureVideoOrientation+Utils.swift in Sources */,
 				47012543238CEEB2004C8403 /* ListCell.swift in Sources */,
+				47F31A2323CDCE7700D33E22 /* Array+Utils.swift in Sources */,
+				47178E4223CA3E5000F72124 /* FlipperView.swift in Sources */,
 				47DC27CD238BD0A200037B90 /* Favourites.swift in Sources */,
 				471B576D238E60FA00378E0A /* MyanmarReSegment.swift in Sources */,
 				47D76BE6238C24C00027240A /* AppUtilities.swift in Sources */,
 				471B576B238E564E00378E0A /* SpellCorrector.swift in Sources */,
+				47F31A1E23CDCE7700D33E22 /* UIImage+Utils.swift in Sources */,
+				47B8CB3023CA21B6001DF2EC /* ClockSUIView.swift in Sources */,
 				47C499CE23BFCB400084F70D /* OcrService.swift in Sources */,
-				47323D8923BD0ED1004EFE64 /* UIImage+Extensions.swift in Sources */,
 				4701254E238D4E6E004C8403 /* SettingsView.swift in Sources */,
+				4729DF7A23CC9708009BE23D /* ResizableView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -941,7 +1029,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3.2;
+				CURRENT_PROJECT_VERSION = 3.3;
 				DEVELOPMENT_TEAM = HJ9L53D9PB;
 				INFOPLIST_FILE = "Myanmar Lens/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -949,7 +1037,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jonahaung.Myanmar-Lens";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -963,7 +1051,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3.2;
+				CURRENT_PROJECT_VERSION = 3.3;
 				DEVELOPMENT_TEAM = HJ9L53D9PB;
 				INFOPLIST_FILE = "Myanmar Lens/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -971,7 +1059,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jonahaung.Myanmar-Lens";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;

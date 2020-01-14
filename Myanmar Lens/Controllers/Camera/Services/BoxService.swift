@@ -20,29 +20,13 @@ final class BoxService {
     
   
     func handle(_ textRects: [TextRect]) {
-        let existings = boxes.filter{ $0.textRect != nil }
-        let frame = self.overlayView.bounds
-        var currentBoxes = [BoundingBox]()
+        clearlayers()
+        let containerRect = overlayView.highlightLayerFrame
         for tr in textRects {
-            if let existing = (existings.filter{ $0.textRect!.displayText == tr.displayText }).first {
-                existing.show(textRect: tr, within: frame)
-                currentBoxes.append(existing)
-            } else {
-                let box = BoundingBox()
-                box.addToLayer(overlayView.videoPreviewLayer)
-                box.show(textRect: tr, within: frame)
-                boxes.append(box)
-                currentBoxes.append(box)
-            }
-        }
-        
-        for x in boxes {
-            if !currentBoxes.contains(x) {
-                if let index = boxes.firstIndex(of: x) {
-                    boxes.remove(at: index)
-                    x.hide()
-                }
-            }
+            let box = BoundingBox()
+            box.addToLayer(overlayView.videoPreviewLayer)
+            box.show(textRect: tr, within: containerRect)
+            boxes.append(box)
         }
     }
     

@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import AudioToolbox
 
 // MARK: - Initializers
 extension UIAlertController {
@@ -118,13 +117,13 @@ extension UIAlertController {
             self.popoverPresentationController?.sourceRect = CGRect(x: source.bounds.midX, y: source.bounds.midY, width: 0, height: 0)
             self.popoverPresentationController?.permittedArrowDirections = .init(rawValue: 0)
         }
-        view.tintColor = .brown
+        view.tintColor = .label
         if let title = title {
-            let attrTitle = NSAttributedString(string: title, attributes: [.font: UIFont.monospacedSystemFont(ofSize: UIFont.buttonFontSize, weight: .medium), .foregroundColor: UIColor.label])
+            let attrTitle = NSAttributedString(string: title, attributes: [.font: UIFont.monospacedSystemFont(ofSize: 23, weight: .semibold)])
             setValue(attrTitle, forKey: "attributedTitle")
         }
         if let subtitle = message {
-            let attrTitle = NSAttributedString(string: subtitle, attributes: [.font: UIFont.monospacedSystemFont(ofSize: UIFont.systemFontSize, weight: .regular), .foregroundColor: UIColor.secondaryLabel])
+            let attrTitle = NSAttributedString(string: subtitle, attributes: [.font: UIFont.monospacedSystemFont(ofSize: 18, weight: .regular)])
             setValue(attrTitle, forKey: "attributedMessage")
         }
     }

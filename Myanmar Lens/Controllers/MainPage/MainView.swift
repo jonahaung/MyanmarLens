@@ -13,7 +13,7 @@ struct MainView: View {
     
     @Environment(\.managedObjectContext) var context: NSManagedObjectContext
     @State private var notDoneEULA = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
-    @State private var sourceLanguage: String = "Source Language"
+    @State private var sourceLanguage: String = userDefaults.languagePair.source.localName
     @State private var showCamera: Bool = false
     private var isMyanmar: Bool { return sourceLanguage == "Burmese" }
     
@@ -33,15 +33,14 @@ struct MainView: View {
                 }
             }.font(.largeTitle)
             Spacer()
-            
             HStack{
                 NavigationLink(destination: HistoryView().environment(\.managedObjectContext, context)) {
                     Image(systemName: "eyeglasses")
                 }
                 Spacer()
                 Image(systemName: "camera.fill").onTapGesture {
-                                       self.showCamera = true
-                    }.font(.largeTitle).padding()
+                    self.showCamera = true
+                }.font(.largeTitle).padding()
                 Spacer()
                 
                 NavigationLink(destination: FavouritesView().environment(\.managedObjectContext, context)) {
@@ -50,21 +49,18 @@ struct MainView: View {
             }.padding().font(.title)
             
         }
-        
-        .background(Image("background").resizable().scaledToFill())
+            
+        .background(Image("1").resizable().scaledToFill())
         .navigationBarTitle("Myanmar Lens")
         .sheet(isPresented: $notDoneEULA, onDismiss: {
             self.notDoneEULA = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
         }, content: {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
-            .sheet(isPresented: $showCamera, content: {
+            .sheet(isPresented: $showCamera, onDismiss: {
+                self.showCamera = false
+            }, content: {
                 CameraView()
             })
-        .onAppear {
-            self.sourceLanguage = userDefaults.languagePair.source.localName
-        }
     }
 }
-
-

@@ -38,7 +38,6 @@ class PreviewView: UIView, UIGestureRecognizerDelegate {
     
     weak var delegate: PreviewCiewDelegate?
     private var padding: UIEdgeInsets? { return delegate?.safeAreaInsets }
-    // MARK: Region of Interest
     
     private let regionOfInterestCornerTouchThreshold: CGFloat = 50
     private var minSize: CGFloat = 20
@@ -56,9 +55,9 @@ class PreviewView: UIView, UIGestureRecognizerDelegate {
         didSet {
             guard oldValue != self.regionOfInterest else { return }
             delegate?.previewView(self, didChangeRegionOfInterest: self.regionOfInterest)
-        
         }
     }
+    
     private var currenCircle: ControlCorner = .none {
         didSet {
             cornorPoints.forEach{ $0.removeFromSuperlayer() }
@@ -78,7 +77,6 @@ class PreviewView: UIView, UIGestureRecognizerDelegate {
     }
     
     func setThemeColor(_ color: UIColor) {
-        
         cornorPoints.forEach{
             $0.strokeColor = color.cgColor
         }

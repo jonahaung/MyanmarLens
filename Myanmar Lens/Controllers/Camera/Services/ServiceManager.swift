@@ -12,21 +12,18 @@ import SwiftUI
 import Combine
 import NaturalLanguage
 
+enum CameraStage {
+    case Start, Stop, Initial
+}
 class ServiceManager: ObservableObject {
-    
-    @Published var isRepeat : Bool = userDefaults.isRepeat {
-        didSet {
-            userDefaults.isRepeat = self.isRepeat
-            dropDownMessageBar.show(text: "Auto-Repeat \(self.isRepeat ? "ON" : "Off")", duration: 3)
-            objectWillChange.send()
-        }
-    }
+
     
     @Published var source: String = "" {
         willSet {
             objectWillChange.send()
         }
     }
+    
     @Published var target: String = "" {
         willSet {
             objectWillChange.send()
@@ -35,8 +32,12 @@ class ServiceManager: ObservableObject {
     
     @Published var zoom: CGFloat = 0 {
         willSet {
-            SoundManager.vibrate(vibration: .medium)
             videoService.sliderValueDidChange(Float(zoom/20))
+        }
+    }
+    
+    @Published var infoText: String = "Press Circle-Button and point the camera at the texts" {
+        willSet {
             objectWillChange.send()
         }
     }
@@ -46,7 +47,6 @@ class ServiceManager: ObservableObject {
             guard oldValue != self.languagePair else { return }
             let isMyanamr = languagePair.source == .burmese
             ocrService.isMyanmar = isMyanamr
-            videoService.isMyanmar = isMyanamr
             source = languagePair.source.localName
             target = languagePair.target.localName
         }
@@ -58,17 +58,14 @@ class ServiceManager: ObservableObject {
     private let translateService: TranslateService
     let overlayView: OverlayView
     
-    private let queue = DispatchQueue(label: "com.jonahaung.ServiceManager", qos: .userInitiated)
-    
-    
-    @Published var isStopped: Bool = true {
+    var stage: CameraStage = .Initial {
         didSet {
-            guard oldValue != self.isStopped else { return }
-            videoService.canOutputBuffer = !isStopped
-            videoService.isMyanmar = self.source == "Burmese"
-            isStopped ? ocrService.stop() : ocrService.start()
-            
+            guard oldValue != self.stage else { return }
+            self.updateStage(stage: self.stage)
         }
+    }
+    
+    @Published var showLoading: Bool = false {
         willSet {
             objectWillChange.send()
         }
@@ -85,22 +82,21 @@ class ServiceManager: ObservableObject {
         videoService.videoServiceDelegate = ocrService
         videoService.configure(layer: overlayView.videoPreviewLayer)
         updateLanguagePair()
-        
     }
     
-    
     func configure() {
-        videoService.sessionQueue.sync {[weak self] in
+        videoService.sessionQueue.async {[weak self] in
             guard let self = self else { return }
-            self.videoService.captureSession?.startRunning()
-            
+            self.videoService.sessionQueue.async {
+                self.videoService.captureSession?.startRunning()
+            }
         }
     }
     
     func stop() {
-        self.videoService.captureSession?.stopRunning()
-        
+        self.stage = .Stop
     }
+    
     deinit {
         stop()
         print("Service Manager")
@@ -108,16 +104,15 @@ class ServiceManager: ObservableObject {
 }
 
 extension ServiceManager: OcrServiceDelegate {
-    
-    func ocrService(_ service: OcrService, didUpdate box: Box) {
-        Async.main {[weak self] in
-            guard let self = self else { return }
-            self.overlayView.handle(highlightLayer: box)
+    func ocrService(_ service: OcrService, didUpdate rect: CGRect) {
+        DispatchQueue.main.async {
+            self.overlayView.highlightLayerFrame = rect
         }
     }
     
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect]) {
-        
+        stage = .Stop
+        overlayView.heighlightLayer.lineWidth = 0
         translateService.handle(textRects: textRects)
     }
 }
@@ -125,12 +120,7 @@ extension ServiceManager: OcrServiceDelegate {
 extension ServiceManager: TranslateServiceDelegate {
     func translateService(_ service: TranslateService, didFinishTranslation textRects: [TextRect]) {
         self.boxService.handle(textRects)
-        self.ocrService.updateCache(textRects)
-        if self.isRepeat {
-            ocrService.semaphore.signal()
-        }else {
-            self.isStopped = true
-        }
+        
     }
 }
 
@@ -139,15 +129,24 @@ extension ServiceManager: TranslateServiceDelegate {
 extension ServiceManager {
     
     func didTapActionButton() {
-        SoundManager.vibrate(vibration: .heavy)
-        self.ocrService.stop()
-        isStopped.toggle()
+        
+        switch stage {
+        case .Initial:
+            stage = .Start
+        case .Stop:
+            stage = .Start
+        case .Start:
+            stage = .Stop
+        }
     }
+
+    
     func toggleLanguagePair() {
         let languagePair = userDefaults.languagePair
         let new = LanguagePair(languagePair.target, languagePair.source)
         userDefaults.languagePair = new
         updateLanguagePair()
+        SoundManager.playSound(tone: .Typing)
     }
     private func updateLanguagePair() {
         languagePair = userDefaults.languagePair
@@ -166,6 +165,35 @@ extension ServiceManager {
             device.unlockForConfiguration()
         } catch {
             print("Torch could not be used")
+        }
+        SoundManager.playSound(tone: .Typing)
+    }
+    
+    private func updateStage(stage: CameraStage) {
+        switch stage {
+        case .Start:
+            self.videoService.start {
+                DispatchQueue.main.async {
+                     SoundManager.playSound(tone: .Tock)
+                    self.boxService.clearlayers()
+                    self.infoText = "Please Hold Still"
+                    self.showLoading = true
+                    self.ocrService.start()
+                     SoundManager.vibrate(vibration: .selection)
+                }
+            }
+        case .Stop:
+            self.videoService.stop {
+                DispatchQueue.main.async {
+                    SoundManager.playSound(tone: .Tock)
+                    self.showLoading = false
+                    self.ocrService.stop()
+                    self.infoText = "Press Circle-Button and point the camera at the texts"
+                    SoundManager.vibrate(vibration: .selection)
+                }
+            }
+        case .Initial:
+            break
         }
     }
     
@@ -200,9 +228,7 @@ extension ServiceManager {
                 alert.title = "Not Allowed!"
                 alert.message = "Source Language and Target Language should not be the same..."
                 selected = nil
-                
             }
-            
         }
         alert.addAction(okAction)
         alert.addCancelAction()
@@ -214,7 +240,9 @@ extension ServiceManager {
         let alert = UIAlertController(title: "Source Language", message: "Pls select one of the following source languages", preferredStyle: .actionSheet)
         let index = Languages.sourceLanguages.firstIndex(of: userDefaults.languagePair.source) ?? 0
         var selected: String?
-        
+        alert.addAction(title: "Switch Language") { _ in
+            self.toggleLanguagePair()
+        }
         let okAction = UIAlertAction(title: "Update Language", style: .default) { _ in
             if let selected = selected {
                 let selectedLanguages = Languages.sourceLanguages.filter{ $0.localName == selected }
@@ -241,7 +269,6 @@ extension ServiceManager {
                 alert.message = "Source Language and Target Language should not be the same..."
                 selected = nil
             }
-            
         }
         alert.addAction(okAction)
         alert.addCancelAction()
