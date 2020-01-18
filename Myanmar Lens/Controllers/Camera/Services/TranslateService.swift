@@ -17,7 +17,7 @@ final class TranslateService {
     
     weak var delegate: TranslateServiceDelegate?
     
-    private var cached: [String: String] = [:]
+    private var cached = [TextRect]()
     
     func handle(textRects: [TextRect]) {
         guard let pair = delegate?.languagePair else { return }
@@ -26,17 +26,14 @@ final class TranslateService {
             guard let self = self else { return }
             self.delegate?.translateService(self, didFinishTranslation: textRects)
         }) { [unowned self] (textRect, next) in
-            
-            
             if textRect.translatedText == nil {
-                let text = textRect._text.trimmed
-                if let found = self.cached[text] {
-                    textRect.translatedText = found
-                    DispatchQueue.global(qos: .background).async {
-                        next()
-                    }
+                let text = textRect._text
+                if let found = (self.cached.filter{ $0 == textRect}).first {
+                    textRect.translatedText = found.text
+                    self.cached.append(textRect)
+                     next()
                 }else {
-                    Translator.shared.translate(text: text, from: pair.0.rawValue, to: pair.1.rawValue) { [weak self] (result, err) in
+                    Translator.shared.translate(text: text, from: pair.source.rawValue, to: pair.target.rawValue) { [weak self] (result, err) in
                         guard let self = self else { return }
                         if let err = err {
                             print(err.localizedDescription)
@@ -50,7 +47,7 @@ final class TranslateService {
                             }
                             result = result.replacingOccurrences(of: "39", with: "'")
                             textRect.translatedText = result
-                            self.cached[textRect._text] = result
+                            self.cached.append(textRect)
                         }
                         next()
                     }

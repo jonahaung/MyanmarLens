@@ -52,9 +52,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window?.overrideUserInterfaceStyle = .dark
             window?.tintColor = UIColor.lightText
             window?.makeKeyAndVisible()
+            let userSettings = UserSettings()
             PersistanceManager.shared.loadContainer {
                 let context = PersistanceManager.shared.viewContext
-                let contentView = MainView().environment(\.managedObjectContext, context)
+                let contentView = MainView().environment(\.managedObjectContext, context).environmentObject(userSettings)
                 let rootViewController = UIHostingController(rootView: contentView)
                 self.window?.rootViewController = UINavigationController(rootViewController: rootViewController)
                 StartUpManager.checkVersion()

@@ -11,14 +11,16 @@ import SwiftUI
 struct CameraView: View {
     
     @ObservedObject var serviceManager = ServiceManager()
-    
-    
+    @EnvironmentObject var userSettings: UserSettings
+    @Binding var isPresenting: Bool
+    @Binding var showPicker: Bool
+   
     var body: some View {
         
         ZStack {
-            CameraUIViewRepresentable(serviceManager: serviceManager)
-            CameraControlView(serviceManager: serviceManager)
+            CameraUIViewRepresentable(serviceManager: serviceManager).environmentObject(userSettings)
             
+            CameraControlView(serviceManager: serviceManager, showPicker: $showPicker).environmentObject(userSettings)
         }
         .onAppear {
             self.serviceManager.configure()
@@ -26,59 +28,80 @@ struct CameraView: View {
         .onDisappear {
             self.serviceManager.stop()
         }
+        
+        
+        
     }
 }
 
 struct CameraControlView: View {
-    
+    @EnvironmentObject var userSettings: UserSettings
     @ObservedObject var serviceManager: ServiceManager
     private var isLoading: Bool { return serviceManager.showLoading }
+    @Binding var showPicker: Bool
     var body: some View {
         VStack {
-            RoundedRectangle(cornerRadius: 8 , style: .circular).stroke(Color.white, lineWidth: 1.5).padding(2)
-            
-            ZStack {
-                
-                Circle().frame(width: isLoading ? 45 : 55, height: isLoading ? 45 : 55, alignment: .center).onTapGesture {
-                    SoundManager.vibrate(vibration: .light)
-                    self.serviceManager.didTapActionButton()
-                }
-                if serviceManager.showLoading {
-                    CircularProgressIndicator().frame(width: 65, height: 65, alignment: .center)
-                } else {
-                    Circle().trim(from: 0, to: 1).stroke(Color.primary, lineWidth: 5).frame(width: 65, height: 65, alignment: .center)
-                }
-            }.padding()
-            HStack(alignment: .bottom, spacing: 13){
-                Text(serviceManager.source).underline().onTapGesture {
+            Spacer() 
+            HStack(alignment: .bottom) {
+                Spacer()
+                Text(userSettings.languagePair.source.localName).underline().onTapGesture {
                     self.serviceManager.didTapSourceLanguage()
                 }
-                Image(systemName: "arrow.2.squarepath").onTapGesture {
-                    self.serviceManager.toggleLanguagePair()
-                }.font(.system(size: 25)).padding(.horizontal)
-                Text(serviceManager.target).onTapGesture {
-                    self.serviceManager.didTapTargetLanguage()
-                }
-            }.font(.system(size: 18, weight: .medium, design: .monospaced))
-            HStack(alignment: .top, spacing: 10){
-                Slider(value: $serviceManager.zoom, in: 0...20)
                 Spacer()
-                Image(systemName: "crop.rotate").onTapGesture {
-                    self.serviceManager.didTapFlashLight()
+                ZStack {
+                    Circle().frame(width: isLoading ? 40 : 50, height: isLoading ? 40 : 50, alignment: .center).onTapGesture {
+                        SoundManager.vibrate(vibration: .light)
+                        self.serviceManager.didTapActionButton()
+                    }
+                    if serviceManager.showLoading {
+                        CircularProgressIndicator().frame(width: 60, height: 60, alignment: .center)
+                    } else {
+                        Circle().trim(from: 0, to: 1).stroke(Color.primary, lineWidth: 5).frame(width: 60, height: 60, alignment: .center)
+                    }
+                }.foregroundColor(.white)
+                Spacer()
+                Text(userSettings.languagePair.target.localName).onTapGesture {
+                    self.showPicker = true
                 }
+                Spacer()
+            }.font(.system(size: 18, weight: .medium, design: .monospaced)).foregroundColor(.yellow).padding(.horizontal)
+            
+            HStack(spacing: 10){
+                
+                
+                Image(systemName: "repeat").onTapGesture {
+                    self.userSettings.toggleLanguagePari()
+                    self.serviceManager.languagePair = self.userSettings.languagePair
+                }.foregroundColor(.white)
+                
+                
+            }.padding(.horizontal)
+            
+            HStack {
+                Image(systemName: "wand.and.stars").onTapGesture {
+                    self.userSettings.isBlackAndWhite.toggle()
+                }.foregroundColor(self.userSettings.isBlackAndWhite ? Color.white : Color.yellow)
                 Image(systemName: "lightbulb.slash.fill").onTapGesture {
                     self.serviceManager.didTapFlashLight()
+                }.padding(.horizontal).foregroundColor(self.serviceManager.touchLightIsOn ? Color.yellow : Color.white)
+                Spacer()
+                HStack {
+                    Slider(value: $serviceManager.zoom, in: 0...20, step: 0.1)
+                    Image(systemName: "plus.slash.minus")
                 }
-            }.font(Font.system(size: 23)).padding(7)
+            }.padding([.leading, .trailing, .bottom]).font(Font.system(size: 20))
+            
+            
         }
+
+        
     }
 }
-
-
 
 struct CameraUIViewRepresentable: UIViewRepresentable {
     
     let serviceManager: ServiceManager
+    @EnvironmentObject var userSettings: UserSettings
     
     func makeUIView(context: Context) -> OverlayView {
         return serviceManager.overlayView

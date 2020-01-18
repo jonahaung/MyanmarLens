@@ -11,46 +11,55 @@ import UIKit
 struct BoundingBox {
     
     let textLayer = CATextLayer()
+    let shapeLayer: CAShapeLayer
     
     init() {
-        
-        textLayer.shadowOpacity = 1
-        textLayer.shadowOffset = .zero
-        textLayer.shadowColor = UIColor.clear.cgColor
+        shapeLayer = CAShapeLayer()
+        shapeLayer.isHidden = true
+        shapeLayer.shouldRasterize = true
+        shapeLayer.rasterizationScale = UIScreen.main.scale
+        shapeLayer.shadowOpacity = 1
+        shapeLayer.shadowRadius = 5
+        shapeLayer.shadowOffset =  CGSize.zero
         textLayer.contentsScale = UIScreen.main.scale
-//         textLayer.shadowRadius = 5
         textLayer.isHidden = true
        
     }
     
     func addToLayer(_ parent: CALayer) {
+        parent.addSublayer(shapeLayer)
         parent.addSublayer(textLayer)
+        
     }
     
     
-    func show(textRect: TextRect, within region: CGRect) {
-        textRect.region = region
-        let backgroundColor = textRect.color?.cgColor ?? UIColor.white.cgColor
-        textLayer.shadowColor = backgroundColor
-        textLayer.backgroundColor = backgroundColor
-        textLayer.foregroundColor = (textRect.color?.isLight() == true) ? UIColor.darkText.cgColor : UIColor.white.cgColor
+    func show(textRect: TextRect) {
+        
+        let frame = textRect.textLayerFrame()
         textLayer.fontSize = textRect.fontSize
         textLayer.font = textRect.font
-        textLayer.frame = textRect.textLayerFrame()
+        textLayer.frame = frame
         textLayer.string = textRect.text
-        textLayer.isHidden = false
         
-        CATransaction.begin()
+        let colors = textRect.colors
+        let backgroundColor = colors?.background
+        let textColor = userDefaults.isBlackAndWhite ? (backgroundColor?.isLight() == true ? UIColor.darkText : UIColor.white) : colors?.detail
+        
+        textLayer.isHidden = false
+        shapeLayer.isHidden = false
         CATransaction.setDisableActions(true)
-
+//        textLayer.backgroundColor = backgroundColor?.cgColor
+//        shapeLayer.fillColor = backgroundColor?.cgColor
+        shapeLayer.shadowColor = backgroundColor?.cgColor
+        textLayer.foregroundColor = textColor?.cgColor
         textLayer.setAffineTransform(textRect.transform())
         textLayer.frame.origin = textRect._rect.origin
-        textLayer.shadowPath = CGPath(rect: textLayer.bounds.inset(by: UIEdgeInsets(top: -3, left: -3, bottom: -5, right: -8)), transform: nil)
-        CATransaction.commit()
+        shapeLayer.shadowPath = CGPath(rect: textLayer.frame.scaleUp(scaleUp: 0.03), transform: nil)
+//        shapeLayer.path = CGPath(rect: textLayer.frame, transform: nil)
     }
     
     func hide() {
-        
+        shapeLayer.removeFromSuperlayer()
         textLayer.removeFromSuperlayer()
     }
 }

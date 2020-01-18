@@ -8,7 +8,6 @@
 
 import NaturalLanguage
 import Vision
-typealias LanguagePair = (source: NLLanguage, target: NLLanguage)
 
 struct Languages {
     static let targetLanguages: [NLLanguage] = [.arabic, .arabic, .armenian, .bengali, .bulgarian, .burmese, .catalan, .czech, .cherokee, .croatian, .dutch, .danish, .dutch, .english, .french, .finnish, .german, .greek, .georgian, .gujarati, .hindi, .hebrew, .hungarian, .italian, .icelandic, .indonesian, .japanese, .khmer, .korean, .kannada, .lao, .malay, .marathi, .malayalam, .mongolian, .oriya, .polish, .persian, .punjabi, .portuguese, .russian, .romanian, .spanish, .slovak, .swedish, .sinhalese, .simplifiedChinese, .thai, .tamil, .telugu, .tibetan, .turkish, .traditionalChinese, .urdu, .ukrainian, .vietnamese]
@@ -20,4 +19,14 @@ extension NLLanguage {
     var localName: String {
         return Locale.current.localizedString(forIdentifier: self.rawValue) ?? ""
     }
+}
+
+struct LanguagePair {
+    typealias LanguagePair = (source: NLLanguage, target: NLLanguage)
+    var source: NLLanguage
+    var target: NLLanguage
+}
+
+extension LanguagePair: Hashable {
+
 }

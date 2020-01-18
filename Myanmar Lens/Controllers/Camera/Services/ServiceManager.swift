@@ -15,20 +15,23 @@ import NaturalLanguage
 enum CameraStage {
     case Start, Stop, Initial
 }
-class ServiceManager: ObservableObject {
 
-    
-    @Published var source: String = "" {
+
+class ServiceManager: ObservableObject {
+    @Published var annoucment: String = "Tap the Circle to start.." {
         willSet {
             objectWillChange.send()
         }
     }
-    
-    @Published var target: String = "" {
-        willSet {
+    @Published var returnToVideoCapession: Bool = userDefaults.displayResultsOnVideoView {
+        didSet {
+            userDefaults.displayResultsOnVideoView.toggle()
             objectWillChange.send()
+            let msg = self.returnToVideoCapession ? "Still image-mode is OFF" : "Still image-mode is ON"
+            dropDownMessageBar.show(text: msg, duration: 0.5)
         }
     }
+   
     
     @Published var zoom: CGFloat = 0 {
         willSet {
@@ -36,22 +39,33 @@ class ServiceManager: ObservableObject {
         }
     }
     
-    @Published var infoText: String = "Press Circle-Button and point the camera at the texts" {
-        willSet {
-            objectWillChange.send()
-        }
-    }
-    
-    var languagePair: LanguagePair = LanguagePair(.burmese, .burmese) {
+    var languagePair: LanguagePair = userDefaults.languagePair {
         didSet {
             guard oldValue != self.languagePair else { return }
             let isMyanamr = languagePair.source == .burmese
             ocrService.isMyanmar = isMyanamr
-            source = languagePair.source.localName
-            target = languagePair.target.localName
         }
     }
     
+    @Published var showLoading: Bool = false {
+        willSet {
+            objectWillChange.send()
+        }
+    }
+    @Published var touchLightIsOn: Bool = false {
+        willSet {
+            objectWillChange.send()
+        }
+    }
+    @Published var isBlackAndWhite: Bool = userDefaults.isBlackAndWhite {
+        didSet {
+            userDefaults.isBlackAndWhite = self.isBlackAndWhite
+            SoundManager.playSound(tone: .Typing)
+        }
+        willSet {
+            objectWillChange.send()
+        }
+    }
     private let videoService: VideoService
     private let ocrService: OcrService
     private let boxService: BoxService
@@ -65,32 +79,23 @@ class ServiceManager: ObservableObject {
         }
     }
     
-    @Published var showLoading: Bool = false {
-        willSet {
-            objectWillChange.send()
-        }
-    }
-    
     init() {
         overlayView = OverlayView()
         videoService = VideoService()
         translateService = TranslateService()
         boxService = BoxService(_overlayView: overlayView)
         ocrService = OcrService(_overlayView: overlayView)
-        translateService.delegate = self
-        ocrService.delegate = self
-        videoService.videoServiceDelegate = ocrService
+        
+        
         videoService.configure(layer: overlayView.videoPreviewLayer)
         updateLanguagePair()
     }
     
     func configure() {
-        videoService.sessionQueue.async {[weak self] in
-            guard let self = self else { return }
-            self.videoService.sessionQueue.async {
-                self.videoService.captureSession?.startRunning()
-            }
-        }
+        videoService.captureSession?.startRunning()
+        translateService.delegate = self
+        ocrService.delegate = self
+        videoService.videoServiceDelegate = ocrService
     }
     
     func stop() {
@@ -102,48 +107,45 @@ class ServiceManager: ObservableObject {
         print("Service Manager")
     }
 }
-
+// OCR Serviece
 extension ServiceManager: OcrServiceDelegate {
-    func ocrService(_ service: OcrService, didUpdate rect: CGRect) {
+    
+    func ocrService(_ service: OcrService, didGetStable rect: CGRect, image: UIImage?) {
+        
         DispatchQueue.main.async {
-            self.overlayView.highlightLayerFrame = rect
+            self.stage = .Stop
+            self.overlayView.imageView.image = image
+            self.showLoading = true
         }
     }
     
+   
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect]) {
-        stage = .Stop
-        overlayView.heighlightLayer.lineWidth = 0
-        translateService.handle(textRects: textRects)
+        
+        self.translateService.handle(textRects: textRects)
+       
     }
+    
+    func ocrService(_ service: OcrService, didUpdate rect: CGRect) {
+        
+    }
+    
 }
-
+// Box Serviece
 extension ServiceManager: TranslateServiceDelegate {
     func translateService(_ service: TranslateService, didFinishTranslation textRects: [TextRect]) {
         self.boxService.handle(textRects)
-        
+        self.showLoading = false
     }
 }
 
 // Others
 
 extension ServiceManager {
-    
-    func didTapActionButton() {
-        
-        switch stage {
-        case .Initial:
-            stage = .Start
-        case .Stop:
-            stage = .Start
-        case .Start:
-            stage = .Stop
-        }
-    }
-
-    
+    // Language Pair
     func toggleLanguagePair() {
         let languagePair = userDefaults.languagePair
-        let new = LanguagePair(languagePair.target, languagePair.source)
+        let new = LanguagePair(source: languagePair.target, target: languagePair.source)
         userDefaults.languagePair = new
         updateLanguagePair()
         SoundManager.playSound(tone: .Typing)
@@ -153,6 +155,7 @@ extension ServiceManager {
         
     }
     
+    // Flash Light
     func didTapFlashLight() {
         SoundManager.playSound(tone: .Tock)
         
@@ -163,40 +166,60 @@ extension ServiceManager {
             
             device.torchMode = isOn ? .off : .on
             device.unlockForConfiguration()
+            self.touchLightIsOn = !isOn
         } catch {
             print("Torch could not be used")
         }
         SoundManager.playSound(tone: .Typing)
     }
     
+    // Action
+    func didTapActionButton() {
+        if showLoading {
+            return 
+        }
+        
+        if overlayView.imageView.image != nil {
+            overlayView.imageView.image = nil
+            boxService.clearlayers()
+            return
+        }
+        
+        switch stage {
+        case .Initial:
+            stage = .Start
+        case .Stop:
+            stage = .Start
+        case .Start:
+            stage = .Stop
+        }
+    }
+    
     private func updateStage(stage: CameraStage) {
         switch stage {
         case .Start:
-            self.videoService.start {
-                DispatchQueue.main.async {
-                     SoundManager.playSound(tone: .Tock)
-                    self.boxService.clearlayers()
-                    self.infoText = "Please Hold Still"
-                    self.showLoading = true
-                    self.ocrService.start()
-                     SoundManager.vibrate(vibration: .selection)
-                }
-            }
+            ocrService.isMyanmar = userDefaults.languagePair.source == .burmese
+            boxService.clearlayers()
+            videoService.canOutputBuffer = true
+            overlayView.imageView.image = nil
+            self.ocrService.start()
+             SoundManager.vibrate(vibration: .selection)
+            SoundManager.playSound(tone: .Tock)
+            ocrService.next()
         case .Stop:
-            self.videoService.stop {
-                DispatchQueue.main.async {
-                    SoundManager.playSound(tone: .Tock)
-                    self.showLoading = false
-                    self.ocrService.stop()
-                    self.infoText = "Press Circle-Button and point the camera at the texts"
-                    SoundManager.vibrate(vibration: .selection)
-                }
-            }
+            videoService.canOutputBuffer = false
+            ocrService.stop()
+            SoundManager.vibrate(vibration: .selection)
+            
         case .Initial:
             break
         }
     }
     
+}
+
+// Language
+extension ServiceManager {
     func didTapTargetLanguage() {
         SoundManager.vibrate(vibration: .medium)
         let alert = UIAlertController(title: "Target Language", message: "Pls select one of the following target languages", preferredStyle: .actionSheet)
@@ -209,8 +232,7 @@ extension ServiceManager {
                 if let language = selectedLanguages.first {
                     let newValue = language.rawValue
                     let newlanguagePair = LanguagePair(source: userDefaults.languagePair.source, target: NLLanguage(newValue))
-                    userDefaults.languagePair = newlanguagePair
-                    self.target = newlanguagePair.target.localName
+                    
                 }
             }
         }
@@ -250,7 +272,7 @@ extension ServiceManager {
                     let newValue = language.rawValue
                     let newlanguagePair = LanguagePair(source: NLLanguage(newValue), target: userDefaults.languagePair.target)
                     userDefaults.languagePair = newlanguagePair
-                    self.source = newlanguagePair.source.localName
+                   
                 }
             }
         }
@@ -274,5 +296,4 @@ extension ServiceManager {
         alert.addCancelAction()
         alert.show()
     }
-    
 }

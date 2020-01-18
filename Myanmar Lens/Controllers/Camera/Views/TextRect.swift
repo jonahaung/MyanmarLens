@@ -8,21 +8,18 @@
 
 import UIKit
 
-class TextRect {
-    
+final class TextRect {
+    let id: String
     var _text: String
     var translatedText: String?
     var _rect: CGRect
     private let _isMyanmar: Bool
-    let color: UIColor?
-    let textColor: UIColor?
     private var hasTranslated: Bool { return translatedText != nil }
     var text: String { return translatedText ?? _text }
     var isMyanmar: Bool { return hasTranslated ? !_isMyanmar : _isMyanmar }
     var fontSize: CGFloat { return _rect.height * 0.8}
     var font: UIFont { return (isMyanmar ? UIFont.myanmarFont : UIFont.engFont).withSize(fontSize) }
-    
-    var region = CGRect.zero
+    var colors: UIImageColors?
     
     var textSize: CGSize { return text.boundingRect(with: CGSize(width: .greatestFiniteMagnitude, height: 150.0), options: [], attributes: [.font: font], context: nil).size}
     
@@ -33,17 +30,18 @@ class TextRect {
     }
     
     func transform() -> CGAffineTransform {
-        let xScale = min(3, (_rect.width/textSize.width).roundToNearest(0.01))
-        let yScale = min(1.6, (_rect.height/textSize.height).roundToNearest(0.01))
+        let size = textSize
+        let xScale = min(5, (_rect.width/size.width))
+        let yScale = min(5, (_rect.height/size.height))
         return CGAffineTransform(scaleX: xScale, y: yScale)
     }
     
-    init(_ _text: String, _ _rect: CGRect, _isMyanmar: Bool, _color: UIColor?) {
+    init(_ _text: String, _ _rect: CGRect, _isMyanmar: Bool, _image: UIImage?) {
         self._text = _text
         self._rect = _rect
         self._isMyanmar = _isMyanmar
-        self.color = _color
-        self.textColor = _color?.isLight() == true ? UIColor.darkText : UIColor.white
+        self.colors = _image?.getColors(quality: .highest)
+        self.id = _text.withoutSpacesAndNewLines.lowercased()
     }
 }
 
@@ -53,7 +51,7 @@ extension TextRect: Hashable {
     }
     
     func hash(into hasher: inout Hasher) {
-        _text.hashValue.hash(into: &hasher)
+        id.hashValue.hash(into: &hasher)
     }
 }
 extension CGRect {

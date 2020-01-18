@@ -39,7 +39,7 @@ public struct Quadrilateral: Transformable {
         self.bottomLeft = rectangleFeature.bottomLeft
         self.bottomRight = rectangleFeature.bottomRight
     }
-
+    
     @available(iOS 11.0, *)
     init(rectangleObservation: VNRectangleObservation) {
         self.topLeft = rectangleObservation.topLeft
@@ -47,7 +47,19 @@ public struct Quadrilateral: Transformable {
         self.bottomLeft = rectangleObservation.bottomLeft
         self.bottomRight = rectangleObservation.bottomRight
     }
-
+    init(textObservation: VNRecognizedTextObservation) {
+        self.topLeft = textObservation.topLeft
+        self.topRight = textObservation.topRight
+        self.bottomLeft = textObservation.bottomLeft
+        self.bottomRight = textObservation.bottomRight
+    }
+    
+    init(textRectangleObservation: VNTextObservation) {
+        self.topLeft = textRectangleObservation.topLeft
+        self.topRight = textRectangleObservation.topRight
+        self.bottomLeft = textRectangleObservation.bottomLeft
+        self.bottomRight = textRectangleObservation.bottomRight
+    }
     init(topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint) {
         self.topLeft = topLeft
         self.topRight = topRight
@@ -226,3 +238,36 @@ extension Quadrilateral: Equatable {
     }
 }
 
+
+
+/// Objects that conform to the Transformable protocol are capable of being transformed with a `CGAffineTransform`.
+protocol Transformable {
+    
+    /// Applies the given `CGAffineTransform`.
+    ///
+    /// - Parameters:
+    ///   - t: The transform to apply
+    /// - Returns: The same object transformed by the passed in `CGAffineTransform`.
+    func applying(_ transform: CGAffineTransform) -> Self
+    
+}
+
+extension Transformable {
+    
+    /// Applies multiple given transforms in the given order.
+    ///
+    /// - Parameters:
+    ///   - transforms: The transforms to apply.
+    /// - Returns: The same object transformed by the passed in `CGAffineTransform`s.
+    func applyTransforms(_ transforms: [CGAffineTransform]) -> Self {
+        
+        var transformableObject = self
+        
+        transforms.forEach { (transform) in
+            transformableObject = transformableObject.applying(transform)
+        }
+        
+        return transformableObject
+    }
+    
+}

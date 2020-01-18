@@ -24,6 +24,8 @@ final class UserDefaultsManager {
     private let canRepeat = "CanRepeat"
     private let regionOfInterestHeightt = "regionOfInterestHeightt"
     private let _isAttentionBased = "isAttentionBased"
+    private let _displayResultsOnVideoView = "displayResultsOnVideoView"
+    private let _isBlackAndWhite = "isBlackAndWhite"
     private var targetLanguage: NLLanguage {
         get {
             if let x = defaults.string(forKey: toLanguage) {
@@ -56,12 +58,12 @@ final class UserDefaultsManager {
     
     var languagePair: LanguagePair {
         get {
-            return (sourceLanguage, targetLanguage)
+            return LanguagePair(source: sourceLanguage, target: targetLanguage)
         }
         set {
-            guard newValue.0 != newValue.1 else { return }
-            sourceLanguage = newValue.0
-            targetLanguage = newValue.1
+            guard newValue.source != newValue.target else { return }
+            sourceLanguage = newValue.source
+            targetLanguage = newValue.target
         }
     }
     
@@ -115,6 +117,24 @@ final class UserDefaultsManager {
         }
         set {
             updateObject(for: regionOfInterestHeightt, with: newValue)
+        }
+    }
+    var displayResultsOnVideoView: Bool {
+        get {
+          
+            return defaults.bool(forKey: _displayResultsOnVideoView)
+        }
+        set {
+            updateObject(for: _displayResultsOnVideoView, with: newValue)
+        }
+    }
+    var isBlackAndWhite: Bool {
+        get {
+          
+            return defaults.bool(forKey: _isBlackAndWhite)
+        }
+        set {
+            updateObject(for: _isBlackAndWhite, with: newValue)
         }
     }
 }

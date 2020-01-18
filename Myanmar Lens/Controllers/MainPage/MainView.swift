@@ -11,11 +11,11 @@ import CoreData
 
 struct MainView: View {
     
+    @EnvironmentObject var userSettings: UserSettings
     @Environment(\.managedObjectContext) var context: NSManagedObjectContext
     @State private var notDoneEULA = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
-    @State private var sourceLanguage: String = userDefaults.languagePair.source.localName
     @State private var showCamera: Bool = false
-    private var isMyanmar: Bool { return sourceLanguage == "Burmese" }
+    @State private var showPicker = false
     
     var body: some View {
         VStack {
@@ -24,12 +24,10 @@ struct MainView: View {
                     Image(systemName: "scribble").padding()
                 }
                 Spacer()
-                
                 Button(action: {
-                    userDefaults.toggleSourceLanguage()
-                    self.sourceLanguage = userDefaults.languagePair.source.localName
+                    self.userSettings.toggleLanguagePari()
                 }) {
-                    Text(self.sourceLanguage)
+                    Text(self.userSettings.languagePair.source.localName)
                 }
             }.font(.largeTitle)
             Spacer()
@@ -47,9 +45,7 @@ struct MainView: View {
                     Image(systemName: "heart")
                 }
             }.padding().font(.title)
-            
         }
-            
         .background(Image("1").resizable().scaledToFill())
         .navigationBarTitle("Myanmar Lens")
         .sheet(isPresented: $notDoneEULA, onDismiss: {
@@ -57,10 +53,10 @@ struct MainView: View {
         }, content: {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
-            .sheet(isPresented: $showCamera, onDismiss: {
-                self.showCamera = false
-            }, content: {
-                CameraView()
-            })
+        .sheet(isPresented: $showCamera, onDismiss: {
+            self.showCamera = false
+        }, content: {
+            CameraView(isPresenting: self.$showCamera, showPicker: self.$showPicker).environmentObject(self.userSettings)
+        })
     }
 }

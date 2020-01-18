@@ -9,12 +9,12 @@
 import Vision
 import Foundation
 
-extension Array where Element == Quadrilateral {
+extension Array where Element == CGRect {
     
     /// Finds the biggest rectangle within an array of `Quadrilateral` objects.
-    func biggest() -> Quadrilateral? {
+    func biggest() -> CGRect? {
         let biggestRectangle = self.max(by: { (rect1, rect2) -> Bool in
-            return rect1.perimeter < rect2.perimeter
+            return rect1.width < rect2.width
         })
         
         return biggestRectangle
