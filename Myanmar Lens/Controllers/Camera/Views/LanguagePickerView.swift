@@ -52,7 +52,6 @@ struct LanguagePickerView: View {
                 }
             }
         }.padding()
-        .background(Image("1").resizable().scaledToFill())
         .onAppear(perform: appear)
     }
     

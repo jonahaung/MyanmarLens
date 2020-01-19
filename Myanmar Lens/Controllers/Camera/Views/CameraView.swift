@@ -12,42 +12,47 @@ struct CameraView: View {
     
     @ObservedObject var serviceManager = ServiceManager()
     @EnvironmentObject var userSettings: UserSettings
-    @Binding var isPresenting: Bool
-    @Binding var showPicker: Bool
-   
+    
+    @State var showPicker = false
+    
     var body: some View {
-        
         ZStack {
             CameraUIViewRepresentable(serviceManager: serviceManager).environmentObject(userSettings)
-            
-            CameraControlView(serviceManager: serviceManager, showPicker: $showPicker).environmentObject(userSettings)
+            CameraControlView(serviceManager: serviceManager).environmentObject(userSettings)
+            .onAppear {
+                self.serviceManager.configure()
+            }
+            .onDisappear {
+                self.serviceManager.stop()
+            }
         }
-        .onAppear {
-            self.serviceManager.configure()
-        }
-        .onDisappear {
-            self.serviceManager.stop()
-        }
-        
-        
-        
     }
 }
 
 struct CameraControlView: View {
-    @EnvironmentObject var userSettings: UserSettings
+    
     @ObservedObject var serviceManager: ServiceManager
     private var isLoading: Bool { return serviceManager.showLoading }
-    @Binding var showPicker: Bool
     var body: some View {
         VStack {
-            Spacer() 
-            HStack(alignment: .bottom) {
+            HStack(spacing: 10){
                 Spacer()
-                Text(userSettings.languagePair.source.localName).underline().onTapGesture {
+                Text(serviceManager.languagePair.source.localName).underline().onTapGesture {
                     self.serviceManager.didTapSourceLanguage()
                 }
+                Image(systemName: "repeat").onTapGesture {
+                    self.serviceManager.toggleLanguagePair()
+                }
+                
+                Text(serviceManager.languagePair.target.localName).underline().onTapGesture {
+                    self.serviceManager.didTapTargetLanguage()
+                }
                 Spacer()
+            }.padding().font(.system(size: 20, weight: .semibold, design: .monospaced)).foregroundColor(Color.yellow)
+            
+            Spacer()
+            
+            HStack(alignment: .top) {
                 ZStack {
                     Circle().frame(width: isLoading ? 40 : 50, height: isLoading ? 40 : 50, alignment: .center).onTapGesture {
                         SoundManager.vibrate(vibration: .light)
@@ -59,41 +64,23 @@ struct CameraControlView: View {
                         Circle().trim(from: 0, to: 1).stroke(Color.primary, lineWidth: 5).frame(width: 60, height: 60, alignment: .center)
                     }
                 }.foregroundColor(.white)
-                Spacer()
-                Text(userSettings.languagePair.target.localName).onTapGesture {
-                    self.showPicker = true
-                }
-                Spacer()
-            }.font(.system(size: 18, weight: .medium, design: .monospaced)).foregroundColor(.yellow).padding(.horizontal)
             
-            HStack(spacing: 10){
-                
-                
-                Image(systemName: "repeat").onTapGesture {
-                    self.userSettings.toggleLanguagePari()
-                    self.serviceManager.languagePair = self.userSettings.languagePair
-                }.foregroundColor(.white)
-                
-                
-            }.padding(.horizontal)
-            
+            }
+
             HStack {
-                Image(systemName: "wand.and.stars").onTapGesture {
-                    self.userSettings.isBlackAndWhite.toggle()
-                }.foregroundColor(self.userSettings.isBlackAndWhite ? Color.white : Color.yellow)
+                Image(systemName: "paintbrush.fill").onTapGesture {
+                    self.serviceManager.isBlackAndWhite.toggle()
+                }.foregroundColor(self.serviceManager.isBlackAndWhite ? Color.white : Color.yellow)
                 Image(systemName: "lightbulb.slash.fill").onTapGesture {
                     self.serviceManager.didTapFlashLight()
                 }.padding(.horizontal).foregroundColor(self.serviceManager.touchLightIsOn ? Color.yellow : Color.white)
                 Spacer()
-                HStack {
-                    Slider(value: $serviceManager.zoom, in: 0...20, step: 0.1)
-                    Image(systemName: "plus.slash.minus")
-                }
-            }.padding([.leading, .trailing, .bottom]).font(Font.system(size: 20))
+                Slider(value: $serviceManager.zoom, in: 0...20, step: 0.1)
+            }.padding().font(Font.system(size: 20))
             
             
         }
-
+        
         
     }
 }

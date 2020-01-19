@@ -12,8 +12,9 @@ class CornorRectView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         shapeLayer?.fillColor = nil
-        shapeLayer?.lineWidth = 4
-        shapeLayer?.strokeColor = UIColor.white.cgColor
+        shapeLayer?.lineWidth = 5
+        shapeLayer?.strokeColor = UIColor.systemBlue.cgColor
+        shapeLayer?.lineCap = .round
     }
     
     required init?(coder: NSCoder) {
@@ -25,9 +26,9 @@ class CornorRectView: UIView {
 
     func drawCornors() {
         
-        let thickness: CGFloat = 4
+        let thickness: CGFloat = 5
         let length: CGFloat = 20
-        let radius: CGFloat = 8
+        let radius: CGFloat = 4
         let t2 = thickness / 2
         let path = UIBezierPath()
         // Top left
@@ -54,8 +55,8 @@ class CornorRectView: UIView {
         path.addArc(withCenter: CGPoint(x: frame.width - radius - t2, y: frame.height - radius - t2), radius: radius, startAngle: 0, endAngle: CGFloat.pi / 2, clockwise: true)
         path.addLine(to: CGPoint(x: frame.width - length - radius - t2, y: frame.height - t2))
 
-//        path.lineWidth = thickness
-//        path.stroke()
+        path.lineWidth = thickness
+        path.stroke()
 //
         shapeLayer?.path = path.cgPath
     }

@@ -14,13 +14,12 @@ import SwiftyTesseract
 
 protocol OcrServiceDelegate: class {
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect])
-    func ocrService(_ service: OcrService, didUpdate rect: CGRect)
-    func ocrService(_ service: OcrService, didGetStable rect: CGRect, image: UIImage?)
+    func ocrService(_ service: OcrService, didGetStable image: UIImage?)
 }
 
 final class OcrService: NSObject {
     
-    static var roi = CGRect(x: 0, y: 0.28, width: 1, height: 0.68)
+    static var roi = CGRect(x: 0, y: 0.25, width: 1, height: 0.70)
     
     weak var delegate: OcrServiceDelegate?
     
@@ -73,15 +72,12 @@ extension OcrService {
         
         var finalResults = [TextRect]()
         var textRects = [(String, CGRect)]()
-      
-        var isNumber = 0
+    
         for result in results {
             if let top = result.topCandidates(1).first {
                 let text = top.string
                 guard !text.isWhitespace else { continue }
-                if text.rangeOfCharacter(from: .decimalDigits) != nil {
-                    isNumber += 1
-                }
+                
                 let xMin = result.topLeft.x
                 let xMax = result.topRight.x
                 let yMin = result.topLeft.y
@@ -147,10 +143,10 @@ extension OcrService: VideoServiceDelegate {
         if !isStable{
             if let cgImage = self.getCurrentCgImage(buffer: sampleBuffer) {
                 isStable = true
-                semaphore.wait()
+                
                 self.cgImage = cgImage
                 let ui = UIImage(cgImage: cgImage, scale: UIScreen.main.scale, orientation: .up)
-                delegate?.ocrService(self, didGetStable: .zero, image: ui)
+                delegate?.ocrService(self, didGetStable: ui)
                 let handler = VNImageRequestHandler(cvPixelBuffer: sampleBuffer, orientation: .up, options: [:])
                 do {
                     try handler.perform([textRequest])

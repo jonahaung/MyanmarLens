@@ -48,14 +48,12 @@ struct BoundingBox {
         textLayer.isHidden = false
         shapeLayer.isHidden = false
         CATransaction.setDisableActions(true)
-//        textLayer.backgroundColor = backgroundColor?.cgColor
-//        shapeLayer.fillColor = backgroundColor?.cgColor
+        shapeLayer.fillColor = backgroundColor?.cgColor
         shapeLayer.shadowColor = backgroundColor?.cgColor
         textLayer.foregroundColor = textColor?.cgColor
         textLayer.setAffineTransform(textRect.transform())
         textLayer.frame.origin = textRect._rect.origin
         shapeLayer.shadowPath = CGPath(rect: textLayer.frame.scaleUp(scaleUp: 0.03), transform: nil)
-//        shapeLayer.path = CGPath(rect: textLayer.frame, transform: nil)
     }
     
     func hide() {

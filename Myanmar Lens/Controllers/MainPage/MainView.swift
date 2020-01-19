@@ -15,8 +15,7 @@ struct MainView: View {
     @Environment(\.managedObjectContext) var context: NSManagedObjectContext
     @State private var notDoneEULA = !userDefaults.currentBoolObjectState(for: userDefaults.hasDoneEULA)
     @State private var showCamera: Bool = false
-    @State private var showPicker = false
-    
+
     var body: some View {
         VStack {
             HStack{
@@ -37,6 +36,7 @@ struct MainView: View {
                 }
                 Spacer()
                 Image(systemName: "camera.fill").onTapGesture {
+                    SoundManager.vibrate(vibration: .medium)
                     self.showCamera = true
                 }.font(.largeTitle).padding()
                 Spacer()
@@ -54,9 +54,11 @@ struct MainView: View {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
         .sheet(isPresented: $showCamera, onDismiss: {
-            self.showCamera = false
+            print(self.showCamera)
+//            self.showCamera = false
         }, content: {
-            CameraView(isPresenting: self.$showCamera, showPicker: self.$showPicker).environmentObject(self.userSettings)
+            CameraView().environmentObject(self.userSettings)
         })
+            
     }
 }

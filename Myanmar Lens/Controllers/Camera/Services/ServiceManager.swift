@@ -8,7 +8,6 @@
 
 import Foundation
 import AVKit
-import SwiftUI
 import Combine
 import NaturalLanguage
 
@@ -18,21 +17,7 @@ enum CameraStage {
 
 
 class ServiceManager: ObservableObject {
-    @Published var annoucment: String = "Tap the Circle to start.." {
-        willSet {
-            objectWillChange.send()
-        }
-    }
-    @Published var returnToVideoCapession: Bool = userDefaults.displayResultsOnVideoView {
-        didSet {
-            userDefaults.displayResultsOnVideoView.toggle()
-            objectWillChange.send()
-            let msg = self.returnToVideoCapession ? "Still image-mode is OFF" : "Still image-mode is ON"
-            dropDownMessageBar.show(text: msg, duration: 0.5)
-        }
-    }
    
-    
     @Published var zoom: CGFloat = 0 {
         willSet {
             videoService.sliderValueDidChange(Float(zoom/20))
@@ -42,8 +27,10 @@ class ServiceManager: ObservableObject {
     var languagePair: LanguagePair = userDefaults.languagePair {
         didSet {
             guard oldValue != self.languagePair else { return }
+            userDefaults.languagePair = self.languagePair
             let isMyanamr = languagePair.source == .burmese
             ocrService.isMyanmar = isMyanamr
+            objectWillChange.send()
         }
     }
     
@@ -61,10 +48,9 @@ class ServiceManager: ObservableObject {
         didSet {
             userDefaults.isBlackAndWhite = self.isBlackAndWhite
             SoundManager.playSound(tone: .Typing)
-        }
-        willSet {
             objectWillChange.send()
         }
+        
     }
     private let videoService: VideoService
     private let ocrService: OcrService
@@ -85,14 +71,12 @@ class ServiceManager: ObservableObject {
         translateService = TranslateService()
         boxService = BoxService(_overlayView: overlayView)
         ocrService = OcrService(_overlayView: overlayView)
-        
-        
         videoService.configure(layer: overlayView.videoPreviewLayer)
         updateLanguagePair()
     }
     
     func configure() {
-        videoService.captureSession?.startRunning()
+        videoService.captureSession.startRunning()
         translateService.delegate = self
         ocrService.delegate = self
         videoService.videoServiceDelegate = ocrService
@@ -109,27 +93,17 @@ class ServiceManager: ObservableObject {
 }
 // OCR Serviece
 extension ServiceManager: OcrServiceDelegate {
-    
-    func ocrService(_ service: OcrService, didGetStable rect: CGRect, image: UIImage?) {
-        
+    func ocrService(_ service: OcrService, didGetStable image: UIImage?) {
         DispatchQueue.main.async {
             self.stage = .Stop
             self.overlayView.imageView.image = image
             self.showLoading = true
         }
     }
-    
-   
+
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect]) {
-        
         self.translateService.handle(textRects: textRects)
-       
     }
-    
-    func ocrService(_ service: OcrService, didUpdate rect: CGRect) {
-        
-    }
-    
 }
 // Box Serviece
 extension ServiceManager: TranslateServiceDelegate {
@@ -144,10 +118,10 @@ extension ServiceManager: TranslateServiceDelegate {
 extension ServiceManager {
     // Language Pair
     func toggleLanguagePair() {
-        let languagePair = userDefaults.languagePair
+        let languagePair = self.languagePair
         let new = LanguagePair(source: languagePair.target, target: languagePair.source)
         userDefaults.languagePair = new
-        updateLanguagePair()
+        self.languagePair = new
         SoundManager.playSound(tone: .Typing)
     }
     private func updateLanguagePair() {
@@ -205,7 +179,7 @@ extension ServiceManager {
             self.ocrService.start()
              SoundManager.vibrate(vibration: .selection)
             SoundManager.playSound(tone: .Tock)
-            ocrService.next()
+
         case .Stop:
             videoService.canOutputBuffer = false
             ocrService.stop()
@@ -232,7 +206,7 @@ extension ServiceManager {
                 if let language = selectedLanguages.first {
                     let newValue = language.rawValue
                     let newlanguagePair = LanguagePair(source: userDefaults.languagePair.source, target: NLLanguage(newValue))
-                    
+                    self.languagePair = newlanguagePair
                 }
             }
         }
@@ -271,7 +245,7 @@ extension ServiceManager {
                 if let language = selectedLanguages.first {
                     let newValue = language.rawValue
                     let newlanguagePair = LanguagePair(source: NLLanguage(newValue), target: userDefaults.languagePair.target)
-                    userDefaults.languagePair = newlanguagePair
+                    self.languagePair = newlanguagePair
                    
                 }
             }

@@ -3,13 +3,13 @@
     {
       "size" : "20x20",
       "idiom" : "iphone",
-      "filename" : "Icon-Spotlight-40.png",
+      "filename" : "Icon1024-11.png",
       "scale" : "2x"
     },
     {
       "size" : "20x20",
       "idiom" : "iphone",
-      "filename" : "MyanmarLens60.png",
+      "filename" : "Icon1024-10.png",
       "scale" : "3x"
     },
     {
@@ -69,121 +69,62 @@
     {
       "size" : "20x20",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens20.png",
+      "filename" : "Icon1024-9.png",
       "scale" : "1x"
     },
     {
       "size" : "20x20",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens40.png",
+      "filename" : "Icon1024-8.png",
       "scale" : "2x"
     },
     {
       "size" : "29x29",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens29.png",
+      "filename" : "Icon1024-7.png",
       "scale" : "1x"
     },
     {
       "size" : "29x29",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens58.png",
+      "filename" : "Icon1024-6.png",
       "scale" : "2x"
     },
     {
       "size" : "40x40",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens40-1.png",
+      "filename" : "Icon1024-5.png",
       "scale" : "1x"
     },
     {
       "size" : "40x40",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens80.png",
+      "filename" : "Icon1024-4.png",
       "scale" : "2x"
     },
     {
       "size" : "76x76",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens76.png",
+      "filename" : "Icon1024-3.png",
       "scale" : "1x"
     },
     {
       "size" : "76x76",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens152.png",
+      "filename" : "Icon1024-2.png",
       "scale" : "2x"
     },
     {
       "size" : "83.5x83.5",
       "idiom" : "ipad",
-      "filename" : "MyanmarLens167.png",
+      "filename" : "Icon1024-1.png",
       "scale" : "2x"
     },
     {
       "size" : "1024x1024",
       "idiom" : "ios-marketing",
-      "filename" : "MyanmarLens.png",
+      "filename" : "Icon1024.png",
       "scale" : "1x"
-    },
-    {
-      "idiom" : "universal",
-      "filename" : "Icon-iPadPro@2x.png",
-      "scale" : "2x"
-    },
-    {
-      "size" : "40x40",
-      "idiom" : "universal",
-      "filename" : "Icon-Spotlight-41.png",
-      "scale" : "1x"
-    },
-    {
-      "size" : "50x50",
-      "idiom" : "universal",
-      "filename" : "Icon-Small-50.png",
-      "scale" : "1x"
-    },
-    {
-      "size" : "50x50",
-      "idiom" : "universal",
-      "filename" : "Icon-Small-50@2x.png",
-      "scale" : "2x"
-    },
-    {
-      "size" : "60x60",
-      "idiom" : "universal",
-      "filename" : "Icon-60.png",
-      "scale" : "1x"
-    },
-    {
-      "size" : "72x72",
-      "idiom" : "universal",
-      "filename" : "Icon-72.png",
-      "scale" : "1x"
-    },
-    {
-      "size" : "72x72",
-      "idiom" : "universal",
-      "filename" : "Icon-72@2x.png",
-      "scale" : "2x"
-    },
-    {
-      "size" : "76x76",
-      "idiom" : "universal",
-      "filename" : "Icon-76.png",
-      "scale" : "1x"
-    },
-    {
-      "size" : "76x76",
-      "idiom" : "universal",
-      "filename" : "Icon-76@2x.png",
-      "scale" : "2x"
-    },
-    {
-      "size" : "76x76",
-      "idiom" : "universal",
-      "filename" : "Icon-76@3x.png",
-      "scale" : "3x"
     }
   ],
   "info" : {

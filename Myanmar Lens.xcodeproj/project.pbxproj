@@ -27,6 +27,7 @@
 		471E66F6238FD561008302E5 /* MyanmarSanpya.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */; };
 		471E66FA238FD7ED008302E5 /* MyanmarPhetsot.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */; };
 		471F237B23B72F1E005D9070 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471F237A23B72F1E005D9070 /* CameraView.swift */; };
+		471FC88723D3110E007A8928 /* PhotoCaptureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471FC88623D3110E007A8928 /* PhotoCaptureDelegate.swift */; };
 		4729DF7C23CCC9AA009BE23D /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */; };
 		472C872B23D0CE5000736DB0 /* CornorRectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472C872A23D0CE5000736DB0 /* CornorRectView.swift */; };
 		47323D8B23BD4106004EFE64 /* Async.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47323D8A23BD4106004EFE64 /* Async.swift */; };
@@ -132,6 +133,7 @@
 		471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarSanpya.ttf; sourceTree = "<group>"; };
 		471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarPhetsot.ttf; sourceTree = "<group>"; };
 		471F237A23B72F1E005D9070 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		471FC88623D3110E007A8928 /* PhotoCaptureDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCaptureDelegate.swift; sourceTree = "<group>"; };
 		4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageColors.swift; sourceTree = "<group>"; };
 		472C872A23D0CE5000736DB0 /* CornorRectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornorRectView.swift; sourceTree = "<group>"; };
 		47323D8A23BD4106004EFE64 /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
@@ -307,6 +309,7 @@
 		471F237723B72F0B005D9070 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
+				471FC88623D3110E007A8928 /* PhotoCaptureDelegate.swift */,
 				47DCA51023C09151003B15F6 /* Views */,
 				47F31A1023CDCE6100D33E22 /* Extensions */,
 				471A88A623B79EA80036FE83 /* Services */,
@@ -761,6 +764,7 @@
 				47F31A1F23CDCE7700D33E22 /* CGSize+Utils.swift in Sources */,
 				47F31A2223CDCE7700D33E22 /* CGAffineTransform+Utils.swift in Sources */,
 				47F31A1B23CDCE7700D33E22 /* CGRect+Utils.swift in Sources */,
+				471FC88723D3110E007A8928 /* PhotoCaptureDelegate.swift in Sources */,
 				476FA25F23BBB1F400B6DF49 /* FireworkLayer.swift in Sources */,
 				47E72C952389BF78008210AF /* UserDefaultsManagar.swift in Sources */,
 				47F31A1C23CDCE7700D33E22 /* CGPoint+Utils.swift in Sources */,
@@ -977,7 +981,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3.3;
+				CURRENT_PROJECT_VERSION = 3.4;
 				DEVELOPMENT_TEAM = HJ9L53D9PB;
 				INFOPLIST_FILE = "Myanmar Lens/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -999,7 +1003,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3.3;
+				CURRENT_PROJECT_VERSION = 3.4;
 				DEVELOPMENT_TEAM = HJ9L53D9PB;
 				INFOPLIST_FILE = "Myanmar Lens/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
