@@ -75,7 +75,7 @@ extension OcrService {
     
         for result in results {
             if let top = result.topCandidates(1).first {
-                let text = top.string
+                let text = top.string.lowercased()
                 guard !text.isWhitespace else { continue }
                 
                 let xMin = result.topLeft.x

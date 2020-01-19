@@ -45,5 +45,15 @@ final class OverlayView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+        guard let first = touches.first else { return }
+        let location = first.location(in: self)
+        if heighlightLayer.frame.contains(location) {
+            SoundManager.playSound(tone: .Tock)
+            imageView.image = nil
+        }
+    }
 
 }

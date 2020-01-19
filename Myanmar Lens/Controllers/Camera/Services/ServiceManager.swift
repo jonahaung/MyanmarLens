@@ -102,7 +102,14 @@ extension ServiceManager: OcrServiceDelegate {
     }
 
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect]) {
-        self.translateService.handle(textRects: textRects)
+        Async.main {
+            self.boxService.handle(textRects)
+            self.showLoading = false
+//            self.overlayView.imageView.image = nil
+//            self.boxService.clearlayers()
+//            self.translateService.handle(textRects: textRects)
+        }
+        
     }
 }
 // Box Serviece
