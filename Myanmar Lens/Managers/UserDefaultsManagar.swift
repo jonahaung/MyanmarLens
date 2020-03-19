@@ -18,15 +18,13 @@ final class UserDefaultsManager {
     private let toLanguage = "toLanguage"
     private let fromLanguage = "fromLanguage"
     let hasDoneEULA = "hasDoneEULA"
-    private let canSpeakResults = "canSpeakResults"
+    private let _autoDeteLanguage = "autoDeteLanguage"
     private let hasOpenedBefore = "hasOpenedBefore"
-    private let NumberOfTimePerRecognition = "NumberOfTimePerRecognition"
-    private let canRepeat = "CanRepeat"
-    private let regionOfInterestHeightt = "regionOfInterestHeightt"
-    private let _isAttentionBased = "isAttentionBased"
-    private let _displayResultsOnVideoView = "displayResultsOnVideoView"
-    private let _isBlackAndWhite = "isBlackAndWhite"
-    private var targetLanguage: NLLanguage {
+    private let _flashLightOn = "flashLightOn"
+    private let _videoQuality = "videoQuality"
+    private let _textTheme = "textTheme"
+    
+    var targetLanguage: NLLanguage {
         get {
             if let x = defaults.string(forKey: toLanguage) {
                 return NLLanguage(rawValue: x)
@@ -36,12 +34,12 @@ final class UserDefaultsManager {
         }
         set {
             updateObject(for: toLanguage, with: newValue.rawValue)
-            SoundManager.playSound(tone: .Typing)
+            SoundManager.playSound(tone: .Tock)
         }
         
     }
     
-    private var sourceLanguage: NLLanguage {
+    var sourceLanguage: NLLanguage {
         get {
             if let x = defaults.string(forKey: fromLanguage) {
                 return NLLanguage(rawValue: x)
@@ -50,7 +48,6 @@ final class UserDefaultsManager {
             return .burmese
         }
         set {
-            targetLanguage = newValue == .english ? .burmese : .english
             updateObject(for: fromLanguage, with: newValue.rawValue)
         }
         
@@ -61,46 +58,30 @@ final class UserDefaultsManager {
             return LanguagePair(source: sourceLanguage, target: targetLanguage)
         }
         set {
-            guard newValue.source != newValue.target else { return }
+          
             sourceLanguage = newValue.source
             targetLanguage = newValue.target
         }
     }
     
-    func toggleSourceLanguage() {
-        sourceLanguage = sourceLanguage == .burmese ? .english : .burmese
-        SoundManager.playSound(tone: .Tock)
-    }
-    
-    var canSpeak: Bool {
+    var autoDeteLanguage: Bool {
         get {
-            return defaults.bool(forKey: canSpeakResults)
+            return defaults.bool(forKey: _autoDeteLanguage)
         }
         set {
-            updateObject(for: canSpeakResults, with: newValue)
+            updateObject(for: _autoDeteLanguage, with: newValue)
             SoundManager.playSound(tone: .Typing)
         }
     }
-    var isRepeat: Bool {
+    var flashLightOn: Bool {
         get {
-            return defaults.bool(forKey: canRepeat)
+            return defaults.bool(forKey: _flashLightOn)
         }
         set {
-            updateObject(for: canRepeat, with: newValue)
+            updateObject(for: _flashLightOn, with: newValue)
             SoundManager.playSound(tone: .Typing)
         }
     }
-    
-    var isAttentionBased: Bool {
-        get {
-            return defaults.bool(forKey: _isAttentionBased)
-        }
-        set {
-            updateObject(for: _isAttentionBased, with: newValue)
-            SoundManager.playSound(tone: .Tock)
-        }
-    }
-    
     var openedBefore: Bool {
         get {
             return defaults.bool(forKey: hasOpenedBefore)
@@ -110,31 +91,25 @@ final class UserDefaultsManager {
         }
     }
 
-    var regionOfInterestHeght: Float {
+    var videoQuality: Int {
         get {
-            let value = defaults.float(forKey: regionOfInterestHeightt)
-            return value == 0 ? 150 : value
+            return defaults.integer(forKey: _videoQuality)
         }
         set {
-            updateObject(for: regionOfInterestHeightt, with: newValue)
+            updateObject(for: _videoQuality, with: newValue)
+            SoundManager.playSound(tone: .Tock)
         }
     }
-    var displayResultsOnVideoView: Bool {
+   
+    var textTheme: TextTheme {
         get {
-          
-            return defaults.bool(forKey: _displayResultsOnVideoView)
+            let x = defaults.integer(forKey: _textTheme)
+            return TextTheme(rawValue: x) ?? .Adaptive
+            
         }
         set {
-            updateObject(for: _displayResultsOnVideoView, with: newValue)
-        }
-    }
-    var isBlackAndWhite: Bool {
-        get {
-          
-            return defaults.bool(forKey: _isBlackAndWhite)
-        }
-        set {
-            updateObject(for: _isBlackAndWhite, with: newValue)
+            let x = newValue.rawValue
+            updateObject(for: _textTheme, with: x)
         }
     }
 }

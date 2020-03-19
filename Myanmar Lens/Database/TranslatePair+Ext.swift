@@ -15,6 +15,7 @@ extension TranslatePair {
     static var historyFetchRequest: NSFetchRequest<TranslatePair> = {
         let x: NSFetchRequest<TranslatePair> = TranslatePair.fetchRequest()
         x.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
+        x.returnsObjectsAsFaults = false
         return x
     }()
     

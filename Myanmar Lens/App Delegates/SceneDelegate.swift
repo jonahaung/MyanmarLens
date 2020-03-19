@@ -24,11 +24,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     fileprivate func applyCustomUIThemes() {
         let navBar = UINavigationBar.appearance()
-        navBar.barTintColor = .clear
+//        navBar.barTintColor = .clear
         navBar.setBackgroundImage(UIImage(), for: .default)
-        navBar.isTranslucent = false
+        navBar.isTranslucent = true
         navBar.prefersLargeTitles = true
-        navBar.largeTitleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
+        navBar.shadowImage = UIImage()
+        navBar.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
         
         let toolBar = UIToolbar.appearance()
         toolBar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
@@ -57,7 +58,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let context = PersistanceManager.shared.viewContext
                 let contentView = MainView().environment(\.managedObjectContext, context).environmentObject(userSettings)
                 let rootViewController = UIHostingController(rootView: contentView)
-                self.window?.rootViewController = UINavigationController(rootViewController: rootViewController)
+                let nav = UINavigationController(rootViewController: rootViewController)
+                
+                self.window?.rootViewController = nav
                 StartUpManager.checkVersion()
             }
         }

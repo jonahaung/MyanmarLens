@@ -17,17 +17,16 @@ final class BoxService {
     }
     
     private var boxes = [BoundingBox]()
-    
-    
+
     func handle(_ textRects: [TextRect]) {
         clearlayers()
         for tr in textRects {
             let box = BoundingBox()
-            box.addToLayer(overlayView.videoPreviewLayer)
-            box.show(textRect: tr)
             boxes.append(box)
+            box.addToLayer(overlayView.displayLayer)
+            box.show(textRect: tr)
+            
         }
-        
     }
     
     func clearlayers() {

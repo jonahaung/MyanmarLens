@@ -22,7 +22,7 @@ struct FavouritesView: View {
             }
             .onDelete(perform: delete)
         }
-        .background(Image("background").resizable().scaledToFill())
+        .background(Image("1").resizable().scaledToFill())
         .navigationBarTitle("Favourites")
     }
     

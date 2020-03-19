@@ -13,8 +13,7 @@ struct SettingCell: View {
     let setting: Setting
     var body: some View {
         HStack{
-            Image(systemName: setting.imageName).padding(.horizontal)
-            Text(setting.description)
+            Text(setting.description).padding(10)
         }
         .font(.system(size: 22, weight: .medium, design: .monospaced))
     }

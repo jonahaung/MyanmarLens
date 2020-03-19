@@ -14,10 +14,10 @@ struct ListCell: View {
     
     private var dateString: String { return item.date?.dateString ?? "" }
     private var langage: String { return item.language?.uppercased() ?? "" }
-    
+   
     var body: some View {
         VStack(alignment: .leading, spacing: 5){
-            Text(item.to.string).font(.system(size: 22, weight: .medium, design: .monospaced))
+            Text(item.to.string).font((item.to.string).titleFont)
             Text(item.from.string).font(.system(size: 16, weight: .light))
             HStack{
                 Image(systemName: "flag.fill").padding(.leading)
@@ -64,3 +64,8 @@ struct ListCell: View {
 }
 
 
+extension String {
+    var titleFont: Font {
+        return Font(self.EXT_isMyanmarCharacters ? UIFont(name: "MyanmarPhetsot", size: 22)! : UIFont.monospacedSystemFont(ofSize: 22, weight: .medium))
+    }
+}

@@ -7,16 +7,17 @@
 //
 
 import SwiftUI
+import UIKit
 struct LoadingIndicator: View {
     
     @Binding var value:CGFloat
     
     var body: some View {
         Circle()
-        .trim(from: 0, to: value)
-        .stroke(Color.white, lineWidth: 3)
-        
-        .rotationEffect(Angle(degrees:-90))
+            .trim(from: 0, to: value)
+            .stroke(Color.white, lineWidth: 3)
+            
+            .rotationEffect(Angle(degrees:-90))
             .animation(Animation.linear(duration: 0.3))
     }
     
@@ -28,15 +29,16 @@ struct LoadingIndicator: View {
 struct CircularProgressIndicator: View {
     
     @State var spinCircle = false
-
+    
     var body: some View {
-         Circle()
-           .trim(from: 0.5, to: 1)
-           .stroke(Color.blue, lineWidth: 5)
-           .rotationEffect(.degrees(spinCircle ? 0 : -360), anchor: .center)
-           .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false))
-        .onAppear {
-            self.spinCircle = true
+        Circle()
+            
+            .trim(from: 0.7, to: 1)
+            .stroke(Color.primary, lineWidth: 5)
+            .rotationEffect(.degrees(spinCircle ? 0 : -360), anchor: .center)
+            .animation(Animation.linear(duration: 1.5).repeatForever(autoreverses: false))
+            .onAppear {
+                self.spinCircle = true
         }
     }
 }

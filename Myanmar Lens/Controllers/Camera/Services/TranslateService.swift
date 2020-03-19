@@ -10,7 +10,6 @@ import Foundation
 
 protocol TranslateServiceDelegate: class {
     func translateService(_ service: TranslateService, didFinishTranslation textRects: [TextRect])
-    var languagePair: LanguagePair { get }
 }
 
 final class TranslateService {
@@ -20,7 +19,16 @@ final class TranslateService {
     private var cached = [TextRect]()
     
     func handle(textRects: [TextRect]) {
-        guard let pair = delegate?.languagePair else { return }
+        let pair = userDefaults.languagePair
+        
+        if pair.source == pair.target {
+            textRects.forEach{ $0.translatedText = $0.text }
+            DispatchQueue.main.async {
+                self.delegate?.translateService(self, didFinishTranslation: textRects)
+            }
+            return
+        }
+        
         let isMyanmar = pair.source == .burmese
         textRects.asyncForEach(completion: {[weak self] in
             guard let self = self else { return }
@@ -33,14 +41,13 @@ final class TranslateService {
                     self.cached.append(textRect)
                      next()
                 }else {
-                    Translator.shared.translate(text: text, from: pair.source.rawValue, to: pair.target.rawValue) { [weak self] (result, err) in
+                    Translator.shared.translate(text: text, from: pair.source, to: pair.target) { [weak self] (result, err) in
                         guard let self = self else { return }
                         if let err = err {
                             print(err.localizedDescription)
                             next()
                             return
                         }
-                        
                         if var result = result, !result.isWhitespace {
                             if isMyanmar {
                                 result = result.cleanUpMyanmarTexts()

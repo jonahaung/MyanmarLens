@@ -22,6 +22,8 @@ struct BoundingBox {
         shapeLayer.shadowRadius = 5
         shapeLayer.shadowOffset =  CGSize.zero
         textLayer.contentsScale = UIScreen.main.scale
+        textLayer.alignmentMode = .justified
+        textLayer.isWrapped = true
         textLayer.isHidden = true
        
     }
@@ -34,16 +36,16 @@ struct BoundingBox {
     
     
     func show(textRect: TextRect) {
+        let fitFrame = textRect.textLayerFrame()
         
-        let frame = textRect.textLayerFrame()
         textLayer.fontSize = textRect.fontSize
         textLayer.font = textRect.font
-        textLayer.frame = frame
-        textLayer.string = textRect.text
+        textLayer.frame = fitFrame
+        
         
         let colors = textRect.colors
         let backgroundColor = colors?.background
-        let textColor = userDefaults.isBlackAndWhite ? (backgroundColor?.isLight() == true ? UIColor.darkText : UIColor.white) : colors?.detail
+        let textColor = userDefaults.textTheme == .BlackAndWhite ? (backgroundColor?.isLight() == true ? UIColor.darkText : UIColor.white) : colors?.primary
         
         textLayer.isHidden = false
         shapeLayer.isHidden = false
@@ -51,13 +53,18 @@ struct BoundingBox {
         shapeLayer.fillColor = backgroundColor?.cgColor
         shapeLayer.shadowColor = backgroundColor?.cgColor
         textLayer.foregroundColor = textColor?.cgColor
+
         textLayer.setAffineTransform(textRect.transform())
-        textLayer.frame.origin = textRect._rect.origin
-        shapeLayer.shadowPath = CGPath(rect: textLayer.frame.scaleUp(scaleUp: 0.03), transform: nil)
+        textLayer.frame.origin.x = textRect._rect.origin.x
+        let path = CGPath(rect: textRect._rect, transform: nil)
+        shapeLayer.path = path
+        shapeLayer.shadowPath = path
+        textLayer.string = textRect.text
     }
     
     func hide() {
         shapeLayer.removeFromSuperlayer()
         textLayer.removeFromSuperlayer()
     }
+    
 }

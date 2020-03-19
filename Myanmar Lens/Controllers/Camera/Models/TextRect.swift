@@ -21,7 +21,7 @@ final class TextRect {
     var font: UIFont { return (isMyanmar ? UIFont.myanmarFont : UIFont.engFont).withSize(fontSize) }
     var colors: UIImageColors?
     
-    var textSize: CGSize { return text.boundingRect(with: CGSize(width: .greatestFiniteMagnitude, height: 150.0), options: [], attributes: [.font: font], context: nil).size}
+    var textSize: CGSize { return text.boundingRect(with: CGSize(width: .greatestFiniteMagnitude, height: 150.0), options: [.usesFontLeading], attributes: [.font: font], context: nil).size}
     
     func textLayerFrame() -> CGRect{
         var frame = _rect

@@ -18,12 +18,5 @@ class UserSettings: ObservableObject {
     func toggleLanguagePari() {
         self.languagePair = LanguagePair(source: languagePair.target, target: languagePair.source)
     }
-    
-    @Published var isBlackAndWhite: Bool = userDefaults.isBlackAndWhite {
-        didSet {
-            userDefaults.isBlackAndWhite = self.isBlackAndWhite
-            SoundManager.playSound(tone: .Typing)
-            objectWillChange.send()
-        }
-    }
+
 }

@@ -11,6 +11,8 @@ import MessageUI
 
 final class AppUtilities: NSObject {
     
+    static let shared = AppUtilities()
+    
     static let dateFormatter_relative: RelativeDateTimeFormatter = {
         $0.dateTimeStyle = .named
         $0.unitsStyle = .short
@@ -50,7 +52,7 @@ final class AppUtilities: NSObject {
         }
     }
     
-    static let shared = AppUtilities()
+   
     func gotoContactUs() {
         if MFMailComposeViewController.canSendMail() {
             let mail = MFMailComposeViewController()

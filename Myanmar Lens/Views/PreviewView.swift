@@ -237,7 +237,7 @@ class PreviewView: UIView, UIGestureRecognizerDelegate {
             didChangeValue(forKey: "regionOfInterest")
             currenCircle = .none
             setNeedsLayout()
-            userDefaults.regionOfInterestHeght = Float(regionOfInterest.height)
+    
             delegate?.previewView(self, gestureStageChanges: false)
         default:
             return

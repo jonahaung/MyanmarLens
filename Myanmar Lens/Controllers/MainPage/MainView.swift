@@ -35,10 +35,13 @@ struct MainView: View {
                     Image(systemName: "eyeglasses")
                 }
                 Spacer()
-                Image(systemName: "camera.fill").onTapGesture {
-                    SoundManager.vibrate(vibration: .medium)
+                Button(action: {
                     self.showCamera = true
-                }.font(.largeTitle).padding()
+                }) {
+                    Image(systemName: "camera.fill")
+                        
+                }.accentColor(.primary).font(.largeTitle).padding(.bottom)
+               
                 Spacer()
                 
                 NavigationLink(destination: FavouritesView().environment(\.managedObjectContext, context)) {
@@ -54,10 +57,9 @@ struct MainView: View {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
         .sheet(isPresented: $showCamera, onDismiss: {
-            print(self.showCamera)
-//            self.showCamera = false
+            self.showCamera = false
         }, content: {
-            CameraView().environmentObject(self.userSettings)
+            CameraView()
         })
             
     }

@@ -50,6 +50,7 @@ final class DropDownMessageBar: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         label.center = bounds.center
+        self.dropShadow()
     }
     
     deinit {
@@ -72,7 +73,7 @@ extension DropDownMessageBar {
         
         guard let window = SceneDelegate.sharedInstance?.window  else { return }
         
-        SoundManager.playSound(tone: .Tock)
+        SoundManager.vibrate(vibration: .selection)
         
         if duration > 0 {
             self.timer?.invalidate()
@@ -123,7 +124,7 @@ extension DropDownMessageBar {
             timer = Timer.scheduledTimer(timeInterval: duration, target: self, selector: #selector(self.hide), userInfo: nil, repeats: false)
         }
         
-        font = UIFont.monospacedSystemFont(ofSize: UIFont.buttonFontSize, weight: .bold)
+        font = UIFont.monospacedSystemFont(ofSize: UIFont.buttonFontSize, weight: .thin)
         
         label.text = text
         
@@ -142,7 +143,7 @@ extension DropDownMessageBar {
         if self.superview == nil {
             SoundManager.vibrate(vibration: .warning)
             window.addSubview(self)
-            self.dropShadow()
+            
         }
        
         UIView.animate(withDuration: 0.2, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction, .allowAnimatedContent, .curveEaseInOut], animations: {
@@ -180,10 +181,10 @@ extension UIView {
     
     func dropShadow(scale: Bool = true) {
         layer.masksToBounds = false
-        layer.shadowColor = UIColor.black.cgColor
-        layer.shadowOpacity = 0.4
-        layer.shadowOffset = CGSize(width: 0, height: 2)
-        layer.shadowRadius = 3
+        layer.shadowColor = backgroundColor?.darker().cgColor
+        layer.shadowOpacity = 0.7
+        layer.shadowOffset = CGSize(width: 1, height: 3)
+        layer.shadowRadius = 5
         layer.shouldRasterize = true
         layer.rasterizationScale = UIScreen.main.scale
     }

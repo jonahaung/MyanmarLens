@@ -16,14 +16,13 @@ struct HistoryView: View {
     private var items: FetchedResults
     
     var body: some View {
-        
         List {
             ForEach(items, id: \.self) { item in
                 ListCell(item: item)
             }
             .onDelete(perform: delete)
         }
-        .background(Image("background").resizable().scaledToFill())
+        .background(Image("1").resizable().scaledToFill())
         .navigationBarTitle("History")
     }
     

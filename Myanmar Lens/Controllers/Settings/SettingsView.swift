@@ -14,18 +14,23 @@ struct SettingsView: View {
     @State var aboutDeveloper = false
     
     var body: some View {
-        VStack{
-            Text("Myanmar Lens").font(.largeTitle).padding(.vertical, 20)
-            List(settings, id: \.self) { setting in
-                SettingCell(setting: setting).onTapGesture {
-                    self.tapped(setting: setting)
+        ZStack {
+            Image("background").resizable()
+            VStack{
+                Spacer()
+                ForEach(settings, id: \.self) { setting in
+                    SettingCell(setting: setting).onTapGesture {
+                        self.tapped(setting: setting)
+                    }
                 }
+                Spacer()
             }
-        }.padding()
+            
+            .foregroundColor(.secondary)
+            .navigationBarTitle("Settings")
+            
+        }
         
-        .foregroundColor(.secondary)
-        .background(Image("background").resizable().scaledToFill())
-        .navigationBarTitle("Settings")
         .sheet(isPresented: $aboutDeveloper) { AboutDeveloper() }
     }
 }

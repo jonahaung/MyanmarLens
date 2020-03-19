@@ -10,10 +10,6 @@ import UIKit
 
 extension CGRect {
     
-    var area: CGFloat {
-        return self.width * self.height
-    }
-    
     func scaleUp(scaleUp: CGFloat) -> CGRect {
         let biggerRect = self.insetBy(
             dx: -self.size.width * scaleUp,
@@ -23,13 +19,6 @@ extension CGRect {
         return biggerRect
     }
 
-}
-extension UIViewController {
-    func add(childController: UIViewController) {
-        childController.willMove(toParent: self)
-        view.addSubview(childController.view)
-        childController.didMove(toParent: self)
-    }
 }
 
 extension Sequence {
@@ -44,19 +33,6 @@ extension Sequence {
         group.notify(queue: DispatchQueue.main, execute: completion)
     }
     
-    func all(_ condition: (Iterator.Element) -> Bool) -> Bool {
-        for x in self where !condition(x) {
-            return false
-        }
-        return true
-    }
-    
-    func some(_ condition: (Iterator.Element) -> Bool) -> Bool {
-        for x in self where condition(x) {
-            return true
-        }
-        return false
-    }
 }
 
 extension DispatchQueue {

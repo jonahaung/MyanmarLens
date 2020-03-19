@@ -1,88 +1,137 @@
 //
 //  Quadrilateral.swift
-//  Myanmar Lens
-//
-//  Created by Aung Ko Min on 14/1/20.
-//  Copyright © 2020 Aung Ko Min. All rights reserved.
-//
-
-//
-//  Quadrilateral.swift
 //  WeScan
 //
 //  Created by Boris Emorine on 2/8/18.
 //  Copyright © 2018 WeTransfer. All rights reserved.
 //
 
-import UIKit 
+import UIKit
 import AVFoundation
 import Vision
+import CoreGraphics
 
 /// A data structure representing a quadrilateral and its position. This class exists to bypass the fact that CIRectangleFeature is read-only.
-public struct Quadrilateral: Transformable {
+
+struct Quadrilateral: Transformable {
     
-    /// A point that specifies the top left corner of the quadrilateral.
-    public var topLeft: CGPoint
+    var topLeft: CGPoint
+    var topRight: CGPoint
+    var bottomRight: CGPoint
+    var bottomLeft: CGPoint
     
-    /// A point that specifies the top right corner of the quadrilateral.
-    public var topRight: CGPoint
+    var imageBuffer: CVImageBuffer?
     
-    /// A point that specifies the bottom right corner of the quadrilateral.
-    public var bottomRight: CGPoint
-    
-    /// A point that specifies the bottom left corner of the quadrilateral.
-    public var bottomLeft: CGPoint
-    
-    init(rectangleFeature: CIRectangleFeature) {
-        self.topLeft = rectangleFeature.topLeft
-        self.topRight = rectangleFeature.topRight
-        self.bottomLeft = rectangleFeature.bottomLeft
-        self.bottomRight = rectangleFeature.bottomRight
+    init(_ x: CIRectangleFeature) {
+        topLeft = x.topLeft
+        topRight = x.topRight
+        bottomLeft = x.bottomLeft
+        bottomRight = x.bottomRight
     }
     
-    @available(iOS 11.0, *)
-    init(rectangleObservation: VNRectangleObservation) {
-        self.topLeft = rectangleObservation.topLeft
-        self.topRight = rectangleObservation.topRight
-        self.bottomLeft = rectangleObservation.bottomLeft
-        self.bottomRight = rectangleObservation.bottomRight
-    }
-    init(textObservation: VNRecognizedTextObservation) {
-        self.topLeft = textObservation.topLeft
-        self.topRight = textObservation.topRight
-        self.bottomLeft = textObservation.bottomLeft
-        self.bottomRight = textObservation.bottomRight
+    init(_ x: VNRectangleObservation) {
+        topLeft = x.topLeft
+        topRight = x.topRight
+        bottomLeft = x.bottomLeft
+        bottomRight = x.bottomRight
     }
     
-    init(textRectangleObservation: VNTextObservation) {
-        self.topLeft = textRectangleObservation.topLeft
-        self.topRight = textRectangleObservation.topRight
-        self.bottomLeft = textRectangleObservation.bottomLeft
-        self.bottomRight = textRectangleObservation.bottomRight
-    }
     init(topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint) {
         self.topLeft = topLeft
         self.topRight = topRight
         self.bottomRight = bottomRight
         self.bottomLeft = bottomLeft
     }
+    init(_ x: VNTextObservation) {
+        topLeft = x.topLeft
+        topRight = x.topRight
+        bottomLeft = x.bottomLeft
+        bottomRight = x.bottomRight
+    }
+    init(_ x: VNRecognizedTextObservation) {
+        topLeft = x.topLeft
+        topRight = x.topRight
+        bottomLeft = x.bottomLeft
+        bottomRight = x.bottomRight
+        if let top = x.topCandidates(1).first {
+            text = top.string
+        }
+    }
+    init(_ x: VNDetectedObjectObservation) {
+        let rect = x.boundingBox
+        topLeft =  CGPoint(x: rect.minX, y: rect.maxY)
+        topRight = CGPoint(x: rect.maxX, y: rect.maxY)
+        bottomRight = CGPoint(x: rect.maxX, y: rect.minY)
+        bottomLeft = CGPoint(x: rect.minX, y: rect.minY)
+    }
+    init(_ rect: CGRect) {
+        topLeft =  CGPoint(x: rect.minX, y: rect.maxY)
+        topRight = CGPoint(x: rect.maxX, y: rect.maxY)
+        bottomRight = CGPoint(x: rect.maxX, y: rect.minY)
+        bottomLeft = CGPoint(x: rect.minX, y: rect.minY)
+        
+    }
     
-    public var description: String {
+    var text: String = String()
+    var quadrilaterals: [Quadrilateral]?
+    
+    var textRects: [(String, CGRect)]? {
+        guard let quads = quadrilaterals else {
+            return nil
+        }
+        return quads.map{ ($0.text, $0.frame )}
+    }
+    
+    var description: String {
         return "topLeft: \(topLeft), topRight: \(topRight), bottomRight: \(bottomRight), bottomLeft: \(bottomLeft)"
     }
     
     /// The path of the Quadrilateral as a `UIBezierPath`
-    var path: UIBezierPath {
+    var rectanglePath: UIBezierPath {
         let path = UIBezierPath()
         path.move(to: topLeft)
         path.addLine(to: topRight)
         path.addLine(to: bottomRight)
         path.addLine(to: bottomLeft)
         path.close()
-        
         return path
     }
-    
+
+    var cornersPath: UIBezierPath {
+        let rect = frame
+        let thickness: CGFloat = 3
+        let length: CGFloat = min(rect.height, rect.width) / 7
+        let radius: CGFloat = length / 5
+        let t2 = thickness / 2
+        let path = UIBezierPath()
+        
+        let topSpace = self.topLeft.y
+        let leftSpace = self.topLeft.x
+        // Top left
+        path.move(to: CGPoint(x: t2 + leftSpace, y: length + radius + t2 + topSpace))
+        path.addLine(to: CGPoint(x: t2 + leftSpace, y: radius + t2 + topSpace))
+        path.addArc(withCenter: CGPoint(x: radius + t2 + leftSpace, y: radius + t2 + topSpace), radius: radius, startAngle: CGFloat.pi, endAngle: CGFloat.pi * 3 / 2, clockwise: true)
+        path.addLine(to: CGPoint(x: length + radius + t2 + leftSpace, y: t2 + topSpace))
+        
+        // Top right
+        path.move(to: CGPoint(x: rect.width - t2 + leftSpace, y: length + radius + t2 + topSpace))
+        path.addLine(to: CGPoint(x: rect.width - t2 + leftSpace, y: radius + t2 + topSpace))
+        path.addArc(withCenter: CGPoint(x: rect.width - radius - t2 + leftSpace, y: radius + t2 + topSpace), radius: radius, startAngle: 0, endAngle: CGFloat.pi * 3 / 2, clockwise: false)
+        path.addLine(to: CGPoint(x: rect.width - length - radius - t2 + leftSpace, y: t2 + topSpace))
+        
+        // Bottom left
+        path.move(to: CGPoint(x: t2 + leftSpace, y: rect.height - length - radius - t2 + topSpace))
+        path.addLine(to: CGPoint(x: t2 + leftSpace, y: rect.height - radius - t2 + topSpace))
+        path.addArc(withCenter: CGPoint(x: radius + t2 + leftSpace, y: rect.height - radius - t2 + topSpace), radius: radius, startAngle: CGFloat.pi, endAngle: CGFloat.pi / 2, clockwise: false)
+        path.addLine(to: CGPoint(x: length + radius + t2 + leftSpace, y: rect.height - t2 + topSpace))
+        
+        // Bottom right
+        path.move(to: CGPoint(x: rect.width - t2 + leftSpace, y: rect.height - length - radius - t2 + topSpace))
+        path.addLine(to: CGPoint(x: rect.width - t2 + leftSpace, y: rect.height - radius - t2 + topSpace))
+        path.addArc(withCenter: CGPoint(x: rect.width - radius - t2 + leftSpace, y: rect.height - radius - t2 + topSpace), radius: radius, startAngle: 0, endAngle: CGFloat.pi / 2, clockwise: true)
+        path.addLine(to: CGPoint(x: rect.width - length - radius - t2 + leftSpace, y: rect.height - t2 + topSpace))
+        return path
+    }
     /// The perimeter of the Quadrilateral
     var perimeter: Double {
         let perimeter = topLeft.distanceTo(point: topRight) + topRight.distanceTo(point: bottomRight) + bottomRight.distanceTo(point: bottomLeft) + bottomLeft.distanceTo(point: topLeft)
@@ -230,44 +279,14 @@ extension Quadrilateral {
         
         return Quadrilateral(topLeft: topLeft, topRight: topRight, bottomRight: bottomRight, bottomLeft: bottomLeft)
     }
+    
+    var frame: CGRect {
+        return CGRect(x: topLeft.x, y: topLeft.y, width: topRight.x - topLeft.x, height: bottomRight.y - topRight.y)
+    }
 }
 
 extension Quadrilateral: Equatable {
     public static func == (lhs: Quadrilateral, rhs: Quadrilateral) -> Bool {
         return lhs.topLeft == rhs.topLeft && lhs.topRight == rhs.topRight && lhs.bottomRight == rhs.bottomRight && lhs.bottomLeft == rhs.bottomLeft
     }
-}
-
-
-
-/// Objects that conform to the Transformable protocol are capable of being transformed with a `CGAffineTransform`.
-protocol Transformable {
-    
-    /// Applies the given `CGAffineTransform`.
-    ///
-    /// - Parameters:
-    ///   - t: The transform to apply
-    /// - Returns: The same object transformed by the passed in `CGAffineTransform`.
-    func applying(_ transform: CGAffineTransform) -> Self
-    
-}
-
-extension Transformable {
-    
-    /// Applies multiple given transforms in the given order.
-    ///
-    /// - Parameters:
-    ///   - transforms: The transforms to apply.
-    /// - Returns: The same object transformed by the passed in `CGAffineTransform`s.
-    func applyTransforms(_ transforms: [CGAffineTransform]) -> Self {
-        
-        var transformableObject = self
-        
-        transforms.forEach { (transform) in
-            transformableObject = transformableObject.applying(transform)
-        }
-        
-        return transformableObject
-    }
-    
 }

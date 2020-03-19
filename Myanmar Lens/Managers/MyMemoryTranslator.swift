@@ -8,7 +8,7 @@
 
 import Foundation
 import CoreData
-
+import NaturalLanguage
 class Translator {
     
     static let shared = Translator()
@@ -27,20 +27,20 @@ class Translator {
     private let session = URLSession(configuration: .default)
     
     
-    func translate(text: String, from: String, to: String, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
+    func translate(text: String, from: NLLanguage, to: NLLanguage, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
+        
         let text = text.lowercased()
-        if let existing = existing(text, language: to) {
+        if let existing = existing(text, language: to.rawValue) {
             DispatchQueue.main.async {
                 completion(existing.lowercased(), nil)
             }
-            
             return
         }
         guard var urlComponents = URLComponents(string: API.translate.url) else {
             completion(nil, nil)
             return
         }
-        let pair = "\(from)|\(to)"
+        let pair = "\(from.rawValue)|\(to.rawValue)"
         
         var queryItems = [URLQueryItem]()
         queryItems.append(URLQueryItem(name: "q", value: text))
@@ -83,7 +83,7 @@ class Translator {
                 completion(text, nil)
                 return
             }
-            self.save(text, lower, language: to)
+            self.save(text, lower, language: to.rawValue)
             completion(lower, nil)
         }
         task.resume()

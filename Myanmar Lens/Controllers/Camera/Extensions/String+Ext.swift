@@ -79,25 +79,6 @@ extension String {
         return range(of: string) != nil
     }
     
-    var myanmarSegments: [String] {
-        let regex = RegexParser.regularExpression(for: RegexParser.myanmarWordsBreakerPattern)
-        
-        let modString = regex?.stringByReplacingMatches(in: self, options: [], range: self.nsRange(of: self), withTemplate: "𝕊$1")
-        return modString?.components(separatedBy: "𝕊").filter{ !$0.isWhitespace } ?? self.components(separatedBy: .whitespaces)
-    }
-    
-    var trimmedNoneBurmeseCharacters: String {
-        return RegexParser.regularExpression(for: RegexParser.myanmarWordsBreakerPattern)?.stringByReplacingMatches(in: self, options: [], range: self.wholeNSRange, withTemplate: "$1").exclude(in: .removingCharacters) ?? String()
-    }
-    
-    var wholeNSRange: NSRange { return nsRange(of: self) }
-    func nsRange(of word: String) -> NSRange {
-        if let wordRange = self.range(of: word) {
-            return NSRange(wordRange, in: self)
-        }
-        
-        return NSRange(location: 0, length: 0)
-    }
 }
 
 extension String {

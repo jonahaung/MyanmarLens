@@ -14,7 +14,6 @@ struct StartUpManager {
     static func checkVersion() {
         if !userDefaults.openedBefore {
             userDefaults.openedBefore = true
-            
         }
     }
 }
