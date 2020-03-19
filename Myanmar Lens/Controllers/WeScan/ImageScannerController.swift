@@ -44,7 +44,7 @@ public final class ImageScannerController: UINavigationController {
             guard let ciImage = CIImage(image: image) else { return }
             let orientation = CGImagePropertyOrientation(image.imageOrientation)
             let orientedImage = ciImage.oriented(forExifOrientation: Int32(orientation.rawValue))
-            VisionRectangleDetector.rectangle(forImage: ciImage, orientation: orientation) { (quad) in
+            ObjectDetector.rectangle(forImage: ciImage, orientation: orientation) { (quad) in
                 detectedQuad = quad?.toCartesian(withHeight: orientedImage.extent.height)
                 let editViewController = EditScanViewController(image: image, quad: detectedQuad, rotateImage: false)
                 self.setViewControllers([editViewController], animated: true)

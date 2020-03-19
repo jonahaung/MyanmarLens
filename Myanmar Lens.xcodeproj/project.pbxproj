@@ -78,8 +78,6 @@
 		4798A5D92416A89C00D6462B /* ZoomGestureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5B52416A89C00D6462B /* ZoomGestureController.swift */; };
 		4798A5DA2416A89C00D6462B /* EditScanCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5B72416A89C00D6462B /* EditScanCornerView.swift */; };
 		4798A5DB2416A89C00D6462B /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5B82416A89C00D6462B /* Error.swift */; };
-		4798A5DC2416A89C00D6462B /* VisionRectangleDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5B92416A89C00D6462B /* VisionRectangleDetector.swift */; };
-		4798A5DD2416A89C00D6462B /* CIRectangleDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5BA2416A89C00D6462B /* CIRectangleDetector.swift */; };
 		4798A5DE2416A89C00D6462B /* QuadrilateralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5BB2416A89C00D6462B /* QuadrilateralView.swift */; };
 		4798A5DF2416A89C00D6462B /* Quadrilateral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5BC2416A89C00D6462B /* Quadrilateral.swift */; };
 		4798A5E02416A89C00D6462B /* CaptureDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4798A5BE2416A89C00D6462B /* CaptureDevice.swift */; };
@@ -204,8 +202,6 @@
 		4798A5B52416A89C00D6462B /* ZoomGestureController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZoomGestureController.swift; sourceTree = "<group>"; };
 		4798A5B72416A89C00D6462B /* EditScanCornerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditScanCornerView.swift; sourceTree = "<group>"; };
 		4798A5B82416A89C00D6462B /* Error.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
-		4798A5B92416A89C00D6462B /* VisionRectangleDetector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VisionRectangleDetector.swift; sourceTree = "<group>"; };
-		4798A5BA2416A89C00D6462B /* CIRectangleDetector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CIRectangleDetector.swift; sourceTree = "<group>"; };
 		4798A5BB2416A89C00D6462B /* QuadrilateralView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QuadrilateralView.swift; sourceTree = "<group>"; };
 		4798A5BC2416A89C00D6462B /* Quadrilateral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Quadrilateral.swift; sourceTree = "<group>"; };
 		4798A5BE2416A89C00D6462B /* CaptureDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CaptureDevice.swift; sourceTree = "<group>"; };
@@ -538,8 +534,6 @@
 			children = (
 				4798A5B72416A89C00D6462B /* EditScanCornerView.swift */,
 				4798A5B82416A89C00D6462B /* Error.swift */,
-				4798A5B92416A89C00D6462B /* VisionRectangleDetector.swift */,
-				4798A5BA2416A89C00D6462B /* CIRectangleDetector.swift */,
 				47CD088E241DE29E006BB8FA /* ObjectDetector.swift */,
 				4798A5BB2416A89C00D6462B /* QuadrilateralView.swift */,
 				4798A5BC2416A89C00D6462B /* Quadrilateral.swift */,
@@ -857,7 +851,6 @@
 				471E557623847F6500AB6A95 /* PersistanceManager.swift in Sources */,
 				4798A5CB2416A89C00D6462B /* RectangleFeaturesFunnel.swift in Sources */,
 				4760676B239BFF5900274A07 /* Pickers+Ext.swift in Sources */,
-				4798A5DD2416A89C00D6462B /* CIRectangleDetector.swift in Sources */,
 				4798A5D42416A89C00D6462B /* CGAffineTransform+Utils.swift in Sources */,
 				47CD088F241DE29E006BB8FA /* ObjectDetector.swift in Sources */,
 				47BDDAC423A4769E0039A401 /* TranslateService.swift in Sources */,
@@ -911,7 +904,6 @@
 				4798A5CD2416A89C00D6462B /* ShutterButton.swift in Sources */,
 				4798A5CA2416A89C00D6462B /* ImageScannerScan.swift in Sources */,
 				4798A5CE2416A89C00D6462B /* FocusRectangleView.swift in Sources */,
-				4798A5DC2416A89C00D6462B /* VisionRectangleDetector.swift in Sources */,
 				471B576B238E564E00378E0A /* SpellCorrector.swift in Sources */,
 				4798A5E42416A89C00D6462B /* CaptureSession+Flash.swift in Sources */,
 				47117AE32402C329001E1295 /* CameraController+Helpers.swift in Sources */,

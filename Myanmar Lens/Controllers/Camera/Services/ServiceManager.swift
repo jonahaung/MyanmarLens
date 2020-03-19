@@ -196,7 +196,7 @@ class ServiceManager: ObservableObject {
             SoundManager.vibrate(vibration: .warning)
             return
         }
-        if overlayView.imageView.image != nil {
+        if overlayView.image != nil {
             SoundManager.vibrate(vibration: .light)
             overlayView.clear()
         } else {
@@ -218,20 +218,17 @@ extension ServiceManager: OcrServiceDelegate {
     func ocrService(_ service: OcrService, didGetImage image: UIImage) {
         DispatchQueue.main.async {
             self.overlayView.flashToBlack()
-            self.overlayView.imageView.image = image
+            self.overlayView.image = image
         }
     }
     
     func ocrService(_ service: OcrService, didCaptureRectangle quad: Quadrilateral?) {
-        DispatchQueue.main.async {
-            self.overlayView.apply(rectangle: quad)
-            
-        }
+        
     }
     func ocrService(_ service: OcrService, didCapture quad: Quadrilateral?) {
         DispatchQueue.main.async {
             self.overlayView.apply(quad)
-            self.fps = quad == nil ? 1 : 5
+            self.fps = quad == nil ? 3 : 5
             
         }
     }

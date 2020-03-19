@@ -76,6 +76,7 @@ extension OcrService: VideoServiceDelegate {
         do {
             try requestHandler.perform([self.textRequest])
         }catch { print(error )}
+        
     }
     
     private func textHandler(request: VNRequest, error: Error?) {
@@ -94,7 +95,7 @@ extension OcrService: VideoServiceDelegate {
             return
         }
         
-        let rect = textRects.map{ $0.1 }.reduce(CGRect.null, {$0.union($1)}).insetBy(dx: -0.02, dy: -0.02)
+        let rect = textRects.map{ $0.1 }.reduce(CGRect.null, {$0.union($1)}).insetBy(dx: -0.02, dy: -0.02).intersection(OcrService.roi)
         
         var quad = Quadrilateral(rect)
        
@@ -131,6 +132,7 @@ extension OcrService: VideoServiceDelegate {
         textRequest.cancel()
         let uiImage = UIImage(cgImage: cgImage)
         delegate?.ocrService(self, didGetImage: uiImage)
+        
        
         
         var imageRects = [(UIImage, CGRect)]()
@@ -176,7 +178,7 @@ extension OcrService: VideoServiceDelegate {
     
     func detectRectangle() {
         guard let quad = currentQuads.last, let buffer = quad.imageBuffer else { return }
-        ObjectDetector.rectangle(for: buffer) {[weak self] quad in
+        ObjectDetector.rectangle(for: buffer, intersect: .zero) {[weak self] quad in
             guard let self = self else { return }
             self.delegate?.ocrService(self, didCaptureRectangle: quad)
         }

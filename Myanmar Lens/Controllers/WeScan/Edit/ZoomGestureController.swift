@@ -11,7 +11,7 @@ import AVFoundation
 
 final class ZoomGestureController {
     
-    private let image: UIImage
+    var image: UIImage
     private let quadView: QuadrilateralView
     
     init(image: UIImage, quadView: QuadrilateralView) {

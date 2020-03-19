@@ -94,14 +94,17 @@ struct Quadrilateral: Transformable {
         path.addLine(to: bottomRight)
         path.addLine(to: bottomLeft)
         path.close()
+        
+        let textPath = UIBezierPath(roundedRect: labelRect, cornerRadius: 10)
+        path.append(textPath)
         return path
     }
 
     var cornersPath: UIBezierPath {
         let rect = frame
-        let thickness: CGFloat = 3
+        let thickness: CGFloat = 2
         let length: CGFloat = min(rect.height, rect.width) / 7
-        let radius: CGFloat = length / 5
+        let radius: CGFloat = 8
         let t2 = thickness / 2
         let path = UIBezierPath()
         
@@ -130,7 +133,17 @@ struct Quadrilateral: Transformable {
         path.addLine(to: CGPoint(x: rect.width - t2 + leftSpace, y: rect.height - radius - t2 + topSpace))
         path.addArc(withCenter: CGPoint(x: rect.width - radius - t2 + leftSpace, y: rect.height - radius - t2 + topSpace), radius: radius, startAngle: 0, endAngle: CGFloat.pi / 2, clockwise: true)
         path.addLine(to: CGPoint(x: rect.width - length - radius - t2 + leftSpace, y: rect.height - t2 + topSpace))
+        
+         let textPath = UIBezierPath(roundedRect: labelRect, cornerRadius: 10)
+        path.append(textPath)
         return path
+    }
+    
+    var labelRect: CGRect {
+    
+        let rect = frame
+        let size = CGSize(width: rect.width/3, height: UIFont.preferredFont(forTextStyle: .title2).pointSize)
+        return CGRect(origin: CGPoint(x: rect.midX - size.width/2, y: rect.maxY), size: size)
     }
     /// The perimeter of the Quadrilateral
     var perimeter: Double {

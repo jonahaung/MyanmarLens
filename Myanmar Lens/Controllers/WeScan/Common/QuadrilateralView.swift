@@ -17,26 +17,22 @@ enum CornerPosition {
     case bottomLeft
 }
 
-/// The `QuadrilateralView` is a simple `UIView` subclass that can draw a quadrilateral, and optionally edit it.
 final class QuadrilateralView: UIView {
     
     private let quadLayer: CAShapeLayer = {
-        let layer = CAShapeLayer()
-        layer.strokeColor = UIColor.orange.cgColor
-        layer.lineWidth = 2
-        layer.opacity = 1.0
-        layer.isHidden = true
-        return layer
-    }()
-    
-    /// We want the corner views to be displayed under the outline of the quadrilateral.
-    /// Because of that, we need the quadrilateral to be drawn on a UIView above them.
+        $0.strokeColor = UIColor.white.cgColor
+        $0.lineWidth = 2
+        $0.opacity = 1.0
+        $0.isHidden = true
+        $0.fillColor = nil
+        return $0
+    }(CAShapeLayer())
+  
     private let quadView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.clear
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
+        $0.backgroundColor = nil
+        $0.translatesAutoresizingMaskIntoConstraints = false
+        return $0
+    }(UIView())
     
     /// The quadrilateral drawn on the view.
     private(set) var quad: Quadrilateral?
@@ -44,45 +40,44 @@ final class QuadrilateralView: UIView {
     public var editable = false {
         didSet {
             cornerViews(hidden: !editable)
-//            quadLayer.fillColor = editable ? UIColor(white: 0.0, alpha: 0.7).cgColor : UIColor(white: 1.0, alpha: 0.3).cgColor
-            quadLayer.fillColor = nil
+           
             guard let quad = quad else {
                 return
             }
+            quadLayer.strokeColor = UIColor.orange.cgColor
             drawQuad(quad, animated: false)
             layoutCornerViews(forQuad: quad)
         }
     }
     
-    private var isHighlighted = false {
+    private var isHighlighted = true {
         didSet (oldValue) {
-            guard oldValue != isHighlighted else {
-                return
-            }
-//            quadLayer.fillColor = isHighlighted ? UIColor.clear.cgColor : UIColor(white: 0.0, alpha: 0.8).cgColor
             isHighlighted ? bringSubviewToFront(quadView) : sendSubviewToBack(quadView)
         }
     }
     
-    lazy private var topLeftCornerView: EditScanCornerView = {
-        return EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .topLeft)
-    }()
-    
-    lazy private var topRightCornerView: EditScanCornerView = {
-        return EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .topRight)
-    }()
-    
-    lazy private var bottomRightCornerView: EditScanCornerView = {
-        return EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .bottomRight)
-    }()
-    
-    lazy private var bottomLeftCornerView: EditScanCornerView = {
-        return EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .bottomLeft)
-    }()
+    lazy private var topLeftCornerView = EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .topLeft)
+    lazy private var topRightCornerView = EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .topRight)
+    lazy private var bottomRightCornerView = EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .bottomRight)
+    lazy private var bottomLeftCornerView = EditScanCornerView(frame: CGRect(origin: .zero, size: cornerViewSize), position: .bottomLeft)
+    private let label: UILabel = {
+        $0.textAlignment = .center
+        $0.adjustsFontSizeToFitWidth = true
+        $0.font = UIFont.preferredFont(forTextStyle: .callout)
+        return $0
+    }(UILabel())
     
     private let highlightedCornerViewSize = CGSize(width: 75.0, height: 75.0)
     private let cornerViewSize = CGSize(width: 20.0, height: 20.0)
-    
+    var text: String = String() {
+        didSet {
+            quadLayer.strokeColor = text.isEmpty ? UIColor.white.cgColor : UIColor.systemBlue.cgColor
+            guard oldValue != text else { return }
+            label.text = text
+            label.sizeToFit()
+            
+        }
+    }
     // MARK: - Life Cycle
     
     override init(frame: CGRect) {
@@ -97,7 +92,9 @@ final class QuadrilateralView: UIView {
     private func commonInit() {
         addSubview(quadView)
         setupCornerViews()
+        
         setupConstraints()
+        addSubview(label)
         quadView.layer.addSublayer(quadLayer)
     }
     
@@ -121,6 +118,8 @@ final class QuadrilateralView: UIView {
     
     override public func layoutSubviews() {
         super.layoutSubviews()
+       
+        
         guard quadLayer.frame != bounds else {
             return
         }
@@ -142,22 +141,23 @@ final class QuadrilateralView: UIView {
         drawQuad(quad, animated: animated)
         if editable {
             cornerViews(hidden: false)
-            layoutCornerViews(forQuad: quad)
+            
+            UIView.animate(withDuration: 0.25, delay: 0.3, options: .curveEaseOut, animations: {
+                self.layoutCornerViews(forQuad: quad)
+                self.label.frame = quad.labelRect
+            }) { _ in
+                
+            }
+        }else {
+            self.label.frame = quad.labelRect
         }
     }
     
     private func drawQuad(_ quad: Quadrilateral, animated: Bool) {
-        var path = quad.rectanglePath
-        
-        if editable {
-            path = path.reversing()
-//            let rectPath = UIBezierPath(rect: bounds)
-//            path.append(rectPath)
-        }
-        
+        let path = editable ? quad.rectanglePath : quad.cornersPath
         if animated == true {
             let pathAnimation = CABasicAnimation(keyPath: "path")
-            pathAnimation.duration = 0.4
+            pathAnimation.duration = 0.2
             quadLayer.add(pathAnimation, forKey: "path")
         }
         

@@ -14,8 +14,9 @@ protocol OverlayViewDelegate: class {
 }
 final class OverlayView: UIView {
     weak var delegate: OverlayViewDelegate?
+    
     var focusRectangle: FocusRectangleView?
-    let imageView: UIImageView = {
+    private let imageView: UIImageView = {
         $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         $0.backgroundColor = nil
         return $0
@@ -26,45 +27,48 @@ final class OverlayView: UIView {
         $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
            return $0
        }(UIView())
-    private let pathAnimation: CABasicAnimation = {
-        $0.duration = 0.15
-        return $0
-    }(CABasicAnimation(keyPath: "path"))
     
     override class var layerClass: AnyClass { return CameraPriviewLayer.self }
     var videoPreviewLayer: CameraPriviewLayer { return layer as! CameraPriviewLayer }
-    
-    private let shapeLayer: CAShapeLayer = {
-        $0.lineWidth = 3
-        $0.lineCap = .round
-        $0.strokeColor = UIColor.systemYellow.cgColor
-        $0.fillColor = nil
-        return $0
-    }(CAShapeLayer())
-    
-    private let textLayer: CATextLayer = {
-        $0.fontSize = UIFont.preferredFont(forTextStyle: .callout).pointSize
-        $0.contentsScale = UIScreen.main.scale
-        $0.font = UIFont.preferredFont(forTextStyle: .callout)
-        $0.frame.size = CGSize(width: 150, height: $0.fontSize + 10)
-        $0.alignmentMode = .center
-        $0.isWrapped = true
-        return $0
-    }(CATextLayer())
-    
     let displayLayer: CALayer = {
         return $0
     }(CALayer())
     
+    private let quadView: QuadrilateralView = {
+        $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        return $0
+    }(QuadrilateralView())
+    
+    var image: UIImage? {
+        get {
+            return imageView.image
+        }
+        set {
+            guard newValue != imageView.image else { return }
+            imageView.image = newValue
+            zoomGestureController.image = newValue ?? UIImage()
+            quadView.editable = newValue != nil
+            
+        }
+    }
+    
+    private var zoomGestureController: ZoomGestureController!
+    private var panGesture: UIPanGestureRecognizer?
     override init(frame: CGRect) {
         super.init(frame: frame)
         imageView.frame = bounds
+        quadView.frame = bounds
         addSubview(blackFlashView)
         addSubview(imageView)
         layer.addSublayer(displayLayer)
-        displayLayer.addSublayer(shapeLayer)
-        displayLayer.addSublayer(textLayer)
+        addSubview(quadView)
         UIApplication.shared.isIdleTimerDisabled = true
+        
+        zoomGestureController = ZoomGestureController(image: UIImage(), quadView: quadView)
+        
+        panGesture = UIPanGestureRecognizer(target: zoomGestureController, action: #selector(zoomGestureController.handle(pan:)))
+        panGesture?.delegate = self
+        addGestureRecognizer(panGesture!)
     }
     
     required init?(coder: NSCoder) {
@@ -88,10 +92,9 @@ final class OverlayView: UIView {
     
     
     func clear() {
-        imageView.image = nil
-        shapeLayer.path = nil
-        shapeLayer.strokeColor = UIColor.systemYellow.cgColor
-        textLayer.string = nil
+        image = nil
+        quadView.editable = false
+        quadView.text = ""
         delegate?.overlayView(didClearScreen: self)
         if videoPreviewLayer.session?.isRunning == false {
             videoPreviewLayer.session?.startRunning()
@@ -104,37 +107,11 @@ final class OverlayView: UIView {
             clear()
             return
         }
-        
-        textLayer.string = quad.text
-        shapeLayer.strokeColor = quad.text.isEmpty ? UIColor.systemYellow.cgColor : UIColor.link.cgColor
+    
         
         let viewQuad = quad.applying(videoPreviewLayer.layerTransform)
-        let quadFrame = viewQuad.frame
-        let position = CGPoint(x: quadFrame.midX, y: quadFrame.minY)
-        apply(path: viewQuad.cornersPath.cgPath)
-        textLayer.position = position
-        
-    }
-    
-    func apply(rectangle quad: Quadrilateral?) {
-        guard let thisQuad = quad else {
-            shapeLayer.path = nil
-            
-            return
-        }
-        textLayer.string = nil
-        shapeLayer.lineWidth = 2
-        shapeLayer.strokeColor = UIColor.systemBlue.cgColor
-        shapeLayer.path = thisQuad.applying(videoPreviewLayer.layerTransform).rectanglePath.cgPath
-    }
-    
-    func apply(path: CGPath?) {
-        shapeLayer.add(pathAnimation, forKey: "path")
-        shapeLayer.path = path
-    }
-    
-    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
-        return OcrService.roi.applying(videoPreviewLayer.layerTransform).contains(point)
+        quadView.text = quad.text
+        quadView.drawQuadrilateral(quad: viewQuad, animated: true)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -177,3 +154,12 @@ final class OverlayView: UIView {
 }
 
 
+extension OverlayView: UIGestureRecognizerDelegate {
+    override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer == panGesture, let quad = quadView.quad {
+            let location = gestureRecognizer.location(in: self)
+            return quad.frame.scaleUp(scaleUp: 0.01).intersects(location.surroundingSquare(withSize: 70))
+        }
+        return super.gestureRecognizerShouldBegin(gestureRecognizer)
+    }
+}
