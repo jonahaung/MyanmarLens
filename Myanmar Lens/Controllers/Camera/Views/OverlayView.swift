@@ -10,31 +10,30 @@ import UIKit
 import AVFoundation
 
 protocol OverlayViewDelegate: class {
-    func overlayView(didClearScreen view: OverlayView)
+    func overlayView(didTapScreen view: OverlayView)
 }
 final class OverlayView: UIView {
     weak var delegate: OverlayViewDelegate?
     
     var focusRectangle: FocusRectangleView?
-    private let imageView: UIImageView = {
+     let imageView: UIImageView = {
         $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        $0.isUserInteractionEnabled = false 
         $0.backgroundColor = nil
         return $0
     }(UIImageView())
     internal let blackFlashView: UIView = {
-        $0.backgroundColor = UIColor.orange.withAlphaComponent(0.8)
+        $0.backgroundColor = UIColor.orange
+        $0.layer.opacity = 0.8
         $0.isHidden = true
         $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-           return $0
-       }(UIView())
+        return $0
+    }(UIView())
     
     override class var layerClass: AnyClass { return CameraPriviewLayer.self }
     var videoPreviewLayer: CameraPriviewLayer { return layer as! CameraPriviewLayer }
-    let displayLayer: CALayer = {
-        return $0
-    }(CALayer())
     
-    private let quadView: QuadrilateralView = {
+    let quadView: QuadrilateralView = {
         $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         return $0
     }(QuadrilateralView())
@@ -46,13 +45,12 @@ final class OverlayView: UIView {
         set {
             guard newValue != imageView.image else { return }
             imageView.image = newValue
-            zoomGestureController.image = newValue ?? UIImage()
-            quadView.editable = newValue != nil
-            
+            zoomGestureController.image = newValue
+            panGesture?.isEnabled = newValue != nil
         }
     }
     
-    private var zoomGestureController: ZoomGestureController!
+    var zoomGestureController: ZoomGestureController!
     private var panGesture: UIPanGestureRecognizer?
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -60,13 +58,14 @@ final class OverlayView: UIView {
         quadView.frame = bounds
         addSubview(blackFlashView)
         addSubview(imageView)
-        layer.addSublayer(displayLayer)
+
         addSubview(quadView)
         UIApplication.shared.isIdleTimerDisabled = true
         
-        zoomGestureController = ZoomGestureController(image: UIImage(), quadView: quadView)
+        zoomGestureController = ZoomGestureController(image: nil, quadView: quadView)
         
         panGesture = UIPanGestureRecognizer(target: zoomGestureController, action: #selector(zoomGestureController.handle(pan:)))
+        panGesture?.isEnabled = false
         panGesture?.delegate = self
         addGestureRecognizer(panGesture!)
     }
@@ -76,55 +75,37 @@ final class OverlayView: UIView {
     }
     
     deinit {
+        if let gesture = panGesture {
+            removeGestureRecognizer(gesture)
+        }
         
         UIApplication.shared.isIdleTimerDisabled = false
     }
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        displayLayer.frame = bounds
         let videoRect = videoPreviewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
         let visible = videoRect.intersection(videoPreviewLayer.visibleRect)
         let scaleT = CGAffineTransform(scaleX: visible.width, y: -visible.height)
         let translateT = CGAffineTransform(translationX: visible.minX, y: visible.maxY)
         videoPreviewLayer.layerTransform = scaleT.concatenating(translateT)
     }
-    
-    
-    func clear() {
-        image = nil
-        quadView.editable = false
-        quadView.text = ""
-        delegate?.overlayView(didClearScreen: self)
-        if videoPreviewLayer.session?.isRunning == false {
-            videoPreviewLayer.session?.startRunning()
-        }
-       
-    }
 
-    func apply(_ quad: Quadrilateral?) {
+    
+    func apply(_ quad: Quadrilateral?, isStable: Bool = false) {
+       
         guard let quad = quad else {
-            clear()
+            quadView.removeQuadrilateral()
             return
         }
+        
+       
+        let transformedQuad = quad.applying(videoPreviewLayer.layerTransform)
     
-        
-        let viewQuad = quad.applying(videoPreviewLayer.layerTransform)
-        quadView.text = quad.text
-        quadView.drawQuadrilateral(quad: viewQuad, animated: true)
-    }
-    
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        super.touchesEnded(touches, with: event)
-        
-        guard let touch = touches.first else { return }
-        SoundManager.playSound(tone: .Tock)
-        
-        let location = touch.location(in: self)
-        
-        let convertedTouchPoint: CGPoint = videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: location)
-        
-        CaptureSession.current.removeFocusRectangleIfNeeded(focusRectangle, animated: true)
+         quadView.isStable = isStable
+        quadView.drawQuadrilateral(quad: transformedQuad, animated: false)
+        let location = transformedQuad.frame.center
+        let convertedTouchPoint: CGPoint = quad.frame.center
         
         focusRectangle = FocusRectangleView(touchPoint: location)
         imageView.addSubview(focusRectangle!)
@@ -135,31 +116,60 @@ final class OverlayView: UIView {
             print(error)
             return
         }
-         clear()
-       
     }
-
-    func flashToBlack() {
-        SoundManager.vibrate(vibration: .selection)
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
         
+        guard let touch = touches.first, !quadView.editable else { return }
+        
+        if image != nil {
+            delegate?.overlayView(didTapScreen: self)
+            return
+        }
+        SoundManager.playSound(tone: .Tock)
+        let location = touch.location(in: self)
+        
+        let convertedTouchPoint: CGPoint = videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: location)
+        
+        focusRectangle = FocusRectangleView(touchPoint: location)
+        imageView.addSubview(focusRectangle!)
+        
+        do {
+            try CaptureSession.current.setFocusPointToTapPoint(convertedTouchPoint)
+        } catch {
+            print(error)
+            return
+        }
+    }
+    
+    func flashToBlack() {
+        SoundManager.vibrate(vibration: .medium)
         bringSubviewToFront(blackFlashView)
         blackFlashView.isHidden = false
-        let flashDuration = DispatchTime.now() + 0.05
-        DispatchQueue.main.asyncAfter(deadline: flashDuration) {
-            self.blackFlashView.isHidden = true
-            self.sendSubviewToBack(self.blackFlashView)
-            SoundManager.playSound(tone: .Typing)
+        blackFlashView.alpha = 1
+        UIView.animate(withDuration: 0.4, animations: {
+            self.blackFlashView.alpha = 0.1
+        }) { done in
+            if done {
+                self.blackFlashView.isHidden = true
+                self.sendSubviewToBack(self.blackFlashView)
+            }
         }
+    }
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        return OcrService.regionOfInterest.applying(videoPreviewLayer.layerTransform).contains(point)
     }
 }
 
 
 extension OverlayView: UIGestureRecognizerDelegate {
     override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-        if gestureRecognizer == panGesture, let quad = quadView.quad {
-            let location = gestureRecognizer.location(in: self)
-            return quad.frame.scaleUp(scaleUp: 0.01).intersects(location.surroundingSquare(withSize: 70))
+        let location = gestureRecognizer.location(in: self)
+        if gestureRecognizer == panGesture, quadView.isStable {
+            
+            return quadView.quad?.frame.insetBy(dx: -10, dy: -10).contains(location) == true
         }
-        return super.gestureRecognizerShouldBegin(gestureRecognizer)
+        return OcrService.regionOfInterest.applying(videoPreviewLayer.layerTransform).contains(location)
     }
 }

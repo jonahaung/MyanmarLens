@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 class UserSettings: ObservableObject {
     @Published var languagePair = userDefaults.languagePair {
@@ -15,8 +16,9 @@ class UserSettings: ObservableObject {
             objectWillChange.send()
         }
     }
+    
+   
     func toggleLanguagePari() {
         self.languagePair = LanguagePair(source: languagePair.target, target: languagePair.source)
     }
-
 }

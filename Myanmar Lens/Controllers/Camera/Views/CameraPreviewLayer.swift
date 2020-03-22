@@ -10,4 +10,5 @@ import AVKit
 
 final class CameraPriviewLayer: AVCaptureVideoPreviewLayer {
     var layerTransform = CGAffineTransform.identity
+    
 }

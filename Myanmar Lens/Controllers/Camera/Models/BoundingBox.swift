@@ -25,13 +25,11 @@ struct BoundingBox {
         textLayer.alignmentMode = .justified
         textLayer.isWrapped = true
         textLayer.isHidden = true
-       
     }
     
-    func addToLayer(_ parent: CALayer) {
-        parent.addSublayer(shapeLayer)
-        parent.addSublayer(textLayer)
-        
+    func addToLayer(_ parent: OverlayView) {
+        parent.imageView.layer.addSublayer(shapeLayer)
+        parent.layer.addSublayer(textLayer)
     }
     
     
@@ -42,7 +40,6 @@ struct BoundingBox {
         textLayer.font = textRect.font
         textLayer.frame = fitFrame
         
-        
         let colors = textRect.colors
         let backgroundColor = colors?.background
         let textColor = userDefaults.textTheme == .BlackAndWhite ? (backgroundColor?.isLight() == true ? UIColor.darkText : UIColor.white) : colors?.primary
@@ -50,14 +47,14 @@ struct BoundingBox {
         textLayer.isHidden = false
         shapeLayer.isHidden = false
         CATransaction.setDisableActions(true)
-        shapeLayer.fillColor = backgroundColor?.cgColor
+//        shapeLayer.fillColor = backgroundColor?.cgColor
         shapeLayer.shadowColor = backgroundColor?.cgColor
         textLayer.foregroundColor = textColor?.cgColor
 
         textLayer.setAffineTransform(textRect.transform())
         textLayer.frame.origin.x = textRect._rect.origin.x
-        let path = CGPath(rect: textRect._rect, transform: nil)
-        shapeLayer.path = path
+        let path = CGPath(rect: textRect._rect.insetBy(dx: -5, dy: -6), transform: nil)
+//        shapeLayer.path = path
         shapeLayer.shadowPath = path
         textLayer.string = textRect.text
     }

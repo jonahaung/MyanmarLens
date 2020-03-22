@@ -56,9 +56,7 @@ struct MainView: View {
         }, content: {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
-        .sheet(isPresented: $showCamera, onDismiss: {
-            self.showCamera = false
-        }, content: {
+        .sheet(isPresented: $showCamera, content: {
             CameraView()
         })
             

@@ -93,7 +93,7 @@ extension UIImage {
     func pixelBuffer() -> CVPixelBuffer? {
         let attrs = [kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue, kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue] as CFDictionary
         var pixelBufferOpt: CVPixelBuffer?
-        let status = CVPixelBufferCreate(kCFAllocatorDefault, Int(self.size.width), Int(self.size.height), kCVPixelFormatType_32ARGB, attrs, &pixelBufferOpt)
+        let status = CVPixelBufferCreate(kCFAllocatorDefault, Int(VideoService.videoSize.width), Int(VideoService.videoSize.height), kCVPixelFormatType_32ARGB, attrs, &pixelBufferOpt)
         guard status == kCVReturnSuccess, let pixelBuffer = pixelBufferOpt else {
             return nil
         }
@@ -102,18 +102,27 @@ extension UIImage {
         let pixelData = CVPixelBufferGetBaseAddress(pixelBuffer)
 
         let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
-        guard let context = CGContext(data: pixelData, width: Int(self.size.width), height: Int(self.size.height), bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer), space: rgbColorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue) else {
+        guard let context = CGContext(data: pixelData, width: Int(VideoService.videoSize.width), height: Int(VideoService.videoSize.height), bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer), space: rgbColorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue) else {
           return nil
         }
 
-        context.translateBy(x: 0, y: self.size.height)
+        context.translateBy(x: 0, y: VideoService.videoSize.height)
         context.scaleBy(x: 1.0, y: -1.0)
 
         UIGraphicsPushContext(context)
-        self.draw(in: CGRect(x: 0, y: 0, width: self.size.width, height: self.size.height))
+        self.draw(in: CGRect(x: 0, y: 0, width: VideoService.videoSize.width, height: VideoService.videoSize.height))
         UIGraphicsPopContext()
         CVPixelBufferUnlockBaseAddress(pixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
 
         return pixelBuffer
+    }
+}
+
+extension UIView {
+    func asImage() -> UIImage {
+        let renderer = UIGraphicsImageRenderer(bounds: bounds)
+        return renderer.image { rendererContext in
+            layer.render(in: rendererContext.cgContext)
+        }
     }
 }

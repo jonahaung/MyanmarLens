@@ -8,9 +8,9 @@
 
 import Foundation
 import AVKit
-import Combine
 import NaturalLanguage
-import SwiftUI
+
+
 enum CameraStage {
     case Start, Stop, Initial
 }
@@ -23,7 +23,7 @@ class ServiceManager: ObservableObject {
             videoService.sliderValueDidChange(Float(zoom/20))
         }
     }
-   
+    
     private var isInitial = false
     @Published var selectedButton: SelectedButton = .none {
         didSet {
@@ -45,10 +45,18 @@ class ServiceManager: ObservableObject {
             
         }
     }
+    
     @Published var fps: Int = 5 {
         didSet {
             guard oldValue != self.fps else { return }
             videoService.fps = self.fps
+            objectWillChange.send()
+        }
+    }
+    @Published var isAutoScan: Bool = userDefaults.isAutoScan {
+        didSet {
+            guard oldValue != isAutoScan else { return }
+            userDefaults.isAutoScan = isAutoScan
             objectWillChange.send()
         }
     }
@@ -60,6 +68,7 @@ class ServiceManager: ObservableObject {
             objectWillChange.send()
         }
     }
+    
     @Published var choice = 0 {
         didSet {
             guard !isInitial else {
@@ -73,9 +82,7 @@ class ServiceManager: ObservableObject {
             default:
                 break
             }
-            
         }
-        
     }
     
     var detectedLanguage: NLLanguage {
@@ -84,32 +91,38 @@ class ServiceManager: ObservableObject {
         }
         set {
             
+            guard detectedLanguage != newValue else { return }
             
-            guard userDefaults.sourceLanguage != newValue else { return }
-            if newValue == targetLanguage {
+            if targetLanguage == newValue {
                 targetLanguage = userDefaults.sourceLanguage
             }
             userDefaults.sourceLanguage = newValue
-            DispatchQueue.main.async {
-                
+            DispatchQueue.main.safeAsync {
                 self.objectWillChange.send()
             }
         }
     }
+    
     var targetLanguage: NLLanguage {
         get {
             return userDefaults.targetLanguage
         }
         set {
-            guard userDefaults.targetLanguage != newValue else { return }
+            isStable = true
+            guard targetLanguage != newValue else { return }
             userDefaults.targetLanguage = newValue
-            DispatchQueue.main.async {
+            DispatchQueue.main.safeAsync {
                 self.objectWillChange.send()
             }
         }
     }
     
     @Published var showLoading: Bool = false {
+        willSet {
+            objectWillChange.send()
+        }
+    }
+    @Published var displayingResults = false {
         willSet {
             objectWillChange.send()
         }
@@ -144,11 +157,15 @@ class ServiceManager: ObservableObject {
             objectWillChange.send()
         }
     }
+    var currentID: UUID?
     
     private let videoService: VideoService
     private let ocrService: OcrService
     private let boxService: BoxService
     private let translateService: TranslateService
+   
+    private let tracker: ObjectTracker<Int> = ObjectTracker(reliability: .tentative)
+    private var isStable = false
     let overlayView: OverlayView
     
     init() {
@@ -168,24 +185,21 @@ class ServiceManager: ObservableObject {
     }
     
     func configure() {
-        
-        videoService.start {
-            self.videoService.canOutputBuffer = true
-        }
         fps = videoService.fps
+        videoService.start {[weak self] in
+            DispatchQueue.main.safeAsync {
+                self?.subjectAreaDidChange()
+            }
+        }
+        
     }
     
-    func stop() {
+    deinit {
         videoService.captureSession.stopRunning()
         guard let device = AVCaptureDevice.default(for: AVMediaType.video) else { return }
         if device.torchMode == .on {
             toggleFlash()
         }
-    }
-    
-    
-    deinit {
-        stop()
         NotificationCenter.default.removeObserver(self)
         print("Service Manager")
     }
@@ -197,16 +211,50 @@ class ServiceManager: ObservableObject {
             return
         }
         if overlayView.image != nil {
-            SoundManager.vibrate(vibration: .light)
-            overlayView.clear()
+            reset()
         } else {
-            videoService.stop {[weak self] in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    self.showLoading = true
+            if let id = currentID {
+                self.showLoading = true
+                videoService.stop {[weak self] in
+                    guard let self = self else { return }
+                    self.ocrService.capture(id: id)
                 }
-                self.ocrService.capture()
             }
+            
+        }
+    }
+    
+    func reset() {
+        fps = 3
+        boxService.reset()
+        overlayView.image = nil
+        overlayView.zoomGestureController.image = nil
+        showLoading = false
+        displayingResults = false
+        isStable = false
+        tracker.resetAll()
+        ocrService.reset()
+        overlayView.apply(nil)
+        videoService.start()
+        
+    }
+    @objc private func subjectAreaDidChange() {
+        
+        guard !displayingResults else {
+            return
+        }
+        
+        do {
+            try CaptureSession.current.resetFocusToAuto()
+            fps = 3
+            isStable = false
+            tracker.resetAll()
+            overlayView.apply(nil)
+            ocrService.reset()
+        } catch {
+            let error = ImageScannerControllerError.inputDevice
+            print(error)
+            return
         }
     }
 }
@@ -215,59 +263,68 @@ class ServiceManager: ObservableObject {
 
 // OCR Serviece
 extension ServiceManager: OcrServiceDelegate {
-    func ocrService(_ service: OcrService, didGetImage image: UIImage) {
-        DispatchQueue.main.async {
-            self.overlayView.flashToBlack()
-            self.overlayView.image = image
-        }
+    
+    func ocrService(_ service: OcrService, didOutput image: UIImage, with sourceLanguage: NLLanguage) {
+        overlayView.image = image
+        detectedLanguage = sourceLanguage
+        overlayView.flashToBlack()
+        overlayView.quadView.isStable = true
+        displayingResults = true
     }
     
-    func ocrService(_ service: OcrService, didCaptureRectangle quad: Quadrilateral?) {
-        
-    }
-    func ocrService(_ service: OcrService, didCapture quad: Quadrilateral?) {
-        DispatchQueue.main.async {
-            self.overlayView.apply(quad)
-            self.fps = quad == nil ? 3 : 5
-            
-        }
-    }
-    func ocrService(_ service: OcrService, didFailedCapture quad: Quadrilateral?) {
-        service.clear()
-        self.videoService.start {[weak self] in
-            guard let self = self else { return }
-            DispatchQueue.main.async {
-                self.self.showLoading = false
-                self.subjectAreaDidChange()
+    
+    func ocrService(_ service: OcrService, didCapture quad: Quadrilateral?, lastQuad: Quadrilateral?, isStable: Bool) {
+        guard !displayingResults else { return }
+        currentID = quad?.id
+        self.isStable = isStable
+       
+        overlayView.apply(quad, isStable: isStable)
+        if let parameter = quad?.perimeter {
+             fps = 1
+            let rounded = Int(round(10 * parameter))
+            tracker.logFrame(objects: [rounded])
+            if let best = tracker.bestString {
+                self.didTapActionButton()
             }
-       }
+        } else {
+            reset()
+        }
+//        rectangleFunnel.add(quad?.applying(self.overlayView.videoPreviewLayer.layerTransform), currentlyDisplayedRectangle: lastQuad) {[weak self] (result, stableQuad) in
+//            if result == .showAndAutoScan {
+//                DispatchQueue.main.async {
+//                    guard let self = self, !self.displayingResults else { return }
+//                    self.overlayView.apply(stableQuad, isStable: true)
+//                    self.didTapActionButton()
+//                }
+//            }
+//        }
     }
     
+    func ocrService(_ service: OcrService, didFailedCapture quad: Quadrilateral?) {
+        reset()
+        tracker.resetAll()
+    }
     
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect]) {
-        
         translateService.handle(textRects: textRects)
     }
 }
 // Box Serviece
 extension ServiceManager: TranslateServiceDelegate {
     func translateService(_ service: TranslateService, didFinishTranslation textRects: [TextRect]) {
-        self.boxService.handle(textRects)
-        self.showLoading = false
+        guard displayingResults else { return }
+        boxService.handle(textRects)
+        showLoading = false
+        SoundManager.vibrate(vibration: .light)
+        
     }
 }
 
 // Overlay View
 extension ServiceManager: OverlayViewDelegate {
-    func overlayView(didClearScreen view: OverlayView) {
-        boxService.clearlayers()
-        showLoading = false
-        ocrService.clear()
-        videoService.start()
-        subjectAreaDidChange()
+    func overlayView(didTapScreen view: OverlayView) {
+        reset()
     }
-    
-    
 }
 
 
@@ -286,24 +343,25 @@ extension ServiceManager {
         textTheme = textTheme == .BlackAndWhite ? .Adaptive : .BlackAndWhite
         
     }
-}
-
-// Subject Area
-extension ServiceManager {
     
-    @objc private func subjectAreaDidChange() {
+    // Skew
+    func didTapSkew() {
+        overlayView.quadView.editable.toggle()
+    }
+    // Share
+    func didTapShareButton() {
+        let image = overlayView.asImage()
+        image.shareWithMenu()
+    }
+    // Save
+    func saveAsImage() {
+        let image = overlayView.asImage()
         
-        do {
-            try CaptureSession.current.resetFocusToAuto()
-        } catch {
-            let error = ImageScannerControllerError.inputDevice
-            print(error)
-            return
-        }
-        
-        /// Remove the focus rectangle if one exists
-        CaptureSession.current.removeFocusRectangleIfNeeded(overlayView.focusRectangle, animated: true)
-        ocrService.clear()
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+        let x = UIAlertController(style: .alert)
+        x.set(title: "Image Saved!", font: UIFont.preferredFont(forTextStyle: .headline))
+        x.addAction(title: "OK")
+        x.show()
     }
     
 }
@@ -348,8 +406,6 @@ extension ServiceManager {
         }
         
         alert.addAction(title: "OK", style: .cancel, handler: nil)
-        alert.show {
-            print("shown")
-        }
+        alert.show()
     }
 }

@@ -34,7 +34,6 @@ class ObjectTracker<T: Hashable> {
             }
             seenStrings[string]?.lastSeen = frameIndex
             seenStrings[string]?.count += 1
-//            print("Seen \(string) \(seenStrings[string]?.count ?? 0) times")
         }
     
         var obsoleteStrings = [T]()

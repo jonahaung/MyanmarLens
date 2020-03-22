@@ -29,6 +29,7 @@
 		471E66F6238FD561008302E5 /* MyanmarSanpya.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */; };
 		471E66FA238FD7ED008302E5 /* MyanmarPhetsot.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */; };
 		471F237B23B72F1E005D9070 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471F237A23B72F1E005D9070 /* CameraView.swift */; };
+		47240CA124270057008AD45D /* LanguageDetector 1.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 47240CA024270057008AD45D /* LanguageDetector 1.mlmodel */; };
 		4729DF7C23CCC9AA009BE23D /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */; };
 		4733A29024206D40006EE2D0 /* SelectedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4733A28F24206D40006EE2D0 /* SelectedButton.swift */; };
 		47348068241FF07C00B7505C /* CameraPreviewLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47348067241FF07C00B7505C /* CameraPreviewLayer.swift */; };
@@ -147,6 +148,7 @@
 		471E66F5238FD561008302E5 /* MyanmarSanpya.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarSanpya.ttf; sourceTree = "<group>"; };
 		471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarPhetsot.ttf; sourceTree = "<group>"; };
 		471F237A23B72F1E005D9070 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		47240CA024270057008AD45D /* LanguageDetector 1.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "LanguageDetector 1.mlmodel"; sourceTree = "<group>"; };
 		4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageColors.swift; sourceTree = "<group>"; };
 		47323D8A23BD4106004EFE64 /* Async.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Async.swift; sourceTree = "<group>"; };
 		4733A28F24206D40006EE2D0 /* SelectedButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedButton.swift; sourceTree = "<group>"; };
@@ -314,8 +316,8 @@
 		471A88A623B79EA80036FE83 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				47240CA024270057008AD45D /* LanguageDetector 1.mlmodel */,
 				471A88A023B75BEB0036FE83 /* ServiceManager.swift */,
-				47976F4B23FBABD300381AC1 /* BoundingBox.swift */,
 				47BDDAC123A4769E0039A401 /* VideoService.swift */,
 				47BDDAB923A4769D0039A401 /* BoxService.swift */,
 				47C499CB23BFC8A20084F70D /* OcrService.swift */,
@@ -329,7 +331,6 @@
 			isa = PBXGroup;
 			children = (
 				471E557523847F6500AB6A95 /* PersistanceManager.swift */,
-				47D76BE3238C18010027240A /* TranslatePair+Ext.swift */,
 				4750E34023845FE700438805 /* Myanmar_Lens.xcdatamodeld */,
 			);
 			path = Database;
@@ -428,7 +429,7 @@
 		4750E36C2384602900438805 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				4798A59E2416A89C00D6462B /* WeScan */,
+				4798A59E2416A89C00D6462B /* Scan */,
 				471F237723B72F0B005D9070 /* Camera */,
 				47012540238CEE74004C8403 /* MainPage */,
 				4701253F238CEE6D004C8403 /* History */,
@@ -441,6 +442,8 @@
 		4750E36E2384604500438805 /* Managers */ = {
 			isa = PBXGroup;
 			children = (
+				4798A5A52416A89C00D6462B /* RectangleFeaturesFunnel.swift */,
+				47CD088E241DE29E006BB8FA /* ObjectDetector.swift */,
 				47117AE12402C196001E1295 /* UserSettings.swift */,
 				47117ADF2402C14E001E1295 /* UserDefaultsManagar.swift */,
 				47D76BE5238C24C00027240A /* AppUtilities.swift */,
@@ -467,7 +470,7 @@
 			path = Pickers;
 			sourceTree = "<group>";
 		};
-		4798A59E2416A89C00D6462B /* WeScan */ = {
+		4798A59E2416A89C00D6462B /* Scan */ = {
 			isa = PBXGroup;
 			children = (
 				4798A59F2416A89C00D6462B /* ImageScannerController.swift */,
@@ -476,13 +479,12 @@
 				4798A5A12416A89C00D6462B /* Models */,
 				4798A5A42416A89C00D6462B /* Scan */,
 				4798A5A92416A89C00D6462B /* Extensions */,
-				4798A5B42416A89C00D6462B /* Edit */,
 				4798A5B62416A89C00D6462B /* Common */,
 				4798A5BD2416A89C00D6462B /* Protocols */,
 				4798A5C02416A89C00D6462B /* EditScanViewController.swift */,
 				4798A5C22416A89C00D6462B /* Session */,
 			);
-			path = WeScan;
+			path = Scan;
 			sourceTree = "<group>";
 		};
 		4798A5A12416A89C00D6462B /* Models */ = {
@@ -497,10 +499,8 @@
 		4798A5A42416A89C00D6462B /* Scan */ = {
 			isa = PBXGroup;
 			children = (
-				4798A5A52416A89C00D6462B /* RectangleFeaturesFunnel.swift */,
 				4798A5A62416A89C00D6462B /* CaptureSessionManager.swift */,
 				4798A5A72416A89C00D6462B /* ShutterButton.swift */,
-				4798A5A82416A89C00D6462B /* FocusRectangleView.swift */,
 			);
 			path = Scan;
 			sourceTree = "<group>";
@@ -532,11 +532,7 @@
 		4798A5B62416A89C00D6462B /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				4798A5B72416A89C00D6462B /* EditScanCornerView.swift */,
 				4798A5B82416A89C00D6462B /* Error.swift */,
-				47CD088E241DE29E006BB8FA /* ObjectDetector.swift */,
-				4798A5BB2416A89C00D6462B /* QuadrilateralView.swift */,
-				4798A5BC2416A89C00D6462B /* Quadrilateral.swift */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -573,10 +569,13 @@
 		47CD088B241DD874006BB8FA /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				47D76BE3238C18010027240A /* TranslatePair+Ext.swift */,
+				4798A5BC2416A89C00D6462B /* Quadrilateral.swift */,
 				473BBDAE2391062800E2BB5A /* TextRect.swift */,
 				47CD088C241DD88F006BB8FA /* TextTheme.swift */,
 				47584F0D24211CAE00C2F89E /* VideoQuality.swift */,
 				4733A28F24206D40006EE2D0 /* SelectedButton.swift */,
+				47976F4B23FBABD300381AC1 /* BoundingBox.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -594,8 +593,12 @@
 		47DCA51023C09151003B15F6 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				4798A5B42416A89C00D6462B /* Edit */,
+				4798A5B72416A89C00D6462B /* EditScanCornerView.swift */,
 				471F237A23B72F1E005D9070 /* CameraView.swift */,
 				471AB2DA23B87198005E95F6 /* OverlayView.swift */,
+				4798A5BB2416A89C00D6462B /* QuadrilateralView.swift */,
+				4798A5A82416A89C00D6462B /* FocusRectangleView.swift */,
 				47348067241FF07C00B7505C /* CameraPreviewLayer.swift */,
 			);
 			path = Views;
@@ -661,6 +664,8 @@
 			dependencies = (
 			);
 			name = "Myanmar Lens";
+			packageProductDependencies = (
+			);
 			productName = "Myanmar Lens";
 			productReference = 4750E33423845FE700438805 /* Myanmar Lens.app */;
 			productType = "com.apple.product-type.application";
@@ -733,6 +738,8 @@
 				Base,
 			);
 			mainGroup = 4750E32B23845FE700438805;
+			packageReferences = (
+			);
 			productRefGroup = 4750E33523845FE700438805 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -873,6 +880,7 @@
 				476BC56F23A2C7230012386B /* PreviewView.swift in Sources */,
 				4798A5E62416A89C00D6462B /* CaptureSession.swift in Sources */,
 				47584F0F2422028400C2F89E /* ObjectTracker.swift in Sources */,
+				47240CA124270057008AD45D /* LanguageDetector 1.mlmodel in Sources */,
 				47012554238D56FB004C8403 /* SettingCell.swift in Sources */,
 				4750E3732384657200438805 /* MyMemoryTranslator.swift in Sources */,
 				4798A5E32416A89C00D6462B /* ScannerViewController.swift in Sources */,

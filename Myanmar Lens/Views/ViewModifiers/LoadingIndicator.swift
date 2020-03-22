@@ -34,9 +34,9 @@ struct CircularProgressIndicator: View {
         Circle()
             
             .trim(from: 0.7, to: 1)
-            .stroke(Color.primary, lineWidth: 5)
+            .stroke(Color.white, lineWidth: 3)
             .rotationEffect(.degrees(spinCircle ? 0 : -360), anchor: .center)
-            .animation(Animation.linear(duration: 1.5).repeatForever(autoreverses: false))
+            .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false))
             .onAppear {
                 self.spinCircle = true
         }

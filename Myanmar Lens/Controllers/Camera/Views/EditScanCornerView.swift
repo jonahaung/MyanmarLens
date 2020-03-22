@@ -12,24 +12,24 @@ import UIKit
 final class EditScanCornerView: UIView {
     
     let position: CornerPosition
-    
-    /// The image to display when the corner view is highlighted.
-    private var image: UIImage?
+
     private(set) var isHighlighted = false
     
     lazy private var circleLayer: CAShapeLayer = {
         $0.fillColor = UIColor.orange.cgColor
         $0.strokeColor = UIColor.orange.cgColor
         $0.lineWidth = 1.0
+        $0.opacity = 1
         return $0
     }(CAShapeLayer())
     
     init(frame: CGRect, position: CornerPosition) {
         self.position = position
         super.init(frame: frame)
-        backgroundColor = UIColor.clear
+        backgroundColor = .clear
         clipsToBounds = true
         layer.addSublayer(circleLayer)
+       
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -47,19 +47,15 @@ final class EditScanCornerView: UIView {
         let bezierPath = UIBezierPath(ovalIn: rect.insetBy(dx: circleLayer.lineWidth, dy: circleLayer.lineWidth))
         circleLayer.frame = rect
         circleLayer.path = bezierPath.cgPath
-        
-        image?.draw(in: rect)
     }
     
     func highlightWithImage(_ image: UIImage) {
         isHighlighted = true
-        self.image = image
         self.setNeedsDisplay()
     }
     
     func reset() {
         isHighlighted = false
-        image = nil
         setNeedsDisplay()
     }
     

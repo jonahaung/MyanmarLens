@@ -20,7 +20,7 @@ struct Quadrilateral: Transformable {
     var bottomRight: CGPoint
     var bottomLeft: CGPoint
     
-    var imageBuffer: CVImageBuffer?
+    var id: UUID?
     
     init(_ x: CIRectangleFeature) {
         topLeft = x.topLeft
@@ -71,17 +71,19 @@ struct Quadrilateral: Transformable {
         bottomLeft = CGPoint(x: rect.minX, y: rect.minY)
         
     }
-    
-    var text: String = String()
-    var quadrilaterals: [Quadrilateral]?
-    
-    var textRects: [(String, CGRect)]? {
-        guard let quads = quadrilaterals else {
-            return nil
-        }
-        return quads.map{ ($0.text, $0.frame )}
+    init(_ rect: CGRect, id: UUID, textRects: [(String, CGRect)], text: String) {
+        topLeft =  CGPoint(x: rect.minX, y: rect.maxY)
+       topRight = CGPoint(x: rect.maxX, y: rect.maxY)
+       bottomRight = CGPoint(x: rect.maxX, y: rect.minY)
+       bottomLeft = CGPoint(x: rect.minX, y: rect.minY)
+        self.id = id
+        self.textRects = textRects
+        self.text = text
     }
     
+    var text: String = String()
+    var textRects: [(String, CGRect)]?
+
     var description: String {
         return "topLeft: \(topLeft), topRight: \(topRight), bottomRight: \(bottomRight), bottomLeft: \(bottomLeft)"
     }
@@ -94,17 +96,14 @@ struct Quadrilateral: Transformable {
         path.addLine(to: bottomRight)
         path.addLine(to: bottomLeft)
         path.close()
-        
-        let textPath = UIBezierPath(roundedRect: labelRect, cornerRadius: 10)
-        path.append(textPath)
         return path
     }
 
     var cornersPath: UIBezierPath {
         let rect = frame
         let thickness: CGFloat = 2
-        let length: CGFloat = min(rect.height, rect.width) / 7
-        let radius: CGFloat = 8
+        let length: CGFloat = min(rect.height, rect.width) / 10
+        let radius: CGFloat = 5
         let t2 = thickness / 2
         let path = UIBezierPath()
         
@@ -133,9 +132,7 @@ struct Quadrilateral: Transformable {
         path.addLine(to: CGPoint(x: rect.width - t2 + leftSpace, y: rect.height - radius - t2 + topSpace))
         path.addArc(withCenter: CGPoint(x: rect.width - radius - t2 + leftSpace, y: rect.height - radius - t2 + topSpace), radius: radius, startAngle: 0, endAngle: CGFloat.pi / 2, clockwise: true)
         path.addLine(to: CGPoint(x: rect.width - length - radius - t2 + leftSpace, y: rect.height - t2 + topSpace))
-        
-         let textPath = UIBezierPath(roundedRect: labelRect, cornerRadius: 10)
-        path.append(textPath)
+      
         return path
     }
     
@@ -171,6 +168,7 @@ struct Quadrilateral: Transformable {
     func isWithin(_ distance: CGFloat, ofRectangleFeature rectangleFeature: Quadrilateral) -> Bool {
         
         let topLeftRect = topLeft.surroundingSquare(withSize: distance)
+        print(topLeftRect, rectangleFeature.topLeft)
         if !topLeftRect.contains(rectangleFeature.topLeft) {
             return false
         }
@@ -303,3 +301,4 @@ extension Quadrilateral: Equatable {
         return lhs.topLeft == rhs.topLeft && lhs.topRight == rhs.topRight && lhs.bottomRight == rhs.bottomRight && lhs.bottomLeft == rhs.bottomLeft
     }
 }
+

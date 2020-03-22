@@ -9,10 +9,10 @@
 import Foundation
 import CoreData
 import NaturalLanguage
-class Translator {
+struct Translator {
     
     static let shared = Translator()
-    lazy var context = PersistanceManager.shared.container.newBackgroundContext()
+//    lazy var context = PersistanceManager.shared.container.newBackgroundContext()
     
     struct API {
         static let base = "https://api.mymemory.translated.net/get?"
@@ -24,44 +24,39 @@ class Translator {
     
     }
     
-    private let session = URLSession(configuration: .default)
-    
-    
-    func translate(text: String, from: NLLanguage, to: NLLanguage, _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
+    private let session = URLSession(configuration: .ephemeral)
+ 
+    init() {
         
-        let text = text.lowercased()
-        if let existing = existing(text, language: to.rawValue) {
-            DispatchQueue.main.async {
-                completion(existing.lowercased(), nil)
-            }
-            return
-        }
+    }
+    func translate(text: String, from: NLLanguage, to: NLLanguage, pair: String, wifiiAddress: String?, email: String,  _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
+
         guard var urlComponents = URLComponents(string: API.translate.url) else {
-            completion(nil, nil)
+            completion(text, nil)
             return
         }
-        let pair = "\(from.rawValue)|\(to.rawValue)"
+        
         
         var queryItems = [URLQueryItem]()
-        queryItems.append(URLQueryItem(name: "q", value: text))
+        queryItems.append(URLQueryItem(name: "q", value: text.lowercased()))
         queryItems.append(URLQueryItem(name: "langpair", value: pair))
         queryItems.append(URLQueryItem(name: "mt", value: "1"))
-        if let ip = self.getWiFiAddress() {
+        
+        if let ip = wifiiAddress {
             queryItems.append(URLQueryItem(name: "ip", value: ip))
         }
-
-        queryItems.append(URLQueryItem(name: "de", value: Random.emailAddress))
+        queryItems.append(URLQueryItem(name: "de", value: email))
        
         urlComponents.queryItems = queryItems
     
         guard let url = urlComponents.url else {
-            completion(nil, nil)
+            completion(text, nil)
             return
         }
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = API.translate.method
         
-        let task = session.dataTask(with: urlRequest) { (data, response, error) in
+        session.dataTask(with: urlRequest) { (data, response, error) in
             guard let data = data, let response = response as? HTTPURLResponse, (200 ..< 300) ~= response.statusCode, error == nil else {
                     completion(nil, error)
                     return
@@ -75,7 +70,7 @@ class Translator {
                 let responseData = dictionary["responseData"] as? NSDictionary,
                 let translated = responseData["translatedText"] as? String else {
                 
-                completion(nil, nil)
+                completion(text, nil)
                 return
             }
             let lower = translated.exclude(in: .removingCharacters).lowercased()
@@ -85,8 +80,7 @@ class Translator {
             }
             self.save(text, lower, language: to.rawValue)
             completion(lower, nil)
-        }
-        task.resume()
+        }.resume()
     }
     
     func getWiFiAddress() -> String? {
@@ -114,13 +108,9 @@ class Translator {
         }
         return address
     }
-    
-    private func existing(_ text: String, language: String) -> String? {
-        return TranslatePair.find(from: text, language: language, context: context)?.to
-    }
-    
+
     private func save(_ from: String, _ to: String, language: String) {
-        TranslatePair.save(from, to, language: language, date: Date(), isFavourite: false, context: context)
+        TranslatePair.save(from, to, language: language, date: Date(), isFavourite: false, context: PersistanceManager.shared.container.newBackgroundContext())
     }
 
 }

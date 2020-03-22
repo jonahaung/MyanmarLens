@@ -50,27 +50,27 @@ final class RectangleFeaturesFunnel {
     private var rectangles = [RectangleMatch]()
     
     /// The maximum number of rectangles to compare newly added rectangles with. Determines the maximum size of `rectangles`. Increasing this value will impact performance.
-    let maxNumberOfRectangles = 8
+    let maxNumberOfRectangles = 5
     
     /// The minimum number of rectangles needed to start making comparaisons and determining which rectangle to display. This value should always be inferior than `maxNumberOfRectangles`.
     /// A higher value will delay the first time a rectangle is displayed.
-    let minNumberOfRectangles = 3
+    let minNumberOfRectangles = 2
     
     /// The value in pixels used to determine if two rectangle match or not. A higher value will prevent displayed rectangles to be refreshed. On the opposite, a smaller value will make new rectangles be displayed constantly.
-    let matchingThreshold: CGFloat = 40.0
+    let matchingThreshold: CGFloat = 1
     
     /// The minumum number of matching rectangles (within the `rectangle` queue), to be confident enough to display a rectangle.
     let minNumberOfMatches = 3
     
     /// The number of similar rectangles that need to be found to auto scan.
-    let autoScanThreshold = 35
+    let autoScanThreshold = 4
     
     /// The number of times the rectangle has passed the threshold to be auto-scanned
     var currentAutoScanPassCount = 0
     
     /// The value in pixels used to determine if a rectangle is accurate enough to be auto scanned.
     /// A higher value means the auto scan is quicker, but the rectangle will be less accurate. On the other hand, the lower the value, the longer it'll take for the auto scan, but it'll be way more accurate
-    var autoScanMatchingThreshold: CGFloat = 3.0
+    var autoScanMatchingThreshold: CGFloat = 3
     
     /// Add a rectangle to the funnel, and if a new rectangle should be displayed, the completion block will be called.
     /// The algorithm works the following way:
@@ -84,7 +84,8 @@ final class RectangleFeaturesFunnel {
     ///   - rectangleFeature: The rectangle to feed to the funnel.
     ///   - currentRectangle: The currently displayed rectangle. This is used to avoid displaying very close rectangles.
     ///   - completion: The completion block called when a new rectangle should be displayed.
-    func add(_ rectangleFeature: Quadrilateral, currentlyDisplayedRectangle currentRectangle: Quadrilateral?, completion: (AddResult, Quadrilateral) -> Void) {
+    func add(_ rectangleFeature: Quadrilateral?, currentlyDisplayedRectangle currentRectangle: Quadrilateral?, completion: (AddResult, Quadrilateral) -> Void) {
+        guard let rectangleFeature = rectangleFeature else { return }
         let rectangleMatch = RectangleMatch(rectangleFeature: rectangleFeature)
         rectangles.append(rectangleMatch)
         
@@ -102,14 +103,15 @@ final class RectangleFeaturesFunnel {
             return
         }
         
-        if let previousRectangle = currentRectangle,
-            bestRectangle.rectangleFeature.isWithin(autoScanMatchingThreshold, ofRectangleFeature: previousRectangle) {
+        if let previousRectangle = currentRectangle, bestRectangle.rectangleFeature.isWithin(autoScanMatchingThreshold, ofRectangleFeature: previousRectangle) {
+            print(previousRectangle, bestRectangle)
             currentAutoScanPassCount += 1
             if currentAutoScanPassCount > autoScanThreshold {
                 currentAutoScanPassCount = 0
                 completion(AddResult.showAndAutoScan, bestRectangle.rectangleFeature)
             }
         } else {
+            print("not within")
             completion(AddResult.showOnly, bestRectangle.rectangleFeature)
         }
     }
@@ -184,6 +186,15 @@ final class RectangleFeaturesFunnel {
         for rectangle in rectangles {
             rectangle.matchingScore = 1
         }
+        
     }
     
+    func reset() {
+        guard !rectangles.isEmpty else { return }
+        for rectangle in rectangles {
+            rectangle.matchingScore = 1
+        }
+        currentAutoScanPassCount = 0
+        rectangles.removeAll()
+    }
 }

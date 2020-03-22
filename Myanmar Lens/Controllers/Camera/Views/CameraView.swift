@@ -14,19 +14,92 @@ struct CameraView: View {
     @ObservedObject var serviceManager = ServiceManager()
     @EnvironmentObject var userSettings: UserSettings
     
+    
     var body: some View {
         ZStack {
             CameraUIViewRepresentable(serviceManager: serviceManager)
-            CameraControlView(serviceManager: serviceManager).environmentObject(serviceManager)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                Group {
+                    HStack(spacing: 10) {
+                        Button(action: {
+                            self.serviceManager.didTapSourceLanguage()
+                        }) {
+                            Text(serviceManager.detectedLanguage.localName).underline(color: .primary)
+                        }
+                        
+                        Image(systemName: "chevron.right.2")
+                            .font(.body)
+                        
+                        Button(action: {
+                            self.serviceManager.didTapTargetLanguage()
+                        }) {
+                            Text(serviceManager.targetLanguage.localName)
+                        }
+                    }.font(.system(size: 18, weight: .medium, design: .monospaced)).padding(.top)
+                }.zIndex(10)
+                Spacer()
+                if serviceManager.displayingResults {
+                    Group {
+                        
+                        if serviceManager.showLoading {
+                            CircularProgressIndicator()
+                                .frame(width: 40, height: 40)
+                        }
+                        
+                        HStack {
+                            Button(action: {
+                                SoundManager.vibrate(vibration: .light)
+                                self.serviceManager.didTapSkew()
+                            }) {
+                                Image(systemName: "skew")
+                            }
+                            Spacer()
+                            Button(action: {
+                                self.serviceManager.didTapSkew()
+                            }) {
+                                Image(systemName: "wand.and.stars")
+                            }
+                            Spacer()
+                            Button(action: {
+                                SoundManager.vibrate(vibration: .medium)
+                                self.serviceManager.didTapShareButton()
+                                
+                            }) {
+                                Image(systemName: "arrowshape.turn.up.right")
+                            }
+                            Spacer()
+                            Button(action: {
+                                self.serviceManager.saveAsImage()
+                            }) {
+                                Image(systemName: "arrow.down.to.line")
+                            }
+                            Spacer()
+                            Button(action: {
+                                self.serviceManager.reset()
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                            }
+                                
+                            .accentColor(.red)
+                        }
+                        
+                    }
+                    .font(Font.system(size: 28, weight: .light))
+                    .accentColor(.blue)
+                    .padding()
+                    
+                }else {
+                    CameraControlView(serviceManager: serviceManager).environmentObject(serviceManager)
+                    
+                }
+            }
+            
         }
+            
         .accentColor(Color(.orange))
         .onAppear {
-                self.serviceManager.configure()
-        }
-        .onDisappear {
-            self.serviceManager.stop()
+            self.serviceManager.configure()
         }
     }
 }
@@ -39,34 +112,29 @@ struct CameraControlView: View {
     var body: some View {
         VStack {
             
-            Section {
-                HStack(spacing: 10) {
-                    Button(action: {
-                        self.serviceManager.didTapSourceLanguage()
-                    }) {
-                        Text(serviceManager.detectedLanguage.localName).underline(color: .primary)
-                    }
-                    
-                    Image(systemName: "chevron.right.2")
-                    .font(.body)
-                    
-                    Button(action: {
-                        self.serviceManager.didTapTargetLanguage()
-                    }) {
-                        Text(serviceManager.targetLanguage.localName)
-                    }
-                }.font(.system(size: 18, weight: .medium, design: .monospaced)).padding(.top)
-            }.zIndex(10)
             
-            
-            Spacer()
-            
-            Section {
+            Group {
                 
                 ZStack {
                     
+                    HStack(alignment: .bottom) {
+                        Button(action: {
+                            SoundManager.vibrate(vibration: .light)
+                            withAnimation {
+                            }
+                            self.serviceManager.isAutoScan.toggle()
+                        }) {
+                            VStack{
+                                Text(self.serviceManager.isAutoScan ? "Auto" : "Manual")
+                            }
+                        }
+                        
+                        Spacer()
+                    }
+                    .font(.callout)
+                    .accentColor(.primary)
+                    
                     Button(action: {
-                       
                         self.serviceManager.didTapActionButton()
                     }) {
                         
@@ -77,34 +145,30 @@ struct CameraControlView: View {
                             Circle()
                                 .fill(Color.primary)
                                 .frame(width: 55)
-                            if serviceManager.showLoading {
-                                CircularProgressIndicator()
-                                .frame(width: 60)
-                            }
-                            
                         }
                     }
                     .frame(width: 63, height: 63)
                     .padding()
                 }
+                .padding(.horizontal)
                 
             }.zIndex(10)
             
-            Section {
+            Group {
                 
                 VStack {
-                   
-                   if serviceManager.selectedButton == .zoom {
-                                          
-                      Slider(value: $serviceManager.zoom, in: 0...20, minimumValueLabel: Text(""), maximumValueLabel: Text("\((serviceManager.zoom * 5).int)")) { EmptyView() }
+                    
+                    if serviceManager.selectedButton == .zoom {
                         
-                     }else if serviceManager.selectedButton == .textColor {
-                         Picker("Options", selection: $serviceManager.choice) {
-                             ForEach(0 ..< TextTheme.allCases.count) {
-                                 Text(TextTheme.allCases[$0].label).tag($0)
-                             }
-                         }.pickerStyle(SegmentedPickerStyle())
-                     }
+                        Slider(value: $serviceManager.zoom, in: 0...20, minimumValueLabel: Text(""), maximumValueLabel: Text("\((serviceManager.zoom * 5).int)")) { EmptyView() }
+                        
+                    }else if serviceManager.selectedButton == .textColor {
+                        Picker("Options", selection: $serviceManager.choice) {
+                            ForEach(0 ..< TextTheme.allCases.count) {
+                                Text(TextTheme.allCases[$0].label).tag($0)
+                            }
+                        }.pickerStyle(SegmentedPickerStyle())
+                    }
                     HStack(spacing: 0) {
                         // Text Color
                         Button(action: {
@@ -123,24 +187,24 @@ struct CameraControlView: View {
                             self.serviceManager.toggleFlash()
                         }) {
                             Image(systemName: serviceManager.flashState.iconName)
-//                            .accentColor(serviceManager.selectedButton == .flash ? .primary : .orange)
-                            .padding().background(Circle().fill(Color(.secondarySystemFill)))
+                                .padding().background(Circle().fill(Color(.secondarySystemFill)))
                         }
                         
                         // Zoom
                         
                         Button(action: {
                             withAnimation(Animation.interactiveSpring()) {
-                                 self.serviceManager.selectedButton = .zoom
+                                self.serviceManager.selectedButton = .zoom
                             }
                         }) {
                             Image(systemName: "magnifyingglass")
-//                            .accentColor(serviceManager.selectedButton == .zoom ? .primary : .orange)
-                            .padding().background(Circle().fill(Color(.secondarySystemFill)))
+                                .padding().background(Circle().fill(Color(.secondarySystemFill)))
                         }
                         
                         Spacer()
-            
+                        
+                        
+                        
                         VStack {
                             
                             Text(serviceManager.fps.description).font(.title) + Text(" FPS").font(.caption)
@@ -153,10 +217,10 @@ struct CameraControlView: View {
                         }.font(.caption).padding(.horizontal)
                     }
                     .font(Font.system(size: 25, weight: .light))
-               }
-                
+                }
+                    
                 .padding(10)
-                 
+                
             }
         }
     }

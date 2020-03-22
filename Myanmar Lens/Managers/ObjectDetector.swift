@@ -33,7 +33,7 @@ struct ObjectDetector {
             completion(biggest)
         }
         
-        request.regionOfInterest = OcrService.roi
+        request.regionOfInterest = OcrService.regionOfInterest
         do {
             try requestHandler.perform([request])
         }catch { print(error )}
@@ -61,7 +61,7 @@ struct ObjectDetector {
 
             completion(biggest)
         }
-        request.regionOfInterest = OcrService.roi
+        request.regionOfInterest = OcrService.regionOfInterest
         do {
             try requestHandler.perform([request])
         }catch { print(error )}
@@ -80,7 +80,7 @@ struct ObjectDetector {
             
         }
         request.reportCharacterBoxes = false
-        request.regionOfInterest = OcrService.roi.normalized()
+        request.regionOfInterest = OcrService.regionOfInterest.normalized()
         do {
             try requestHandler.perform([request])
         }catch { print(error )}
@@ -88,17 +88,22 @@ struct ObjectDetector {
     static func text(for pixelBuffer: CVPixelBuffer, completion: @escaping ((Quadrilateral?) -> Void)) {
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
         
-        let request = VNRecognizeTextRequest { (x, err) in
+        let request = TextRequest(_id: UUID()) { (x, err) in
             guard var results = x.results as? [VNRecognizedTextObservation], results.count > 0 else {
                 completion(nil)
                 return
             }
-            results = results.filter{ OcrService.roi.contains($0.boundingBox)}
+            results = results.filter{ OcrService.regionOfInterest.contains($0.boundingBox)}
             
-            let quads = results.map(Quadrilateral.init)
-           
-            let textRects = quads.map{($0.text, $0.frame)}.filter{ !$0.0.isEmpty }
-           
+            let textRects: [(String, CGRect)] = {
+               var x = [(String, CGRect)]()
+                results.forEach {
+                    if let top = $0.topCandidates(1).first {
+                        x.append((top.string, $0.boundingBox))
+                    }
+                }
+                return x
+            }()
             
             if textRects.count == 0 {
                 completion(nil)
@@ -107,20 +112,19 @@ struct ObjectDetector {
             
             let rect = textRects.map{ $0.1 }.reduce(CGRect.null, {$0.union($1)}).insetBy(dx: -0.02, dy: -0.02)
             var quad = Quadrilateral(rect)
-            quad.quadrilaterals = quads
-            quad.imageBuffer = pixelBuffer
-            let texts = textRects.map{ $0.0 }.joined(separator: "\n").lowercased()
-            quad.text = texts.language == "en" ? "English" : "Burmese"
+            quad.textRects = textRects
+            quad.text = textRects.map{ $0.0 }.joined(separator: " ").lowercased()
             completion(quad)
             
         }
+        
         request.usesLanguageCorrection = true
         request.recognitionLevel = .accurate
         do {
             try requestHandler.perform([request])
         }catch { print(error )}
     }
-    static func rectangle(for pixelBuffer: CVPixelBuffer, intersect rect: CGRect, completion: @escaping ((Quadrilateral?) -> Void)) {
+    static func rectangle(for pixelBuffer: CVPixelBuffer, roi: CGRect, completion: @escaping ((Quadrilateral?) -> Void)) {
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
         
         let request = VNDetectRectanglesRequest(completionHandler: { (request, error) in
@@ -131,23 +135,47 @@ struct ObjectDetector {
             
            
             let quads: [Quadrilateral] = results.map(Quadrilateral.init)
-            let interests = quads.filter{ $0.frame.intersects(rect)}
-            guard let biggest = interests.biggest() else {
+           
+            guard let biggest = quads.biggest() else {
                 completion(nil)
                 return
             }
             
             completion(biggest)
         })
-//        request.regionOfInterest = OcrService.roi
-        request.minimumConfidence = 0.7
-        request.maximumObservations = 15
-        request.minimumAspectRatio = 0.3
+        request.regionOfInterest = roi
+//        request.minimumConfidence = 0.7
+//        request.maximumObservations = 15
+//        request.minimumAspectRatio = 0.3
         
         do {
             try requestHandler.perform([request])
         }catch { print(error )}
     }
+    
+    static func rectangles(for pixelBuffer: CVPixelBuffer, completion: @escaping (([Quadrilateral]?) -> Void)) {
+            let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+            
+            let request = VNDetectRectanglesRequest(completionHandler: { (request, error) in
+                guard let results = request.results as? [VNRectangleObservation], !results.isEmpty else {
+                    completion(nil)
+                    return
+                }
+                
+               
+                let quads: [Quadrilateral] = results.map(Quadrilateral.init)
+            
+                completion(quads)
+            })
+            request.regionOfInterest = OcrService.regionOfInterest
+            request.minimumConfidence = 0.5
+            request.maximumObservations = 15
+//            request.minimumAspectRatio = 0.3
+            
+            do {
+                try requestHandler.perform([request])
+            }catch { print(error )}
+        }
     static func human(for pixelBuffer: CVPixelBuffer, completion: @escaping ((Quadrilateral?) -> Void)) {
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
     
@@ -173,7 +201,7 @@ struct ObjectDetector {
         }catch { print(error )}
     }
     
-    static func horizon(for pixelBuffer: CVPixelBuffer, completion: @escaping ((CGAffineTransform?) -> Void)) {
+    static func horizon(for pixelBuffer: CVPixelBuffer, completion: @escaping (((CGAffineTransform, CGFloat)?) -> Void)) {
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
         
         let request = VNDetectHorizonRequest { (x, err) in
@@ -181,11 +209,16 @@ struct ObjectDetector {
                 completion(nil)
                 return
             }
+            if let first = results.first {
+                let x = (first.transform, first.angle)
+                completion(x)
+            }else {
+                completion(nil)
+            }
             
-            completion(results.first?.transform)
             
         }
-
+        request.regionOfInterest = OcrService.regionOfInterest
         do {
             try requestHandler.perform([request])
         }catch { print(error )}
@@ -288,6 +321,47 @@ struct ObjectDetector {
             for: imageRequestHandler, width: orientedImage.extent.width,
             height: orientedImage.extent.height, completion: completion)
     }
+}
+
+extension ObjectDetector {
+    static func rectangleRequest(for pixelBuffer: CVPixelBuffer, completionHandler: @escaping VNRequestCompletionHandler) -> VNDetectRectanglesRequest {
+            
+            
+            let request = VNDetectRectanglesRequest(completionHandler: completionHandler)
+        
+            request.regionOfInterest = OcrService.regionOfInterest
+            request.minimumConfidence = 0.7
+            request.maximumObservations = 15
+            request.minimumAspectRatio = 0.3
+            return request
+            
+        }
+    
+    static func textRequest(for pixelBuffer: CVPixelBuffer, completionHandler: @escaping VNRequestCompletionHandler) -> TextRequest {
+        
+        let request = TextRequest(_id: UUID(), _completion: completionHandler)
+        request.usesLanguageCorrection = true
+        request.revision = VNRecognizeTextRequestRevision1
+        return request
+    }
+    static func attentionRequest(for pixelBuffer: CVPixelBuffer, completionHandler: @escaping VNRequestCompletionHandler) -> VNGenerateAttentionBasedSaliencyImageRequest {
+        
+        let request = VNGenerateAttentionBasedSaliencyImageRequest(completionHandler: completionHandler)
+        request.regionOfInterest = OcrService.regionOfInterest
+        return request
+    }
+}
+
+class TextRequest: VNRecognizeTextRequest {
+    let id: UUID
+    
+    init(_id: UUID, _completion: VNRequestCompletionHandler? = nil) {
+        id = _id
+        super.init(completionHandler: _completion)
+        usesLanguageCorrection = true
+        revision = VNRecognizeTextRequestRevision1
+    }
+
 }
 
 

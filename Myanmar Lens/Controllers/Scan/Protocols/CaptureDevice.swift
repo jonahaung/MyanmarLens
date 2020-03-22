@@ -23,7 +23,7 @@ protocol CaptureDevice: class {
     
     var exposureMode: AVCaptureDevice.ExposureMode { get set }
     var exposurePointOfInterest: CGPoint { get set }
-    var isExposurePointOfInterestSupported: Bool { get }
+    var isExposurePointOfInterestSupported: Bool { get } 
     func isExposureModeSupported(_ exposureMode: AVCaptureDevice.ExposureMode) -> Bool
     
     var isSubjectAreaChangeMonitoringEnabled: Bool { get set }

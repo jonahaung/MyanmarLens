@@ -19,6 +19,7 @@ final class UserDefaultsManager {
     private let fromLanguage = "fromLanguage"
     let hasDoneEULA = "hasDoneEULA"
     private let _autoDeteLanguage = "autoDeteLanguage"
+    private let _isAutoScan = "isAutoScan"
     private let hasOpenedBefore = "hasOpenedBefore"
     private let _flashLightOn = "flashLightOn"
     private let _videoQuality = "videoQuality"
@@ -73,6 +74,17 @@ final class UserDefaultsManager {
             SoundManager.playSound(tone: .Typing)
         }
     }
+    
+    var isAutoScan: Bool {
+        get {
+            return defaults.bool(forKey: _isAutoScan)
+        }
+        set {
+            updateObject(for: _isAutoScan, with: newValue)
+            SoundManager.playSound(tone: .Typing)
+        }
+    }
+    
     var flashLightOn: Bool {
         get {
             return defaults.bool(forKey: _flashLightOn)

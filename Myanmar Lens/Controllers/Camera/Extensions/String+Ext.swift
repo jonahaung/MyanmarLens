@@ -22,6 +22,7 @@ extension CharacterSet {
 extension String {
     
     var language: String {
+
         return NSLinguisticTagger.dominantLanguage(for: self) ?? ""
     }
     func cleanUpMyanmarTexts() -> String {
