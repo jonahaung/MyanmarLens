@@ -21,4 +21,7 @@ class UserSettings: ObservableObject {
     func toggleLanguagePari() {
         self.languagePair = LanguagePair(source: languagePair.target, target: languagePair.source)
     }
+    
+    
+    
 }

@@ -28,7 +28,12 @@ struct Quadrilateral: Transformable {
         bottomLeft = x.bottomLeft
         bottomRight = x.bottomRight
     }
-    
+    init(_ x: CITextFeature) {
+        topLeft = x.topLeft
+        topRight = x.topRight
+        bottomLeft = x.bottomLeft
+        bottomRight = x.bottomRight
+    }
     init(_ x: VNRectangleObservation) {
         topLeft = x.topLeft
         topRight = x.topRight
@@ -36,7 +41,7 @@ struct Quadrilateral: Transformable {
         bottomRight = x.bottomRight
     }
     
-    init(topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint) {
+    init(topLeft: CGPoint, topRight: CGPoint, bottomRight: CGPoint, bottomLeft: CGPoint, id: UUID? = nil, textRects: [(String, CGRect)]? = nil, text: String = "") {
         self.topLeft = topLeft
         self.topRight = topRight
         self.bottomRight = bottomRight
@@ -58,30 +63,33 @@ struct Quadrilateral: Transformable {
         }
     }
     init(_ x: VNDetectedObjectObservation) {
-        let rect = x.boundingBox
+        let rect = x.boundingBox.normalized()
         topLeft =  CGPoint(x: rect.minX, y: rect.maxY)
         topRight = CGPoint(x: rect.maxX, y: rect.maxY)
         bottomRight = CGPoint(x: rect.maxX, y: rect.minY)
         bottomLeft = CGPoint(x: rect.minX, y: rect.minY)
     }
     init(_ rect: CGRect) {
-        topLeft =  CGPoint(x: rect.minX, y: rect.maxY)
-        topRight = CGPoint(x: rect.maxX, y: rect.maxY)
-        bottomRight = CGPoint(x: rect.maxX, y: rect.minY)
-        bottomLeft = CGPoint(x: rect.minX, y: rect.minY)
+        topLeft =  CGPoint(x: rect.minX, y: rect.minY)
+        topRight = CGPoint(x: rect.maxX, y: rect.minY)
+        bottomRight = CGPoint(x: rect.maxX, y: rect.maxY)
+        bottomLeft = CGPoint(x: rect.minX, y: rect.maxY)
         
     }
     init(_ rect: CGRect, id: UUID, textRects: [(String, CGRect)], text: String) {
-        topLeft =  CGPoint(x: rect.minX, y: rect.maxY)
-       topRight = CGPoint(x: rect.maxX, y: rect.maxY)
-       bottomRight = CGPoint(x: rect.maxX, y: rect.minY)
-       bottomLeft = CGPoint(x: rect.minX, y: rect.minY)
+        topLeft =  CGPoint(x: rect.minX, y: rect.minY)
+        topRight = CGPoint(x: rect.maxX, y: rect.minY)
+        bottomRight = CGPoint(x: rect.maxX, y: rect.maxY)
+        bottomLeft = CGPoint(x: rect.minX, y: rect.maxY)
         self.id = id
         self.textRects = textRects
         self.text = text
     }
     
     var text: String = String()
+    mutating func applyText(text: String) {
+        self.text = text
+    }
     var textRects: [(String, CGRect)]?
 
     var description: String {
@@ -100,10 +108,10 @@ struct Quadrilateral: Transformable {
     }
 
     var cornersPath: UIBezierPath {
-        let rect = frame
+        let rect = frame.insetBy(dx: -10, dy: -10)
         let thickness: CGFloat = 2
-        let length: CGFloat = min(rect.height, rect.width) / 10
-        let radius: CGFloat = 5
+        let length: CGFloat = min(rect.height, rect.width) / 8
+        let radius: CGFloat = length/5
         let t2 = thickness / 2
         let path = UIBezierPath()
         
@@ -132,15 +140,14 @@ struct Quadrilateral: Transformable {
         path.addLine(to: CGPoint(x: rect.width - t2 + leftSpace, y: rect.height - radius - t2 + topSpace))
         path.addArc(withCenter: CGPoint(x: rect.width - radius - t2 + leftSpace, y: rect.height - radius - t2 + topSpace), radius: radius, startAngle: 0, endAngle: CGFloat.pi / 2, clockwise: true)
         path.addLine(to: CGPoint(x: rect.width - length - radius - t2 + leftSpace, y: rect.height - t2 + topSpace))
-      
         return path
     }
     
     var labelRect: CGRect {
     
         let rect = frame
-        let size = CGSize(width: rect.width/3, height: UIFont.preferredFont(forTextStyle: .title2).pointSize)
-        return CGRect(origin: CGPoint(x: rect.midX - size.width/2, y: rect.maxY), size: size)
+        let size = CGSize(width: 90, height: UIFont.preferredFont(forTextStyle: .title2).pointSize)
+        return CGRect(origin: CGPoint(x: rect.midX - size.width/2, y: rect.minY-size.height), size: size)
     }
     /// The perimeter of the Quadrilateral
     var perimeter: Double {
@@ -154,9 +161,7 @@ struct Quadrilateral: Transformable {
     ///   - t: the transform to apply.
     /// - Returns: The transformed quadrilateral.
     func applying(_ transform: CGAffineTransform) -> Quadrilateral {
-        let quadrilateral = Quadrilateral(topLeft: topLeft.applying(transform), topRight: topRight.applying(transform), bottomRight: bottomRight.applying(transform), bottomLeft: bottomLeft.applying(transform))
-        
-        return quadrilateral
+        return Quadrilateral(topLeft: topLeft.applying(transform), topRight: topRight.applying(transform), bottomRight: bottomRight.applying(transform), bottomLeft: bottomLeft.applying(transform), id: id, textRects: textRects, text: text)
     }
     
     /// Checks whether the quadrilateral is withing a given distance of another quadrilateral.
@@ -168,7 +173,7 @@ struct Quadrilateral: Transformable {
     func isWithin(_ distance: CGFloat, ofRectangleFeature rectangleFeature: Quadrilateral) -> Bool {
         
         let topLeftRect = topLeft.surroundingSquare(withSize: distance)
-        print(topLeftRect, rectangleFeature.topLeft)
+        
         if !topLeftRect.contains(rectangleFeature.topLeft) {
             return false
         }

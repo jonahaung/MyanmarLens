@@ -38,26 +38,28 @@ final class TranslateService {
             }
         }
         
-        let isMyanmar = pair.source == .burmese
+        
         let wifii = Translator.shared.getWiFiAddress()
         let email = Random.emailAddress
-        let queryPair = "\(pair.source.rawValue)|\(pair.target.rawValue)"
+    
         textRects.filter{ $0.translatedText == nil }.asyncForEach(completion: {[weak self] in
             guard let self = self else { return }
             self.delegate?.translateService(self, didFinishTranslation: textRects)
         }) { (textRect, next) in
-            Translator.shared.translate(text: textRect.text, from: pair.source, to: pair.target, pair: queryPair, wifiiAddress: wifii, email: email) {(result, err) in
+            Translator.shared.translate(text: textRect._text, from: pair.source, to: pair.target, wifiiAddress: wifii, email: email) {(result, err) in
                
                 if let err = err {
                     print(err.localizedDescription)
                     next()
                     return
                 }
-                if var result = result, !result.isWhitespace {
+                let isMyanmar = result?.EXT_isMyanmarCharacters == true
+                if var result = result?.lowercased(), !result.isWhitespace {
                     if isMyanmar {
                         result = result.cleanUpMyanmarTexts()
+                    }else {
+                        result = EngTextCorrector.shared.correct(text: result)
                     }
-                    result = result.replacingOccurrences(of: "39", with: "'")
                     textRect.translatedText = result
                     cached.append(textRect)
                 }

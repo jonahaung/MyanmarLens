@@ -19,8 +19,12 @@ enum CornerPosition {
 
 final class QuadrilateralView: UIView {
     
-    private let quadLayer: CAShapeLayer = {
-        $0.strokeColor = UIColor.systemYellow.cgColor
+    var stableColor = UIColor.systemBlue.cgColor
+    var unstableColor = UIColor.systemYellow.cgColor
+    var editingColor = UIColor.orange.cgColor
+    
+    private lazy var quadLayer: CAShapeLayer = {
+        $0.strokeColor = unstableColor
         $0.lineWidth = 2
         $0.fillColor = nil
         return $0
@@ -28,15 +32,29 @@ final class QuadrilateralView: UIView {
    
     /// The quadrilateral drawn on the view.
     private(set) var quad: Quadrilateral?
+    
+    var displayingResults = false {
+        didSet {
+            guard oldValue != self.displayingResults else { return }
+            if displayingResults {
+                quadLayer.path = nil
+            }else {
+                if let quad = quad {
+                    drawQuad(quad, animated: false)
+                }
+            }
+        }
+    }
     public var isStable = false {
         didSet {
             guard oldValue != isStable else { return }
-            
+           
+            quadLayer.fillColor = nil
             quadLayer.lineWidth = isStable ? 3 : 2
-            quadLayer.strokeColor = isStable ? UIColor.link.cgColor : UIColor.systemYellow.cgColor
-            if let quad = quad {
-                drawQuad(quad, animated: false)
-            }
+            quadLayer.strokeColor = isStable ? stableColor : unstableColor
+            
+            let path = editable ? quad?.rectanglePath : isStable ? quad?.cornersPath : quad?.rectanglePath
+            quadLayer.path = path?.cgPath
         }
     }
     public var editable = false {
@@ -46,9 +64,12 @@ final class QuadrilateralView: UIView {
             guard let quad = quad else {
                 return
             }
-            quadLayer.strokeColor = editable ? UIColor.white.cgColor : UIColor.link.cgColor
+            
+            quadLayer.strokeColor = editable ? editingColor : stableColor
+            quadLayer.fillColor = editable ? UIColor.init(white: 0.8, alpha: 0.5).cgColor : nil
             drawQuad(quad, animated: false)
             layoutCornerViews(forQuad: quad)
+            displayingResults = !editable
         }
     }
     
@@ -66,9 +87,10 @@ final class QuadrilateralView: UIView {
     private let textLayer: CATextLayer = {
         $0.alignmentMode = .center
         $0.isWrapped = true
-        $0.font = UIFont.preferredFont(forTextStyle: .callout)
-        $0.fontSize = $0.font?.pointSize ?? 20
+        $0.font = UIFont.monospacedSystemFont(ofSize: 16, weight: .medium)
+        $0.fontSize = 15
         $0.contentsScale = UIScreen.main.scale
+        $0.foregroundColor = UIColor.systemYellow.cgColor
         return $0
     }(CATextLayer())
     
@@ -112,7 +134,7 @@ final class QuadrilateralView: UIView {
     
     func drawQuadrilateral(quad: Quadrilateral, animated: Bool) {
         self.quad = quad
-        textLayer.string = quad.text
+        
         drawQuad(quad, animated: animated)
         
         if editable {
@@ -128,14 +150,19 @@ final class QuadrilateralView: UIView {
     }
     
     private func drawQuad(_ quad: Quadrilateral, animated: Bool) {
+
         let path = editable ? quad.rectanglePath : isStable ? quad.cornersPath : quad.rectanglePath
+        
+        quadLayer.path = path.cgPath
         if animated == true {
-            
             quadLayer.add(pathAnimation, forKey: "path")
         }
-        textLayer.frame = quad.labelRect
-        quadLayer.path = path.cgPath
         
+        if !quad.text.isEmpty {
+            
+            textLayer.frame = quad.labelRect
+            textLayer.string = quad.text
+        }
     }
     
     private func layoutCornerViews(forQuad quad: Quadrilateral) {
@@ -151,10 +178,6 @@ final class QuadrilateralView: UIView {
         quad = nil
         isStable = false
         editable = false
-    }
-    func clearLayer() {
-        quadLayer.path = nil
-        textLayer.string = nil
     }
     
     // MARK: - Actions

@@ -29,14 +29,14 @@ struct Translator {
     init() {
         
     }
-    func translate(text: String, from: NLLanguage, to: NLLanguage, pair: String, wifiiAddress: String?, email: String,  _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
+    func translate(text: String, from: NLLanguage, to: NLLanguage, wifiiAddress: String?, email: String,  _ completion: @escaping ((_ text: String?, _ error: Error?) -> Void)) {
 
         guard var urlComponents = URLComponents(string: API.translate.url) else {
             completion(text, nil)
             return
         }
         
-        
+        let pair = "\(from.rawValue)|\(to.rawValue)"
         var queryItems = [URLQueryItem]()
         queryItems.append(URLQueryItem(name: "q", value: text.lowercased()))
         queryItems.append(URLQueryItem(name: "langpair", value: pair))
@@ -73,7 +73,8 @@ struct Translator {
                 completion(text, nil)
                 return
             }
-            let lower = translated.exclude(in: .removingCharacters).lowercased()
+            let lower = translated.lowercased()
+            
             guard !lower.isWhitespace else {
                 completion(text, nil)
                 return

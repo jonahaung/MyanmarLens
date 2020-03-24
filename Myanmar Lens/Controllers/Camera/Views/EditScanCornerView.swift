@@ -29,7 +29,7 @@ final class EditScanCornerView: UIView {
         backgroundColor = .clear
         clipsToBounds = true
         layer.addSublayer(circleLayer)
-       
+       isHidden = true
     }
     
     required init?(coder aDecoder: NSCoder) {

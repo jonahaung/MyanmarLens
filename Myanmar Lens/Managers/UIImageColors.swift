@@ -213,7 +213,7 @@ extension UIImage {
         }
     #endif
 
-    public func getColors(quality: UIImageColorsQuality = .high, _ completion: @escaping (UIImageColors?) -> Void) {
+    public func getColors(quality: UIImageColorsQuality = .highest, _ completion: @escaping (UIImageColors?) -> Void) {
         DispatchQueue.global().async {
             let result = self.getColors(quality: quality)
             DispatchQueue.main.async {
@@ -222,7 +222,7 @@ extension UIImage {
         }
     }
 
-    public func getColors(quality: UIImageColorsQuality = .high) -> UIImageColors? {
+    public func getColors(quality: UIImageColorsQuality = .highest) -> UIImageColors? {
         var scaleDownSize: CGSize = self.size
         if quality != .highest {
             if self.size.width < self.size.height {

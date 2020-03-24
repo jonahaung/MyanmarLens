@@ -26,8 +26,8 @@ extension String {
         return NSLinguisticTagger.dominantLanguage(for: self) ?? ""
     }
     func cleanUpMyanmarTexts() -> String {
-        let words = self.trimmingCharacters(in: CharacterSet.decimalDigits.union(CharacterSet.illegalCharacters)).words()
-        let filtered = words.filter{ $0.utf16.count > 2 }.joined(separator: " ")
+        let words = self.trimmingCharacters(in: CharacterSet.illegalCharacters).words()
+        let filtered = words.joined(separator: " ")
         return MyanmarTextCorrector.shared.correct(text: filtered).exclude(in: .removingCharacters)
     }
     

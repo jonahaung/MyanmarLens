@@ -57,7 +57,7 @@ struct MainView: View {
             TermsAndConditions(notDoneEULA: self.$notDoneEULA)
         })
         .sheet(isPresented: $showCamera, content: {
-            CameraView()
+            CameraView().environmentObject(self.userSettings)
         })
             
     }

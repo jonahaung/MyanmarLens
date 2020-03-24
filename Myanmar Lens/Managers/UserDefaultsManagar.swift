@@ -20,6 +20,7 @@ final class UserDefaultsManager {
     let hasDoneEULA = "hasDoneEULA"
     private let _autoDeteLanguage = "autoDeteLanguage"
     private let _isAutoScan = "isAutoScan"
+    private let _isLanguageDetectionEnabled = "isLanguageDetectionEnabled"
     private let hasOpenedBefore = "hasOpenedBefore"
     private let _flashLightOn = "flashLightOn"
     private let _videoQuality = "videoQuality"
@@ -64,17 +65,16 @@ final class UserDefaultsManager {
             targetLanguage = newValue.target
         }
     }
-    
-    var autoDeteLanguage: Bool {
+
+    var isLanguageDetectionEnabled: Bool {
         get {
-            return defaults.bool(forKey: _autoDeteLanguage)
+            return defaults.bool(forKey: _isLanguageDetectionEnabled)
         }
         set {
-            updateObject(for: _autoDeteLanguage, with: newValue)
+            updateObject(for: _isLanguageDetectionEnabled, with: newValue)
             SoundManager.playSound(tone: .Typing)
         }
     }
-    
     var isAutoScan: Bool {
         get {
             return defaults.bool(forKey: _isAutoScan)

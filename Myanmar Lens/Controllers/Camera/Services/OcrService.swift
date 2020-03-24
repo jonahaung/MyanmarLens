@@ -16,39 +16,51 @@ import NaturalLanguage
 
 protocol OcrServiceDelegate: class {
     func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect])
-    func ocrService(_ service: OcrService, didFailedCapture quad: Quadrilateral?)
-    func ocrService(_ service: OcrService, didCapture quad: Quadrilateral?, lastQuad: Quadrilateral?, isStable: Bool)
-    func ocrService(_ service: OcrService, didOutput image: UIImage, with sourceLanguage: NLLanguage)
+    func ocrService(_ service: OcrService, didCapture quad: Quadrilateral?, isStable: Bool)
+    func ocrService(_ service: OcrService, willCapture quad: Quadrilateral?, with image: UIImage?)
     var detectedLanguage: NLLanguage { get set  }
+    var isAutoScan: Bool { get }
 }
 
 final class OcrService: NSObject {
     
     private let languageDetector = LanguageDetector_1()
-    
-    static var regionOfInterest = CGRect(x: 0, y: 0.13, width: 1, height: 0.80)
-    
-    weak var delegate: OcrServiceDelegate?
-    
-    private let context = CIContext(options: nil)
-    
-    private let videoLayer: CameraPriviewLayer
-    
-    var isMyanmar: Bool { return delegate?.detectedLanguage == .burmese }
-    
     private lazy var tessrect: SwiftyTesseract = {
         $0.preserveInterwordSpaces = true
         return $0
     }(SwiftyTesseract(language: .burmese))
     
-    private var cachedPixelBuffers = [UUID: CVPixelBuffer]()
+    static var regionOfInterest = CGRect(x: 0, y: 0.20, width: 1, height: 0.80)
+    weak var delegate: OcrServiceDelegate?
     
-    private var cachedQuads = [UUID: Quadrilateral]()
+    private lazy var context = CIContext(options: nil)
+    
+    private let videoLayer: CameraPriviewLayer
+    
+    var isMyanmar: Bool { return delegate?.detectedLanguage == .burmese }
+    var isAutoScan: Bool { return delegate?.isAutoScan == true }
+    private let funnel = RectangleFeaturesFunnel()
+    private var textRequest: TextRequest?
+    
+    static let textDetector = CIDetector(ofType: CIDetectorTypeText, context: CIContext(options: nil), options: [CIDetectorAccuracyLow: CIDetectorAccuracyLow])
+    
+    private var isDetecting = false
+    private var isStable: Bool = false
+    
+    private let noRectangleThreshold = 3
+    private var noRectangleCount = 0
+    private var displayedQuad: Quadrilateral?
+    
+    private let foundTextTreshold = 3
+    private var foundTextsCount = 0
+   
+    private var cachedPixelBuffers = [UUID: CVPixelBuffer]()
     
     // Init
     init(_overlayView: OverlayView) {
         videoLayer = _overlayView.videoPreviewLayer
         super.init()
+        createTextRequest()
     }
     
     deinit {
@@ -57,138 +69,258 @@ final class OcrService: NSObject {
     }
     
     func reset() {
-        currentRequest?.cancel()
-        cachedQuads.removeAll()
+        textRequest?.cancel()
+        funnel.currentAutoScanPassCount = 0
+        displayedQuad = nil
+        isStable = false
+        foundTextsCount = 0
+        noRectangleCount = 0
         cachedPixelBuffers.removeAll()
+        isDetecting = true
     }
-    var currentRequest: VNRequest?
+    
+    func start() {
+        isDetecting = true
+    }
+    
+    func capture() {
+        textRequest?.cancel()
+        if let displayedQuad = displayedQuad, displayedQuad.textRects != nil, let id = displayedQuad.id {
+            
+            
+            capture(quad: displayedQuad, id: id)
+        }
+    }
+}
+
+// VideoServiceDelegate {
+
+extension OcrService: VideoServiceDelegate {
+
+    func videoService(_ service: VideoService, didOutput buffer: CVImageBuffer) {
+        guard isDetecting else { return }
+        if isStable {
+            performTextRequest(buffer)
+        } else {
+            performRectangleRequest(buffer)
+        }
+    }
 }
 
 
-
-// Video Input
-extension OcrService: VideoServiceDelegate {
+// Text
+extension OcrService {
     
-
-    func videoService(_ service: VideoService, didOutput buffer: CVImageBuffer) {
+    private func createTextRequest() {
         
-        let handler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: .up, options: [:])
-        
-        let request = ObjectDetector.textRequest(for: buffer) {[weak self] (x, err) in
+        textRequest = TextRequest { [weak self] (request, err) in
             guard let self = self else { return }
-            guard let textRequest = x as? TextRequest, var results = x.results as? [VNRecognizedTextObservation], results.count > 0 else {
-                DispatchQueue.main.async {
-                    self.delegate?.ocrService(self, didFailedCapture: nil)
+            
+            guard
+                let textRequest = request as? TextRequest,
+                let id = textRequest.id,
+                let results = textRequest.results as? [VNRecognizedTextObservation],
+                results.count > 0
+                else {
+                    self.isStable = false
+                    self.foundTextsCount = 0
+                    return
                 }
-                return
-            }
-            results = results.filter{ OcrService.regionOfInterest.contains($0.boundingBox)}
+            
+            let filteredResults = results.filter{ OcrService.regionOfInterest.contains($0.boundingBox)}
             
             let textRects: [(String, CGRect)] = {
                 var x = [(String, CGRect)]()
-                results.forEach {
+                filteredResults.forEach {
                     if let top = $0.topCandidates(1).first {
                         x.append((top.string, $0.boundingBox))
                     }
                 }
                 return x
             }()
+            self.performTextRects(textRects, with: id)
             
-            if textRects.count == 0 {
-                DispatchQueue.main.async {
-                    self.delegate?.ocrService(self, didFailedCapture: nil)
-                }
-                return
-            }
-            
-            let rect = textRects.map{ $0.1 }.reduce(CGRect.null, {$0.union($1)}).insetBy(dx: -0.02, dy: -0.02)
-            let text = textRects.map{ $0.0 }.joined(separator: " ").lowercased()
-            let quad = Quadrilateral(rect, id: textRequest.id, textRects: textRects, text: text)
-            self.cachedQuads[textRequest.id] = quad
-            DispatchQueue.main.async {
-                self.delegate?.ocrService(self, didCapture: quad, lastQuad: nil, isStable: false)
-            }
         }
-        self.cachedPixelBuffers[request.id] = buffer
-        do {
-            try handler.perform([request])
-        }catch { print(error )}
-        currentRequest = request
     }
     
-    
-    func capture(id: UUID) {
-        currentRequest?.cancel()
-        guard
-            let quad = cachedQuads[id],
-            let textRects = quad.textRects,
-            let buffer = cachedPixelBuffers[id],
-            let cgImage = self.getCurrentCgImage(buffer: buffer)
-            else { return }
-        
-        
-        let uiImage = UIImage(cgImage: cgImage)
-        
-        do {
-            let language = try self.languageDetector.prediction(text: quad.text)
-            let sourceLanguage = language.label == "Myanmar" ? NLLanguage.burmese : .english
-            DispatchQueue.main.async {
-                self.delegate?.ocrService(self, didOutput: uiImage, with: sourceLanguage)
-            }
-        }catch {
-            print(error.localizedDescription)
-        }
-        
-        
-        var myanmarObjects = [(UIImage, CGRect)]()
-        var resultObjects = [TextRect]()
-        
-        autoreleasepool {
-            textRects.forEach { x in
-                if let cropped = self.cropImage(cgImage: cgImage, rect: x.1.normalized()) {
-                    let rect = x.1.applying(self.videoLayer.layerTransform)
-                    if self.isMyanmar {
-                        myanmarObjects.append((cropped, rect))
-                    } else {
-                        let tr = TextRect(x.0, rect, _isMyanmar: false, _image: cropped)
-                        resultObjects.append(tr)
-                    }
-                }
-            }
-        }
-        
-        if !isMyanmar {
-            DispatchQueue.main.async {
-                self.delegate?.ocrService(self, didGetStableTextRects: resultObjects)
-            }
+    private func performTextRects(_ textRects: [(String, CGRect)], with id: UUID) {
+        guard textRects.count > 0 else {
+            isStable = false
+            foundTextsCount = 0
             return
         }
         
-        let dispatchQroup = DispatchGroup()
-        for object in myanmarObjects {
-            
-            dispatchQroup.enter()
-            
-            tessrect.performOCR(on: object.0) { result in
+        let rect = textRects.map{ $0.1 }.reduce(CGRect.null, {$0.union($1)}).scaleUp(scaleUp: 0.002).intersection(OcrService.regionOfInterest).applying(self.videoLayer.layerTransform)
+        var quad = Quadrilateral(rect, id: id, textRects: textRects, text: "")
+        
+        if userDefaults.isLanguageDetectionEnabled {
+            let text = textRects.map{ $0.0 }.joined(separator: " ").lowercased()
+            do {
+                let language = try languageDetector.prediction(text: text)
+                let sourceLanguage = language.label == "Myanmar" ? NLLanguage.burmese : .english
+                delegate?.detectedLanguage = sourceLanguage
                 
-                if let txt = result?.filteredSmallWords, txt.utf16.count > 3 {
-                    
-                    let textRect = TextRect(txt, object.1, _isMyanmar: true, _image: object.0)
-                    resultObjects.append(textRect)
-                }
-                dispatchQroup.leave()
+                quad.applyText(text: sourceLanguage.localName)
+            }catch {
+                self.isStable = false
+                print(error.localizedDescription)
+                return
             }
         }
         
-        dispatchQroup.notify(queue: .main) { [weak self] in
-            
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                self.delegate?.ocrService(self, didGetStableTextRects: resultObjects)
+        
+        foundTextsCount += 1
+        
+        displayRectangleResult(quad: quad)
+        displayedQuad = quad
+        if (foundTextsCount > foundTextTreshold && isAutoScan) {
+            capture(quad: quad, id: id)
+        }
+    }
+    
+    private func performTextRequest(_ buffer: CVPixelBuffer) {
+        let handler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: .up, options: [:])
+        
+        if let request = self.textRequest {
+            let id = UUID()
+            request.id = id
+            self.cachedPixelBuffers[id] = buffer
+            do {
+                try handler.perform([request])
+            }catch {
+                print(error )
             }
         }
     }
 }
+
+
+
+// Capturing
+
+extension OcrService {
+    
+    private func capture(quad: Quadrilateral, id: UUID) {
+        isDetecting = false
+        foundTextsCount = 0
+        guard
+            let textRects = quad.textRects,
+            let buffer = cachedPixelBuffers[id],
+            let cgImage = self.getCurrentCgImage(buffer: buffer)
+        else {
+               displayRectangleResult(quad: nil)
+                return
+        }
+
+    
+         delegate?.ocrService(self, willCapture: quad, with: UIImage(cgImage: cgImage))
+        
+        
+        var myanmarObjects = [(UIImage, CGRect)]()
+        var resultObjects = [TextRect]()
+        let isBurmese = isMyanmar
+        
+        autoreleasepool {[weak self] in
+            guard let self = self else { return }
+            textRects.forEach { tr in
+                if let cropped = self.cropImage(cgImage: cgImage, rect: tr.1.normalized()) {
+                    let rect = tr.1.applying(self.videoLayer.layerTransform)
+                    if isBurmese {
+                        myanmarObjects.append((cropped, rect))
+                    } else {
+                        resultObjects.append(TextRect(tr.0, rect, _isMyanmar: isBurmese, _image: cropped))
+                    }
+                }
+            }
+        }
+        if isBurmese {
+            let dispatchQroup = DispatchGroup()
+            for object in myanmarObjects {
+                dispatchQroup.enter()
+                
+                self.tessrect.performOCR(on: object.0) { result in
+                    
+                    if let txt = result?.filteredSmallWords, txt.utf16.count > 3 {
+                        
+                        let textRect = TextRect(txt, object.1, _isMyanmar: true, _image: object.0)
+                        resultObjects.append(textRect)
+                    }
+                    dispatchQroup.leave()
+                }
+            }
+            
+            dispatchQroup.notify(queue: .main) { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.ocrService(self, didGetStableTextRects: resultObjects)
+            }
+        } else {
+            delegate?.ocrService(self, didGetStableTextRects: resultObjects)
+        }
+        
+    }
+}
+
+
+// Rectangle
+extension OcrService {
+    
+    private func performRectangleRequest(_ buffer: CVPixelBuffer) {
+        let ciImage = CIImage(cvImageBuffer: buffer)
+        guard let rectangleFeatures = OcrService.textDetector?.features(in: ciImage) as? [CITextFeature], rectangleFeatures.count > 0  else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.noRectangleCount += 1
+                
+                if self.noRectangleCount > self.noRectangleThreshold {
+                
+                    self.funnel.currentAutoScanPassCount = 0
+                    
+                    // Remove the currently displayed rectangle as no rectangles are being found anymore
+                    self.displayedQuad = nil
+                    self.delegate?.ocrService(self, didCapture: nil, isStable: self.isStable)
+                }
+            }
+            
+            return
+        }
+        let scale = videoLayer.bounds.width / ciImage.extent.width
+        let roi = OcrService.regionOfInterest.applying(videoLayer.layerTransform)
+        let rect = rectangleFeatures
+            .map{ $0.rectInBounds(videoLayer.bounds, scale: scale)}
+            .filter{roi.contains($0)}
+            .reduce(CGRect.null, {$0.union($1)})
+                        
+        let quad = Quadrilateral(rect)
+        noRectangleCount = 0
+        
+        
+        self.funnel.add(quad, currentlyDisplayedRectangle: displayedQuad) {[weak self] (result, resultQuad) in
+            guard let self = self, !self.isStable else { return }
+            let shouldAutoScan = (result == .showAndAutoScan)
+            self.displayRectangleResult(quad: resultQuad)
+            if shouldAutoScan {
+                self.isStable = true
+            }
+            
+        }
+    }
+    
+    
+    @discardableResult private func displayRectangleResult(quad: Quadrilateral?) -> Quadrilateral? {
+        displayedQuad = quad
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            self.delegate?.ocrService(self, didCapture: quad, isStable: self.isStable)
+        }
+        
+        return quad
+    }
+}
+
 
 // Others
 extension OcrService {

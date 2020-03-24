@@ -12,7 +12,6 @@ struct CameraView: View {
     
     
     @ObservedObject var serviceManager = ServiceManager()
-    @EnvironmentObject var userSettings: UserSettings
     
     
     var body: some View {
@@ -22,11 +21,24 @@ struct CameraView: View {
             VStack {
                 Group {
                     HStack(spacing: 10) {
-                        Button(action: {
-                            self.serviceManager.didTapSourceLanguage()
-                        }) {
-                            Text(serviceManager.detectedLanguage.localName).underline(color: .primary)
+                        VStack(spacing: 0){
+                            Button(action: {
+                                self.serviceManager.didTapSourceLanguage()
+                            }) {
+                                Text(serviceManager.detectedLanguage.localName).underline(color: .primary)
+                            }
+                            Button(action: {
+                                self.serviceManager.isLanguageDetectionEnabled.toggle()
+                            }) {
+                                Image(systemName: self.serviceManager.isLanguageDetectionEnabled ? "a.circle" : "m.circle")
+                                .padding(EdgeInsets(top: 5, leading: 20, bottom: 20, trailing: 20))
+                            }
+                            .font(Font.system(size: 20, weight: .light, design: .rounded))
+                            .accentColor(.primary)
+                            
                         }
+                        
+                        
                         
                         Image(systemName: "chevron.right.2")
                             .font(.body)
@@ -38,6 +50,9 @@ struct CameraView: View {
                         }
                     }.font(.system(size: 18, weight: .medium, design: .monospaced)).padding(.top)
                 }.zIndex(10)
+                
+                
+                
                 Spacer()
                 if serviceManager.displayingResults {
                     Group {
@@ -47,28 +62,16 @@ struct CameraView: View {
                                 .frame(width: 40, height: 40)
                         }
                         
-                        HStack {
-                            Button(action: {
-                                SoundManager.vibrate(vibration: .light)
-                                self.serviceManager.didTapSkew()
-                            }) {
-                                Image(systemName: "skew")
-                            }
-                            Spacer()
-                            Button(action: {
-                                self.serviceManager.didTapSkew()
-                            }) {
-                                Image(systemName: "wand.and.stars")
-                            }
-                            Spacer()
+                        HStack(spacing: 10) {
+                
                             Button(action: {
                                 SoundManager.vibrate(vibration: .medium)
                                 self.serviceManager.didTapShareButton()
                                 
                             }) {
-                                Image(systemName: "arrowshape.turn.up.right")
+                                Image(systemName: "arrowshape.turn.up.right.fill")
                             }
-                            Spacer()
+                            
                             Button(action: {
                                 self.serviceManager.saveAsImage()
                             }) {
@@ -83,14 +86,12 @@ struct CameraView: View {
                                 
                             .accentColor(.red)
                         }
-                        
+                        .font(Font.system(size: 30, weight: .light))
                     }
-                    .font(Font.system(size: 28, weight: .light))
-                    .accentColor(.blue)
                     .padding()
                     
                 }else {
-                    CameraControlView(serviceManager: serviceManager).environmentObject(serviceManager)
+                    CameraControlView(serviceManager: serviceManager)
                     
                 }
             }
@@ -116,39 +117,43 @@ struct CameraControlView: View {
             Group {
                 
                 ZStack {
-                    
                     HStack(alignment: .bottom) {
+                        
                         Button(action: {
-                            SoundManager.vibrate(vibration: .light)
-                            withAnimation {
-                            }
                             self.serviceManager.isAutoScan.toggle()
                         }) {
-                            VStack{
-                                Text(self.serviceManager.isAutoScan ? "Auto" : "Manual")
-                            }
+                            Image(systemName: serviceManager.isAutoScan ? "a.circle" : "m.circle")
                         }
-                        
                         Spacer()
+                        
+                        
                     }
-                    .font(.callout)
+                    .font(Font.system(size: 30, weight: .light, design: .rounded))
                     .accentColor(.primary)
                     
                     Button(action: {
                         self.serviceManager.didTapActionButton()
                     }) {
                         
-                        
                         ZStack {
-                            Image(systemName: "circle.fill")
+                            if self.serviceManager.isStable {
+                                Image(systemName: "circle.fill")
+                                    .resizable()
+                                Circle()
+                                    .fill(Color.primary)
+                                    .frame(width: 55)
+                            }else {
+                                Image(systemName: "camera.viewfinder")
                                 .resizable()
-                            Circle()
-                                .fill(Color.primary)
-                                .frame(width: 55)
+                                .font(.system(size: 63, weight: .thin, design: .default))
+                            }
+                            
                         }
+                        
                     }
                     .frame(width: 63, height: 63)
-                    .padding()
+                    .disabled(!self.serviceManager.isStable)
+                    
                 }
                 .padding(.horizontal)
                 
@@ -157,7 +162,12 @@ struct CameraControlView: View {
             Group {
                 
                 VStack {
-                    
+                    if serviceManager.isStopped {
+                        VStack {
+                            Text("Paused!")
+                            Text("Tap the camera screen to resume").font(.caption).foregroundColor(.secondary)
+                        }
+                    }
                     if serviceManager.selectedButton == .zoom {
                         
                         Slider(value: $serviceManager.zoom, in: 0...20, minimumValueLabel: Text(""), maximumValueLabel: Text("\((serviceManager.zoom * 5).int)")) { EmptyView() }
@@ -207,7 +217,12 @@ struct CameraControlView: View {
                         
                         VStack {
                             
-                            Text(serviceManager.fps.description).font(.title) + Text(" FPS").font(.caption)
+                            Button(action: {
+                                self.serviceManager.didTappedFPS()
+                            }) {
+                                Text(serviceManager.fps.description).font(.title) + Text(" FPS").font(.caption)
+                            }
+                            .accentColor(.primary)
                             Button(action: {
                                 self.serviceManager.videoQuality = self.serviceManager.videoQuality.opposite
                             }) {

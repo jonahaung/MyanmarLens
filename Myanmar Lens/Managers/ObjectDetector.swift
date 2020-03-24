@@ -10,7 +10,7 @@ import Foundation
 import Vision
 import AVFoundation
 import CoreImage
-
+import UIKit
 struct ObjectDetector {
     
     static func object(for pixelBuffer: CVPixelBuffer, completion: @escaping ((Quadrilateral?) -> Void)) {
@@ -88,7 +88,7 @@ struct ObjectDetector {
     static func text(for pixelBuffer: CVPixelBuffer, completion: @escaping ((Quadrilateral?) -> Void)) {
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
         
-        let request = TextRequest(_id: UUID()) { (x, err) in
+        let request = TextRequest( completionHandler: { (x, err) in
             guard var results = x.results as? [VNRecognizedTextObservation], results.count > 0 else {
                 completion(nil)
                 return
@@ -116,7 +116,7 @@ struct ObjectDetector {
             quad.text = textRects.map{ $0.0 }.joined(separator: " ").lowercased()
             completion(quad)
             
-        }
+        })
         
         request.usesLanguageCorrection = true
         request.recognitionLevel = .accurate
@@ -324,6 +324,7 @@ struct ObjectDetector {
 }
 
 extension ObjectDetector {
+    
     static func rectangleRequest(for pixelBuffer: CVPixelBuffer, completionHandler: @escaping VNRequestCompletionHandler) -> VNDetectRectanglesRequest {
             
             
@@ -337,9 +338,9 @@ extension ObjectDetector {
             
         }
     
-    static func textRequest(for pixelBuffer: CVPixelBuffer, completionHandler: @escaping VNRequestCompletionHandler) -> TextRequest {
+    static func textRequest(for pixelBuffer: CVPixelBuffer, completionHandler: VNRequestCompletionHandler? = nil) -> TextRequest {
         
-        let request = TextRequest(_id: UUID(), _completion: completionHandler)
+        let request = TextRequest(completionHandler: completionHandler)
         request.usesLanguageCorrection = true
         request.revision = VNRecognizeTextRequestRevision1
         return request
@@ -350,48 +351,61 @@ extension ObjectDetector {
         request.regionOfInterest = OcrService.regionOfInterest
         return request
     }
+    
+    
+    // CoreImage Detectors
+    
+    static let rectangleDetector = CIDetector(ofType: CIDetectorTypeRectangle, context: CIContext(options: nil), options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+    static let textDetector = CIDetector(ofType: CIDetectorTypeText, context: CIContext(options: nil), options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+    
+    static func CIRectangle(for pixelBuffer: CVPixelBuffer, completion: @escaping ((Quadrilateral?) -> Void)) {
+        let ciImage = CIImage(cvImageBuffer: pixelBuffer)
+        guard let rectangleFeatures = rectangleDetector?.features(in: ciImage, options: [CIDetectorImageOrientation: CGImagePropertyOrientation.up, CIDetectorReturnSubFeatures: true]) as? [CIRectangleFeature] else {
+            completion(nil)
+            return
+        }
+        completion(rectangleFeatures.map { Quadrilateral($0)}.biggest())
+    }
+
+    static func CITexts(for pixelBuffer: CVPixelBuffer, completion: @escaping (([Quadrilateral]?) -> Void)) {
+        let ciImage = CIImage(cvImageBuffer: pixelBuffer)
+        guard let rectangleFeatures = textDetector?.features(in: ciImage) as? [CITextFeature], rectangleFeatures.count > 0 else {
+            completion(nil)
+            return
+        }
+        let quads = rectangleFeatures.map{ Quadrilateral($0.bounds)}
+        print(quads.map{$0.frame})
+        return completion(quads)
+    }
 }
 
 class TextRequest: VNRecognizeTextRequest {
-    let id: UUID
     
-    init(_id: UUID, _completion: VNRequestCompletionHandler? = nil) {
-        id = _id
-        super.init(completionHandler: _completion)
+    var id: UUID?
+    
+    override init(completionHandler: VNRequestCompletionHandler? = nil) {
+        super.init(completionHandler: completionHandler)
         usesLanguageCorrection = true
         revision = VNRecognizeTextRequestRevision1
     }
-
 }
 
 
-import CoreImage
-/// Class used to detect rectangles from an image.
-struct CIRectangleDetector {
-    
-    static let rectangleDetector = CIDetector(ofType: CIDetectorTypeRectangle,
-                                              context: CIContext(options: nil),
-                                              options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-    
-    /// Detects rectangles from the given image on iOS 10.
-    ///
-    /// - Parameters:
-    ///   - image: The image to detect rectangles on.
-    /// - Returns: The biggest detected rectangle on the image.
-    static func rectangle(forImage image: CIImage, completion: @escaping ((Quadrilateral?) -> Void)) {
-        let biggestRectangle = rectangle(forImage: image)
-        completion(biggestRectangle)
+extension CITextFeature {
+    func rectInBounds(_ inBounds: CGRect, scale: CGFloat) -> CGRect {
+        return CGRect(
+            x: topLeft.x * scale,
+            y: inBounds.height - bottomLeft.y * scale,
+            width: bounds.size.width * scale,
+            height: bounds.size.height*2 * scale)
     }
     
-    static func rectangle(forImage image: CIImage) -> Quadrilateral? {
-        guard let rectangleFeatures = rectangleDetector?.features(in: image) as? [CIRectangleFeature] else {
-            return nil
-        }
-        
-        let quads = rectangleFeatures.map { rectangle in
-            return Quadrilateral(rectangle)
-        }
-        
-        return quads.biggest()
+    func drawRectOnView(_ view: UIView, color: UIColor, borderWidth: CGFloat, scale: CGFloat) {
+        let featureRect = rectInBounds(view.bounds, scale: scale)
+        let featureView = UIView(frame: featureRect)
+        featureView.backgroundColor = UIColor.clear
+        featureView.layer.borderColor = color.cgColor
+        featureView.layer.borderWidth = borderWidth
+        view.addSubview(featureView)
     }
 }

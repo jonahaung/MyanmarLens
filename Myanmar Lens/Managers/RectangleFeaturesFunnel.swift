@@ -46,31 +46,31 @@ final class RectangleFeaturesFunnel {
         }
     }
     
-    /// The queue of last added rectangles. The first rectangle is oldest one, and the last rectangle is the most recently added one.
-    private var rectangles = [RectangleMatch]()
-    
-    /// The maximum number of rectangles to compare newly added rectangles with. Determines the maximum size of `rectangles`. Increasing this value will impact performance.
-    let maxNumberOfRectangles = 5
-    
-    /// The minimum number of rectangles needed to start making comparaisons and determining which rectangle to display. This value should always be inferior than `maxNumberOfRectangles`.
-    /// A higher value will delay the first time a rectangle is displayed.
-    let minNumberOfRectangles = 2
-    
-    /// The value in pixels used to determine if two rectangle match or not. A higher value will prevent displayed rectangles to be refreshed. On the opposite, a smaller value will make new rectangles be displayed constantly.
-    let matchingThreshold: CGFloat = 1
-    
-    /// The minumum number of matching rectangles (within the `rectangle` queue), to be confident enough to display a rectangle.
-    let minNumberOfMatches = 3
-    
-    /// The number of similar rectangles that need to be found to auto scan.
-    let autoScanThreshold = 4
-    
-    /// The number of times the rectangle has passed the threshold to be auto-scanned
-    var currentAutoScanPassCount = 0
-    
-    /// The value in pixels used to determine if a rectangle is accurate enough to be auto scanned.
-    /// A higher value means the auto scan is quicker, but the rectangle will be less accurate. On the other hand, the lower the value, the longer it'll take for the auto scan, but it'll be way more accurate
-    var autoScanMatchingThreshold: CGFloat = 3
+     /// The queue of last added rectangles. The first rectangle is oldest one, and the last rectangle is the most recently added one.
+       private var rectangles = [RectangleMatch]()
+       
+       /// The maximum number of rectangles to compare newly added rectangles with. Determines the maximum size of `rectangles`. Increasing this value will impact performance.
+       let maxNumberOfRectangles = 8
+       
+       /// The minimum number of rectangles needed to start making comparaisons and determining which rectangle to display. This value should always be inferior than `maxNumberOfRectangles`.
+       /// A higher value will delay the first time a rectangle is displayed.
+       let minNumberOfRectangles = 3
+       
+       /// The value in pixels used to determine if two rectangle match or not. A higher value will prevent displayed rectangles to be refreshed. On the opposite, a smaller value will make new rectangles be displayed constantly.
+       let matchingThreshold: CGFloat = 5
+       
+       /// The minumum number of matching rectangles (within the `rectangle` queue), to be confident enough to display a rectangle.
+       let minNumberOfMatches = 3
+       
+       /// The number of similar rectangles that need to be found to auto scan.
+       let autoScanThreshold = 6
+       
+       /// The number of times the rectangle has passed the threshold to be auto-scanned
+       var currentAutoScanPassCount = 0
+       
+       /// The value in pixels used to determine if a rectangle is accurate enough to be auto scanned.
+       /// A higher value means the auto scan is quicker, but the rectangle will be less accurate. On the other hand, the lower the value, the longer it'll take for the auto scan, but it'll be way more accurate
+       var autoScanMatchingThreshold: CGFloat = 6.0
     
     /// Add a rectangle to the funnel, and if a new rectangle should be displayed, the completion block will be called.
     /// The algorithm works the following way:
@@ -90,29 +90,34 @@ final class RectangleFeaturesFunnel {
         rectangles.append(rectangleMatch)
         
         guard rectangles.count >= minNumberOfRectangles else {
+            completion(AddResult.showOnly, rectangleFeature)
             return
         }
         
         if rectangles.count > maxNumberOfRectangles {
+            
             rectangles.removeFirst()
         }
-        
+        guard !rectangles.isEmpty else {
+            completion(AddResult.showOnly, rectangleFeature)
+            return
+        }
         updateRectangleMatches()
         
         guard let bestRectangle = bestRectangle(withCurrentlyDisplayedRectangle: currentRectangle) else {
+             completion(AddResult.showOnly, rectangleFeature)
             return
         }
         
         if let previousRectangle = currentRectangle, bestRectangle.rectangleFeature.isWithin(autoScanMatchingThreshold, ofRectangleFeature: previousRectangle) {
-            print(previousRectangle, bestRectangle)
             currentAutoScanPassCount += 1
             if currentAutoScanPassCount > autoScanThreshold {
                 currentAutoScanPassCount = 0
-                completion(AddResult.showAndAutoScan, bestRectangle.rectangleFeature)
+                completion(AddResult.showAndAutoScan, rectangleFeature)
             }
         } else {
-            print("not within")
-            completion(AddResult.showOnly, bestRectangle.rectangleFeature)
+            
+            completion(AddResult.showOnly, rectangleFeature)
         }
     }
     
@@ -169,7 +174,7 @@ final class RectangleFeaturesFunnel {
     /// Loops through all of the rectangles of the queue, and gives them a score depending on how many they match. @see `RectangleMatch.matchingScore`
     private func updateRectangleMatches() {
         resetMatchingScores()
-        guard !rectangles.isEmpty else { return }
+        
         for (i, currentRect) in rectangles.enumerated() {
             for (j, rect) in rectangles.enumerated() {
                 if j > i && currentRect.matches(rect.rectangleFeature, withThreshold: matchingThreshold) {
@@ -187,14 +192,5 @@ final class RectangleFeaturesFunnel {
             rectangle.matchingScore = 1
         }
         
-    }
-    
-    func reset() {
-        guard !rectangles.isEmpty else { return }
-        for rectangle in rectangles {
-            rectangle.matchingScore = 1
-        }
-        currentAutoScanPassCount = 0
-        rectangles.removeAll()
     }
 }

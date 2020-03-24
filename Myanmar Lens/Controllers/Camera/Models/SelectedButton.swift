@@ -8,21 +8,15 @@
 
 import Foundation
 enum SelectedButton: Int, CaseIterable {
-    case none, textColor, flash, sound, zoom, videoQuality
+    case none, textColor, zoom
     
     var label: String {
         switch self {
         case .textColor:
             return "Text Color"
-        case .flash:
-            return "Flash Light"
-        case .sound:
-            return "Speak Texts"
         case .zoom:
             return "Zoom"
         case .none:
-            return ""
-        case .videoQuality:
             return ""
         }
     }

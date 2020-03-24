@@ -8,22 +8,16 @@
 
 import UIKit
 
-/// A yellow rectangle used to display the last 'tap to focus' point
 final class FocusRectangleView: UIView {
     convenience init(touchPoint: CGPoint) {
-        let originalSize: CGFloat = 120
+        let originalSize: CGFloat = 140
         let finalSize: CGFloat = 10
-        
-        // Here, we create the frame to be the `originalSize`, with it's center being the `touchPoint`.
         self.init(frame: CGRect(x: touchPoint.x - (originalSize / 2), y: touchPoint.y - (originalSize / 2), width: originalSize, height: originalSize))
         
-        backgroundColor = nil
-        layer.borderWidth = 2.0
         layer.cornerRadius = bounds.height/2
-        layer.borderColor = UIColor.systemGreen.cgColor
-        
-        // Here, we animate the rectangle from the `originalSize` to the `finalSize` by calculating the difference.
-        UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseOut, animations: {
+        backgroundColor = UIColor.lightText
+       
+        UIView.animate(withDuration: 0.4, delay: 0.0, options: .curveEaseOut, animations: {
             self.frame.origin.x += (originalSize - finalSize) / 2
             self.frame.origin.y += (originalSize - finalSize) / 2
             

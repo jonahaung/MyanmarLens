@@ -7,13 +7,14 @@
 //
 
 import Foundation
-import CoreData
 
 struct StartUpManager {
     
     static func checkVersion() {
         if !userDefaults.openedBefore {
             userDefaults.openedBefore = true
+            userDefaults.isAutoScan = true
+            userDefaults.isLanguageDetectionEnabled = true
         }
     }
 }
