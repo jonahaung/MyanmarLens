@@ -11,7 +11,7 @@ import Foundation
 
 enum Setting: CaseIterable {
     
-    case DeviceSettings, ResetSettings, AboutDeveloper, ShareApp, PrivacyPolicy, ContactUs
+    case DeviceSettings, ResetSettings, ShareApp, PrivacyPolicy, ContactUs, AboutDeveloper, RateApp
     
     var description: String {
         switch self {
@@ -20,30 +20,15 @@ enum Setting: CaseIterable {
         case .ResetSettings:
             return "Reset Settings"
         case .AboutDeveloper:
-            return "About Developer"
+            return "App Developer"
         case .ShareApp:
             return "Share App"
         case .PrivacyPolicy:
             return "Privacy Policy"
         case .ContactUs:
             return "Contact Us"
-        }
-    }
-    
-    var imageName: String {
-        switch self {
-        case .DeviceSettings:
-            return "wrench"
-        case .ResetSettings:
-            return "house"
-        case .AboutDeveloper:
-            return "signature"
-        case .ShareApp:
-            return "arrowshape.turn.up.right"
-        case .PrivacyPolicy:
-            return "lock.shield"
-        case .ContactUs:
-            return "message"
+        case .RateApp:
+            return "Rate App"
         }
     }
     

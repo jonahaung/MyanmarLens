@@ -20,12 +20,12 @@ final class UserDefaultsManager {
     let hasDoneEULA = "hasDoneEULA"
     private let _autoDeteLanguage = "autoDeteLanguage"
     private let _isAutoScan = "isAutoScan"
-    private let _isLanguageDetectionEnabled = "isLanguageDetectionEnabled"
+    private let _isLanguageDetectionEnabled = "_isLanguageDetectionEnabled"
     private let hasOpenedBefore = "hasOpenedBefore"
     private let _flashLightOn = "flashLightOn"
     private let _videoQuality = "videoQuality"
     private let _textTheme = "textTheme"
-    
+    private let _versionNumber = "versionNumber"
     var targetLanguage: NLLanguage {
         get {
             if let x = defaults.string(forKey: toLanguage) {
@@ -65,35 +65,15 @@ final class UserDefaultsManager {
             targetLanguage = newValue.target
         }
     }
-
-    var isLanguageDetectionEnabled: Bool {
+    var versionNumber: Float {
         get {
-            return defaults.bool(forKey: _isLanguageDetectionEnabled)
+            return defaults.float(forKey: _versionNumber)
         }
         set {
-            updateObject(for: _isLanguageDetectionEnabled, with: newValue)
-            SoundManager.playSound(tone: .Typing)
+            updateObject(for: _versionNumber, with: newValue)
         }
     }
-    var isAutoScan: Bool {
-        get {
-            return defaults.bool(forKey: _isAutoScan)
-        }
-        set {
-            updateObject(for: _isAutoScan, with: newValue)
-            SoundManager.playSound(tone: .Typing)
-        }
-    }
-    
-    var flashLightOn: Bool {
-        get {
-            return defaults.bool(forKey: _flashLightOn)
-        }
-        set {
-            updateObject(for: _flashLightOn, with: newValue)
-            SoundManager.playSound(tone: .Typing)
-        }
-    }
+   
     var openedBefore: Bool {
         get {
             return defaults.bool(forKey: hasOpenedBefore)

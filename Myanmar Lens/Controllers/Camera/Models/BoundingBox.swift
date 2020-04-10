@@ -15,7 +15,7 @@ struct BoundingBox {
     
     init() {
         shapeLayer = CAShapeLayer()
-        shapeLayer.isHidden = true
+       
         shapeLayer.shouldRasterize = true
         shapeLayer.rasterizationScale = UIScreen.main.scale
         shapeLayer.shadowOpacity = 1
@@ -24,7 +24,7 @@ struct BoundingBox {
         textLayer.contentsScale = UIScreen.main.scale
         textLayer.alignmentMode = .justified
         textLayer.isWrapped = true
-        textLayer.isHidden = true
+       
     }
     
     func addToLayer(_ parent: OverlayView) {
@@ -44,17 +44,14 @@ struct BoundingBox {
         let backgroundColor = colors?.background
         let textColor = userDefaults.textTheme == .BlackAndWhite ? (backgroundColor?.isLight() == true ? UIColor.darkText : UIColor.white) : colors?.primary
         
-        textLayer.isHidden = false
-        shapeLayer.isHidden = false
+        
         CATransaction.setDisableActions(true)
-//        shapeLayer.fillColor = backgroundColor?.cgColor
         shapeLayer.shadowColor = backgroundColor?.cgColor
         textLayer.foregroundColor = textColor?.cgColor
 
         textLayer.setAffineTransform(textRect.transform())
         textLayer.frame.origin.x = textRect._rect.origin.x
-        let path = CGPath(rect: textRect._rect.insetBy(dx: -5, dy: -6), transform: nil)
-//        shapeLayer.path = path
+        let path = CGPath(rect: textRect._rect.insetBy(dx: 0, dy: -4), transform: nil)
         shapeLayer.shadowPath = path
         textLayer.string = textRect.text
     }

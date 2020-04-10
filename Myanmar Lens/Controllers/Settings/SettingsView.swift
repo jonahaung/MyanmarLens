@@ -17,14 +17,16 @@ struct SettingsView: View {
         ZStack {
             Image("background").resizable()
             VStack{
-                Spacer()
+               Spacer()
                 ForEach(settings, id: \.self) { setting in
                     SettingCell(setting: setting).onTapGesture {
                         self.tapped(setting: setting)
                     }
                 }
+                
                 Spacer()
-            }
+                Text("Version ").italic() + Text(userDefaults.versionNumber.description)
+            }.padding()
             
             .foregroundColor(.secondary)
             .navigationBarTitle("Settings")
@@ -38,19 +40,22 @@ struct SettingsView: View {
 extension SettingsView {
     
     private func tapped(setting: Setting) {
+        SoundManager.vibrate(vibration: .light)
         switch setting {
         case .DeviceSettings:
-            AppUtilities.gotoDeviceSettings()
+            AppUtilities.shared.gotoDeviceSettings()
         case .ResetSettings:
             resetSettings()
         case .AboutDeveloper:
             aboutDeveloper = true
         case .ShareApp:
-            AppUtilities.shareApp()
+            AppUtilities.shared.shareApp()
         case .PrivacyPolicy:
-            AppUtilities.gotoPrivacyPolicy()
+            AppUtilities.shared.gotoPrivacyPolicy()
         case .ContactUs:
             AppUtilities.shared.gotoContactUs()
+        case .RateApp:
+            AppUtilities.shared.rateApp()
         }
     }
     

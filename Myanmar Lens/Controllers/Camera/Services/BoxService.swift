@@ -12,7 +12,7 @@ final class BoxService {
     
     private let overlayView: OverlayView
     
-    init(_overlayView: OverlayView) {
+    init(_ _overlayView: OverlayView) {
         overlayView = _overlayView
     }
     

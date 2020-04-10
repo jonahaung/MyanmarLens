@@ -7,6 +7,46 @@
 //
 
 import UIKit
+import CoreImage
+import Vision
+
+extension CVPixelBuffer {
+    var ciImage: CIImage { return CIImage(cvPixelBuffer: self) }
+}
+
+extension CIImage {
+    
+    func cgImage(for context: CIContext) -> CGImage? {
+        return context.createCGImage(self, from: extent)
+    }
+}
+
+
+extension CGAffineTransform {
+    
+    /// Convenience function to easily get a scale `CGAffineTransform` instance.
+    ///
+    /// - Parameters:
+    ///   - fromSize: The size that needs to be transformed to fit (aspect fill) in the other given size.
+    ///   - toSize: The size that should be matched by the `fromSize` parameter.
+    /// - Returns: The transform that will make the `fromSize` parameter fir (aspect fill) inside the `toSize` parameter.
+    static func scaleTransform(forSize fromSize: CGSize, aspectFillInSize toSize: CGSize) -> CGAffineTransform {
+        let scale = max(toSize.width / fromSize.width, toSize.height / fromSize.height)
+        return CGAffineTransform(scaleX: scale, y: scale)
+    }
+    
+    /// Convenience function to easily get a translate `CGAffineTransform` instance.
+    ///
+    /// - Parameters:
+    ///   - fromRect: The rect which center needs to be translated to the center of the other passed in rect.
+    ///   - toRect: The rect that should be matched.
+    /// - Returns: The transform that will translate the center of the `fromRect` parameter to the center of the `toRect` parameter.
+    static func translateTransform(fromCenterOfRect fromRect: CGRect, toCenterOfRect toRect: CGRect) -> CGAffineTransform {
+        let translate = CGPoint(x: toRect.midX - fromRect.midX, y: toRect.midY - fromRect.midY)
+        return CGAffineTransform(translationX: translate.x, y: translate.y)
+    }
+        
+}
 
 extension Collection where Indices.Iterator.Element == Index {
     subscript (exist index: Index) -> Iterator.Element? {
@@ -36,7 +76,7 @@ extension UIApplication {
 extension UIFont {
     
     static let myanmarFont = UIFont(name:"MyanmarSansPro", size: 35)!
-    static let engFont = UIFont.systemFont(ofSize: UIFont.labelFontSize, weight: .regular)
+    static let engFont = UIFontMetrics.default.scaledFont(for: UIFont.systemFont(ofSize: 35, weight: .medium))
     static let myanmarFontBold = UIFontMetrics.default.scaledFont(for: UIFont(name: "MyanmarPhetsot", size: 35)!)
     
     static var monoSpacedFont: UIFont {
@@ -55,7 +95,32 @@ extension UIFont {
     }
     
 }
-
+extension UIView {
+    func asImage() -> UIImage {
+        let renderer = UIGraphicsImageRenderer(bounds: bounds)
+        return renderer.image { rendererContext in
+            layer.render(in: rendererContext.cgContext)
+        }
+    }
+}
+extension Array where Element == Quadrilateral {
+    
+    /// Finds the biggest rectangle within an array of `Quadrilateral` objects.
+    func biggest() -> Quadrilateral? {
+        let biggestRectangle = self.max(by: { (rect1, rect2) -> Bool in
+            return rect1.perimeter < rect2.perimeter
+        })
+        
+        return biggestRectangle
+    }
+    func smallest() -> Quadrilateral? {
+        let biggestRectangle = self.max(by: { (rect1, rect2) -> Bool in
+            return rect1.perimeter > rect2.perimeter
+        })
+        
+        return biggestRectangle
+    }
+}
 
 //extension UIImage {
 //    var greysCaled: UIImage {
@@ -78,6 +143,21 @@ extension UIImage {
         }
         return nil
     }
+    func scaledImage(atPoint point: CGPoint, scaleFactor: CGFloat, targetSize size: CGSize) -> UIImage? {
+        guard let cgImage = self.cgImage else { return nil }
+        
+        let scaledSize = CGSize(width: size.width / scaleFactor, height: size.height / scaleFactor)
+        let midX = point.x - scaledSize.width / 2.0
+        let midY = point.y - scaledSize.height / 2.0
+        let newRect = CGRect(x: midX, y: midY, width: scaledSize.width, height: scaledSize.height)
+        
+        guard let croppedImage = cgImage.cropping(to: newRect) else {
+            return nil
+        }
+        
+        return UIImage(cgImage: croppedImage)
+    }
+    
 }
 
 extension CGFloat {

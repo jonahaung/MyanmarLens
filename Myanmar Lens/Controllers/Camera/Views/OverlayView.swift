@@ -18,17 +18,15 @@ final class OverlayView: UIView {
     var focusRectangle: FocusRectangleView?
     let imageView: UIImageView = {
         $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        $0.isUserInteractionEnabled = false 
-        $0.backgroundColor = nil
         return $0
     }(UIImageView())
-    internal let blackFlashView: UIView = {
-        $0.layer.opacity = 0.5
-        $0.isHidden = true
-        $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        return $0
-    }(UIView())
     
+    let trackLayer: CAShapeLayer = {
+        $0.strokeColor = UIColor.systemPink.cgColor
+        $0.lineWidth = 2
+        $0.fillColor = nil
+        return $0
+    }(CAShapeLayer())
     override class var layerClass: AnyClass { return CameraPriviewLayer.self }
     var videoPreviewLayer: CameraPriviewLayer { return layer as! CameraPriviewLayer }
     
@@ -47,28 +45,25 @@ final class OverlayView: UIView {
             zoomGestureController.image = newValue
             panGesture?.isEnabled = newValue != nil
             quadView.displayingResults = newValue != nil
-            flashToBlack(isCapture: newValue != nil)
+            
         }
     }
     
     var zoomGestureController: ZoomGestureController!
-    private var panGesture: UIPanGestureRecognizer?
+    private var panGesture: UILongPressGestureRecognizer?
     override init(frame: CGRect) {
         super.init(frame: frame)
         imageView.frame = bounds
         quadView.frame = bounds
-        addSubview(blackFlashView)
         addSubview(imageView)
-        
         addSubview(quadView)
-        
-        
+        imageView.layer.addSublayer(trackLayer)
         zoomGestureController = ZoomGestureController(image: nil, quadView: quadView)
         
-        panGesture = UIPanGestureRecognizer(target: zoomGestureController, action: #selector(zoomGestureController.handle(pan:)))
+        panGesture = UILongPressGestureRecognizer(target: zoomGestureController, action: #selector(zoomGestureController.handle(pan:)))
         panGesture?.isEnabled = false
         panGesture?.delegate = self
-        addGestureRecognizer(panGesture!)
+        quadView.addGestureRecognizer(panGesture!)
     }
     
     required init?(coder: NSCoder) {
@@ -88,6 +83,7 @@ final class OverlayView: UIView {
         let scaleT = CGAffineTransform(scaleX: visible.width, y: -visible.height)
         let translateT = CGAffineTransform(translationX: visible.minX, y: visible.maxY)
         videoPreviewLayer.layerTransform = scaleT.concatenating(translateT)
+        videoPreviewLayer.containerSize = imageView.bounds.size
     }
     
     
@@ -101,11 +97,8 @@ final class OverlayView: UIView {
         
         quadView.drawQuadrilateral(quad: quad, animated: !canfoucs)
         quadView.isStable = isStable
-        if isStable {
-            
+        if canfoucs {
             let location = quad.frame.center
-            
-            
             focusRectangle = FocusRectangleView(touchPoint: location)
             imageView.addSubview(focusRectangle!)
             SoundManager.vibrate(vibration: .light)
@@ -114,7 +107,7 @@ final class OverlayView: UIView {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
-        
+        SoundManager.playSound(tone: .Tock)
         guard let touch = touches.first, !quadView.editable else { return }
         
         let canReset = image != nil
@@ -122,7 +115,7 @@ final class OverlayView: UIView {
         if canReset {
             return
         }
-        SoundManager.playSound(tone: .Tock)
+        
         let location = touch.location(in: self)
         
         let convertedTouchPoint: CGPoint = videoPreviewLayer.captureDevicePointConverted(fromLayerPoint: location)
@@ -138,20 +131,17 @@ final class OverlayView: UIView {
         }
     }
     
-    private func flashToBlack(isCapture: Bool) {
-        if isCapture {
-            SoundManager.playSound(tone: .Typing)
-        }
-        blackFlashView.backgroundColor = isCapture ? UIColor.black : UIColor.systemOrange
-        bringSubviewToFront(blackFlashView)
-        blackFlashView.isHidden = false
-        blackFlashView.alpha = 1
-        UIView.animate(withDuration: 0.5, animations: {
-            self.blackFlashView.alpha = 0.1
+    func flashToBlack(isCapture: Bool) {
+        let blackFlashView: UIView = {
+            $0.backgroundColor = isCapture ? UIColor.black : UIColor.white
+            return $0
+        }(UIView(frame: bounds))
+        addSubview(blackFlashView)
+        UIView.animate(withDuration: 0.3, animations: {
+            blackFlashView.alpha = 0.1
         }) { done in
             if done {
-                self.blackFlashView.isHidden = true
-                self.sendSubviewToBack(self.blackFlashView)
+                blackFlashView.removeFromSuperview()
             }
         }
     }

@@ -38,7 +38,7 @@ extension Sequence {
 
 extension DispatchQueue {
     convenience init(queueLabel: DispatchQueue.Label) {
-        self.init(label: queueLabel.rawValue)
+        self.init(label: queueLabel.rawValue, attributes: [.concurrent], autoreleaseFrequency: .workItem)
     }
     
     enum Label: String {

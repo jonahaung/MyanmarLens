@@ -26,6 +26,7 @@ final class TextRect {
     func textLayerFrame() -> CGRect{
         var frame = _rect
         frame.size = textSize
+        frame.origin = _rect.origin
         return frame
     }
     
@@ -36,11 +37,11 @@ final class TextRect {
         return CGAffineTransform(scaleX: xScale, y: yScale)
     }
     
-    init(_ _text: String, _ _rect: CGRect, _isMyanmar: Bool, _image: UIImage?) {
+    init(_ _text: String, _ _rect: CGRect, _isMyanmar: Bool, _colors: UIImageColors?) {
         self._text = _text
         self._rect = _rect
         self._isMyanmar = _isMyanmar
-        self.colors = _image?.getColors(quality: .highest)
+        self.colors = _colors
         self.id = _text.withoutSpacesAndNewLines.lowercased()
     }
 }

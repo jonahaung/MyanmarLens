@@ -13,8 +13,16 @@ struct StartUpManager {
     static func checkVersion() {
         if !userDefaults.openedBefore {
             userDefaults.openedBefore = true
-            userDefaults.isAutoScan = true
-            userDefaults.isLanguageDetectionEnabled = true
+            
+        }
+        if let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String, let currentVersionNumber = Float(appVersion) {
+            let oldVersionNumber = userDefaults.versionNumber
+            if currentVersionNumber != oldVersionNumber {
+                userDefaults.versionNumber = currentVersionNumber
+                if PersistanceManager.shared.viewContext.deleteAllData(entityName: TranslatePair.description()) {
+                    
+                }
+            }
         }
     }
 }

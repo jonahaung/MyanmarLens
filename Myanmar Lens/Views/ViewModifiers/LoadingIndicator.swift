@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 struct LoadingIndicator: View {
     
-    @Binding var value:CGFloat
+    @Binding var value: CGFloat
     
     var body: some View {
         Circle()
@@ -39,6 +39,9 @@ struct CircularProgressIndicator: View {
             .animation(Animation.linear(duration: 1).repeatForever(autoreverses: false))
             .onAppear {
                 self.spinCircle = true
+        }
+        .onDisappear {
+            self.spinCircle = false
         }
     }
 }

@@ -33,7 +33,9 @@ final class ZoomGestureController {
             quadView.resetHighlightedCornerViews()
             return
         }
-        
+        if pan.state == .began {
+            SoundManager.vibrate(vibration: .medium)
+        }
         let position = pan.location(in: quadView)
         
         let previousPanPosition = self.previousPanPosition ?? position
@@ -55,6 +57,7 @@ final class ZoomGestureController {
         }
         
         quadView.highlightCornerAtPosition(position: closestCorner, with: zoomedImage)
+        
     }
     
 }

@@ -34,13 +34,13 @@ extension CaptureSession {
     }
     
     /// Toggles the current device's flashlight on or off.
-    func toggleFlash() -> FlashState {
-        guard let device = device, device.isTorchAvailable else { return .off }
+    func toggleFlash() {
+        guard let device = device, device.isTorchAvailable else { return }
         
         do {
             try device.lockForConfiguration()
         } catch {
-            return .off
+            print(error)
         }
         
         defer {
@@ -49,13 +49,9 @@ extension CaptureSession {
         
         if device.torchMode == .on {
             device.torchMode = .off
-            return .off
         } else if device.torchMode == .off {
             device.torchMode = .on
-            return .on
         }
-        
-        return .off
     }
     
     var currentState: FlashState {

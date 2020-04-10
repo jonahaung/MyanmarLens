@@ -37,6 +37,7 @@ final class MyanmarTextCorrector {
             let from = dic["from"] as! String
             let to = dic["to"] as! String
             let range = output.startIndex ..< output.endIndex
+            
             output = output.replacingOccurrences(of: from, with: to, options: .regularExpression, range: range)
         }
         return output

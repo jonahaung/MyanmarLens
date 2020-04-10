@@ -12,12 +12,11 @@ import UIKit
 final class EditScanCornerView: UIView {
     
     let position: CornerPosition
-
     private(set) var isHighlighted = false
     
     lazy private var circleLayer: CAShapeLayer = {
-        $0.fillColor = UIColor.orange.cgColor
-        $0.strokeColor = UIColor.orange.cgColor
+        $0.fillColor = UIColor.systemBlue.cgColor
+        $0.strokeColor = UIColor.systemBlue.cgColor
         $0.lineWidth = 1.0
         $0.opacity = 1
         return $0
@@ -53,6 +52,8 @@ final class EditScanCornerView: UIView {
         isHighlighted = true
         self.setNeedsDisplay()
     }
+    
+    
     
     func reset() {
         isHighlighted = false

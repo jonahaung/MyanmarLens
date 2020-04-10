@@ -18,6 +18,7 @@ final class TranslateService {
 
     func handle(textRects: [TextRect]) {
         let pair = userDefaults.languagePair
+       
         if pair.source == pair.target {
             DispatchQueue.main.async {
                 self.delegate?.translateService(self, didFinishTranslation: textRects)
@@ -28,10 +29,10 @@ final class TranslateService {
     
         textRects.forEach { x in
             if x.translatedText == nil {
-                if let found = (cached.filter{ $0 == x}).first {
-                    x.translatedText = found.text
+                if let found = (cached.filter{ $0 == x && $0.translatedText != nil}).first {
+                    x.translatedText = found.translatedText
                    
-                }else if let existing = existing(x.text.lowercased(), language: pair.target.rawValue){
+                }else if let existing = existing(x._text.lowercased(), language: pair.target.rawValue){
                     x.translatedText = existing
                     cached.append(x)
                 }
@@ -46,7 +47,7 @@ final class TranslateService {
             guard let self = self else { return }
             self.delegate?.translateService(self, didFinishTranslation: textRects)
         }) { (textRect, next) in
-            Translator.shared.translate(text: textRect._text, from: pair.source, to: pair.target, wifiiAddress: wifii, email: email) {(result, err) in
+            Translator.shared.translate(text: textRect._text.lowercased(), from: pair.source, to: pair.target, wifiiAddress: wifii, email: email) {(result, err) in
                
                 if let err = err {
                     print(err.localizedDescription)

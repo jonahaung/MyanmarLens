@@ -8,6 +8,7 @@
 
 import UIKit
 import MessageUI
+import StoreKit
 
 final class AppUtilities: NSObject {
     
@@ -25,25 +26,25 @@ final class AppUtilities: NSObject {
         return $0
     }(DateFormatter())
     
-    static func gotoPrivacyPolicy() {
+    func gotoPrivacyPolicy() {
         guard let url = URL(string: "https://mmsgr-1b7a6.firebaseapp.com/MyanmarLens.html") else {
             return //be safe
         }
         
-        if #available(iOS 10.0, *) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        } else {
-            UIApplication.shared.openURL(url)
-        }
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
     
-    static func shareApp() {
+    func rateApp() {
+        SKStoreReviewController.requestReview()
+    }
+    
+    func shareApp() {
         if let url = URL(string: "https://apps.apple.com/app/myanmar-lens/id1489326871") {
             url.shareWithMenu()
         }
     }
     
-    static func gotoDeviceSettings() {
+    func gotoDeviceSettings() {
         let url = URL(string: UIApplication.openSettingsURLString)!
         if #available(iOS 10.0, *) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
@@ -99,7 +100,7 @@ extension Equatable {
             activity.popoverPresentationController?.permittedArrowDirections = .down
             activity.popoverPresentationController?.permittedArrowDirections = .init(rawValue: 0)
         }
-        UIApplication.topViewController()?.present(activity, animated: true, completion: nil)
+        SceneDelegate.sharedInstance?.window?.rootViewController?.present(activity, animated: true, completion: nil)
     }
 }
 

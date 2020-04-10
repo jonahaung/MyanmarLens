@@ -21,8 +21,8 @@ final class QuadrilateralView: UIView {
     
     var stableColor = UIColor.systemBlue.cgColor
     var unstableColor = UIColor.systemYellow.cgColor
-    var editingColor = UIColor.orange.cgColor
-    
+    var editingColor = UIColor.white.cgColor
+    private var imageView: UIImageView?
     private lazy var quadLayer: CAShapeLayer = {
         $0.strokeColor = unstableColor
         $0.lineWidth = 2
@@ -66,10 +66,16 @@ final class QuadrilateralView: UIView {
             }
             
             quadLayer.strokeColor = editable ? editingColor : stableColor
-            quadLayer.fillColor = editable ? UIColor.init(white: 0.8, alpha: 0.5).cgColor : nil
+            
+            
+            
+            
             drawQuad(quad, animated: false)
             layoutCornerViews(forQuad: quad)
             displayingResults = !editable
+            if !editable {
+                imageView?.removeFromSuperview()
+            }
         }
     }
     
@@ -94,7 +100,7 @@ final class QuadrilateralView: UIView {
         return $0
     }(CATextLayer())
     
-    private let highlightedCornerViewSize = CGSize(width: 75.0, height: 75.0)
+    private let highlightedCornerViewSize = CGSize(width: 90, height: 90)
     private let cornerViewSize = CGSize(width: 25, height: 25)
     
     // MARK: - Life Cycle
@@ -212,6 +218,7 @@ final class QuadrilateralView: UIView {
                              y: cornerView.frame.origin.y - (highlightedCornerViewSize.height - cornerViewSize.height) / 2.0)
         cornerView.frame = CGRect(origin: origin, size: highlightedCornerViewSize)
         cornerView.highlightWithImage(image)
+        
     }
     
     func resetHighlightedCornerViews() {

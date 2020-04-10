@@ -9,12 +9,7 @@
 import Foundation
 import AVKit
 import NaturalLanguage
-
-
-enum CameraStage {
-    case Start, Stop, Initial
-}
-
+import Vision
 
 class ServiceManager: ObservableObject {
     
@@ -23,146 +18,54 @@ class ServiceManager: ObservableObject {
             videoService.sliderValueDidChange(Float(zoom/20))
         }
     }
-    @Published var isStopped = false {
+    var isTracking = false {
         didSet {
-            guard oldValue != isStopped else { return }
-            if isStopped {
-                videoService.stop()
-            }else {
-                videoService.start()
+            guard oldValue != self.isTracking else { return }
+            if isTracking {
+                SoundManager.vibrate(vibration: .light)
+            } else {
+                reset()
             }
-            objectWillChange.send()
+            fps = isTracking ? 10 : 3
         }
     }
-    @Published var selectedButton: SelectedButton = .none {
-        didSet {
-            if oldValue == self.selectedButton {
-                return
-            }
-            if self.selectedButton != .none {
-                isStopped = true
-            }
-            switch self.selectedButton {
-                
-            case .textColor:
-                choice = textTheme.rawValue
-            default:
-                break
-            }
-            SoundManager.vibrate(vibration: .light)
-            objectWillChange.send()
+    @Published var isStopped = false {
+        willSet {
             
+            objectWillChange.send()
+        }
+        didSet {
+            !oldValue ? videoService.stop() : videoService.start()
         }
     }
     
-    @Published var fps: Int = 5 {
+    @Published var fps: Int = 3 {
         didSet {
-            guard oldValue != self.fps else { return }
+            
             videoService.fps = self.fps
             objectWillChange.send()
         }
     }
     
-    @Published var isAutoScan: Bool = userDefaults.isAutoScan {
-        didSet {
-            guard oldValue != isAutoScan else { return }
-            userDefaults.isAutoScan = isAutoScan
+    @Published var videoQuality: VideoQuality = VideoQuality.current {
+        willSet {
             objectWillChange.send()
         }
-    }
-    @Published var videoQuality: VideoQuality = VideoQuality.current {
         didSet{
             guard oldValue != self.videoQuality else { return }
             userDefaults.videoQuality = videoQuality.rawValue
             videoService.videoQuality = videoQuality
-            objectWillChange.send()
         }
     }
-    @Published var isLanguageDetectionEnabled = userDefaults.isLanguageDetectionEnabled {
-        didSet {
-            guard oldValue != isLanguageDetectionEnabled else { return }
-            userDefaults.isLanguageDetectionEnabled = isLanguageDetectionEnabled
-            objectWillChange.send()
-        }
-    }
-    @Published var choice = 0 {
-        didSet {
-            switch selectedButton {
-            case .textColor:
-                self.textTheme = TextTheme(rawValue: choice) ?? TextTheme.Adaptive
-            default:
-                break
-            }
-        }
-    }
-    
-    var detectedLanguage: NLLanguage {
-        get {
-            return userDefaults.sourceLanguage
-        }
-        set {
-            
-            userDefaults.sourceLanguage = newValue
-            DispatchQueue.main.safeAsync {
-                self.objectWillChange.send()
-            }
-        }
-    }
-    
-    var targetLanguage: NLLanguage {
-        get {
-            return userDefaults.targetLanguage
-        }
-        set {
-            userDefaults.targetLanguage = newValue
-            DispatchQueue.main.safeAsync {
-                self.objectWillChange.send()
-            }
-        }
-    }
-    
+
     @Published var showLoading: Bool = false {
         willSet {
             objectWillChange.send()
         }
     }
-    @Published var isStable: Bool = false {
-        willSet {
-            objectWillChange.send()
-        }
-    }
+    
     @Published var displayingResults = false {
         willSet {
-            objectWillChange.send()
-        }
-    }
-    
-    @Published var flashState: CaptureSession.FlashState = .off {
-        didSet {
-            
-            guard let device = videoService.captureDevice, device.isTorchAvailable else { return  }
-            
-            do {
-                try device.lockForConfiguration()
-            } catch {
-                print(error)
-            }
-            
-            defer {
-                device.unlockForConfiguration()
-            }
-            switch flashState {
-            case .on:
-                device.torchMode = .on
-            case .off:
-                device.torchMode = .off
-            }
-            objectWillChange.send()
-        }
-    }
-    @Published var textTheme: TextTheme = userDefaults.textTheme {
-        didSet {
-            userDefaults.textTheme = self.textTheme
             objectWillChange.send()
         }
     }
@@ -171,122 +74,116 @@ class ServiceManager: ObservableObject {
     private let ocrService: OcrService
     private let boxService: BoxService
     private let translateService: TranslateService
+    private let perspectiveService: LiveOcrService
 
-  
     let overlayView: OverlayView
     
     init() {
         overlayView = OverlayView()
-        videoService = VideoService()
+        videoService = VideoService(overlayView)
+        boxService = BoxService(overlayView)
+        ocrService = OcrService(overlayView)
+        perspectiveService = LiveOcrService(overlayView)
         translateService = TranslateService()
-        boxService = BoxService(_overlayView: overlayView)
-        ocrService = OcrService(_overlayView: overlayView)
-        translateService.delegate = self
+       
+        videoService.captureSession.startRunning()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(subjectAreaDidChange), name: Notification.Name.AVCaptureDeviceSubjectAreaDidChange, object: nil)
+        videoService.delegate = self
         ocrService.delegate = self
         overlayView.delegate = self
-        videoService.videoServiceDelegate = ocrService
         
-        videoService.configure(layer: overlayView.videoPreviewLayer)
-        videoService.captureSession.startRunning()
-        NotificationCenter.default.addObserver(self, selector: #selector(subjectAreaDidChange), name: Notification.Name.AVCaptureDeviceSubjectAreaDidChange, object: nil)
+        translateService.delegate = self
+        perspectiveService.delegate = self
     }
     
     func configure() {
         fps = videoService.fps
-        videoService.start {[weak self] in
-            DispatchQueue.main.safeAsync {
-                self?.ocrService.start()
-            }
-        }
+        videoService.configure()
+        videoService.start()
         UIApplication.shared.isIdleTimerDisabled = true
         subjectAreaDidChange()
     }
     
     deinit {
-        UIApplication.shared.isIdleTimerDisabled = false
         videoService.captureSession.stopRunning()
-        guard let device = AVCaptureDevice.default(for: AVMediaType.video) else { return }
-        if device.torchMode == .on {
-            toggleFlash()
-        }
         NotificationCenter.default.removeObserver(self)
         print("Service Manager")
     }
-    
-    // Action
-    func didTapActionButton() {
-        guard !displayingResults else {
-            reset()
-            ocrService.start()
-            return
-        }
-         
-        videoService.perform {[weak self] in
-            self?.ocrService.capture()
-        }
-       
-    }
-    
-    func reset() {
-       
-        boxService.reset()
-        overlayView.image = nil
-        overlayView.zoomGestureController.image = nil
-        showLoading = false
-        displayingResults = false
-        ocrService.reset()
-        overlayView.apply(nil)
-    }
-    
-    @objc private func subjectAreaDidChange() {
-        
-        guard !displayingResults else { return }
-        reset()
-        ocrService.start()
-        do {
-            try CaptureSession.current.resetFocusToAuto()
-            
-        } catch {
-            print(error)
-        }
-         
-    }
 }
 
-
+// Video Service
+extension ServiceManager: VideoServiceDelegate {
+    
+    func videoService(_ service: VideoService, willCapturePhoto cvPixelBuffer: CVPixelBuffer) {
+        let ciImage = cvPixelBuffer.ciImage
+        if let cgImage = CIContext().createCGImage(ciImage, from: ciImage.extent) {
+            DispatchQueue.main.async {
+                self.showLoading = true
+                self.displayingResults = true
+                self.overlayView.flashToBlack(isCapture: true)
+                self.overlayView.image = UIImage(cgImage: cgImage, scale: 2, orientation: .up)
+            }
+        }
+    }
+    
+    func videoService(_ service: VideoService, captureFrame cvPixelBuffer: CVImageBuffer) {
+        ocrService.handle(with: cvPixelBuffer)
+    }
+    
+    func videoService(_ service: VideoService, didOutput sampleBuffer: CVImageBuffer) {
+        guard isTracking else { return }
+        SoundManager.vibrate(vibration: .selection)
+        perspectiveService.handle(sampleBuffer)
+    }
+}
 
 // OCR Serviece
 extension ServiceManager: OcrServiceDelegate {
     
-    func ocrService(_ service: OcrService, willCapture quad: Quadrilateral?, with image: UIImage?) {
-        DispatchQueue.main.async {
-            self.displayingResults = true
-            self.showLoading = true
-            self.overlayView.image = image
+    func ocrService(displayNoResult service: OcrService) {
+        DispatchQueue.main.async {[weak self] in
+            guard let self = self else { return }
+            self.reset()
         }
     }
     
-    func ocrService(_ service: OcrService, didCapture quad: Quadrilateral?,  isStable: Bool) {
-        self.isStable = isStable
-        if let quad = quad {
-            overlayView.apply(quad, isStable: isStable)
-        }else {
-            reset()
-            
-        }
-    }
-    
-   
-    func ocrService(_ service: OcrService, didGetStableTextRects textRects: [TextRect]) {
+    func ocrService(_ service: OcrService, didGetTextRects textRects: [TextRect]) {
         translateService.handle(textRects: textRects)
     }
 }
-// Box Serviece
+
+// Live OCR Service
+extension ServiceManager: LiveOcrServiceDelegate {
+    
+    func liveOcrService(_ service: LiveOcrService, didTrack quad: Quadrilateral) {
+        overlayView.apply(quad.applying(overlayView.videoPreviewLayer.layerTransform))
+    }
+    
+    func liveOcrService(_ service: LiveOcrService, didGet quad: Quadrilateral) {
+        
+        DispatchQueue.main.async {
+            guard self.isTracking else { return }
+            
+            let isMyanmar = userDefaults.sourceLanguage == .burmese
+            if let trTurples = quad.textRects {
+                
+                let colors = UIImageColors(background: .separator, primary: .white, secondary: .systemYellow, detail: .black)
+                
+                let containerSize = self.overlayView.bounds.size
+                let textRects = trTurples.map{ TextRect($0.0, $0.1.normalized().viewRect(for: containerSize), _isMyanmar: isMyanmar, _colors: colors)}
+                self.translateService.handle(textRects: textRects)
+            }
+        }
+    }
+}
+
+// Translate Serviece
 extension ServiceManager: TranslateServiceDelegate {
     func translateService(_ service: TranslateService, didFinishTranslation textRects: [TextRect]) {
-        guard displayingResults else { return }
-        boxService.handle(textRects)
         showLoading = false
+        boxService.handle(textRects)
+        
     }
 }
 
@@ -296,7 +193,6 @@ extension ServiceManager: OverlayViewDelegate {
         if canreset {
             reset()
         }else if isStopped {
-            selectedButton = .none
             isStopped = false
         }
     }
@@ -307,21 +203,60 @@ extension ServiceManager: OverlayViewDelegate {
 
 extension ServiceManager {
     
-    
-    // Flash
-    func toggleFlash() {
-        flashState = CaptureSession.current.toggleFlash()
+    // Action
+    func didTapActionButton() {
+        SoundManager.vibrate(vibration: .light)
+        overlayView.flashToBlack(isCapture: true)
+        videoService.capturePhoto()
     }
     
-    //  Text Theme
-    func toggleTextTheme() {
-        textTheme = textTheme == .BlackAndWhite ? .Adaptive : .BlackAndWhite
+    func reset() {
         
+        ocrService.cancel()
+        boxService.reset()
+        overlayView.image = nil
+        overlayView.zoomGestureController.image = nil
+        showLoading = false
+        displayingResults = false
+        overlayView.apply(nil)
+        subjectAreaDidChange()
+        
+    }
+    
+    @objc private func subjectAreaDidChange() {
+        
+        guard !displayingResults else { return }
+        try? CaptureSession.current.resetFocusToAuto()
     }
     
     // Skew
     func didTapSkew() {
-        overlayView.quadView.editable.toggle()
+        if let buffer = ocrService.currentPixelBuffer {
+            ObjectDetector.rectangle(for: buffer) {[weak self] quad in
+                guard let self = self else {
+                    return
+                }
+                DispatchQueue.main.async {
+                    if let quad = quad {
+                        self.overlayView.apply(quad.applying(self.overlayView.videoPreviewLayer.layerTransform))
+                        self.overlayView.quadView.editable = true
+                    } else {
+                        ObjectDetector.attention(for: buffer.ciImage) {[weak self] quad in
+                            guard let self = self else {
+                                return
+                            }
+                            DispatchQueue.main.async {
+                                if let quad = quad {
+                                    self.overlayView.apply(quad.applying(self.overlayView.videoPreviewLayer.layerTransform))
+                                    self.overlayView.quadView.editable = true
+                                }
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }
     }
     // Share
     func didTapShareButton() {
@@ -341,58 +276,13 @@ extension ServiceManager {
     // FPS
     func didTappedFPS() {
         SoundManager.vibrate(vibration: .light)
-        if fps < 6 {
-            if fps == 5 {
-                fps = 1
+        if fps <= 15 {
+            if fps == 15 {
+                fps = 3
             }else {
                 fps += 1
             }
         }
-        
     }
     
-}
-
-// Language
-extension ServiceManager {
-    func didTapTargetLanguage() {
-        SoundManager.vibrate(vibration: .medium)
-        let alert = UIAlertController(title: "Target Language", message: "Pls select one of the following target languages", preferredStyle: .actionSheet)
-        let index = Languages.targetLanguages.firstIndex(of: userDefaults.languagePair.target) ?? 1
-        
-        alert.addPickerView(values: [ Languages.targetLanguages.map{ $0.localName }], initialSelection: PickerViewViewController.Index(0, index)) { (_, _, index, values) in
-            let value = values[index.column][index.row]
-            let selectedLanguages = Languages.targetLanguages.filter{ $0.localName == value }
-            if let language = selectedLanguages.first {
-                let newValue = language.rawValue
-                let newLanguage = NLLanguage(newValue)
-                alert.message = newLanguage.rawValue
-                self.targetLanguage = newLanguage
-                
-            }
-        }
-        alert.addAction(title: "OK", style: .cancel, handler: nil)
-        alert.show()
-    }
-    
-    func didTapSourceLanguage() {
-        SoundManager.vibrate(vibration: .medium)
-        let alert = UIAlertController(title: "Source Language", message: "Pls select one of the following source languages", preferredStyle: .actionSheet)
-        let index = Languages.sourceLanguages.firstIndex(of: userDefaults.languagePair.source) ?? 0
-        
-        alert.addPickerView(values: [ Languages.sourceLanguages.map{ $0.localName }], initialSelection: PickerViewViewController.Index(0, index)) { (_, _, index, values) in
-            let value = values[index.column][index.row]
-            let selectedLanguages = Languages.sourceLanguages.filter{ $0.localName == value }
-            if let language = selectedLanguages.first {
-                let newValue = language.rawValue
-                let newLanguage = NLLanguage(newValue)
-                alert.message = newLanguage.rawValue
-                self.detectedLanguage = newLanguage
-                
-            }
-        }
-        
-        alert.addAction(title: "OK", style: .cancel, handler: nil)
-        alert.show()
-    }
 }

@@ -39,8 +39,8 @@ struct ObjectDetector {
         }catch { print(error )}
     }
     
-    static func attention(for pixelBuffer: CVPixelBuffer, completion: @escaping ((Quadrilateral?) -> Void)) {
-        let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+    static func attention(for ciImage: CIImage, completion: @escaping ((Quadrilateral?) -> Void)) {
+        let requestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: .up, options: [:])
         
         let request = VNGenerateAttentionBasedSaliencyImageRequest { (x, err) in
             guard let results = (x.results?.first as? VNSaliencyImageObservation)?.salientObjects else {
@@ -54,14 +54,14 @@ struct ObjectDetector {
             }
             let quads: [Quadrilateral] = results.map(Quadrilateral.init)
 
-            guard let biggest = quads.biggest() else {
+            guard let biggest = quads.smallest() else {
                 completion(nil)
                 return
             }
 
             completion(biggest)
         }
-        request.regionOfInterest = OcrService.regionOfInterest
+        
         do {
             try requestHandler.perform([request])
         }catch { print(error )}
@@ -124,7 +124,7 @@ struct ObjectDetector {
             try requestHandler.perform([request])
         }catch { print(error )}
     }
-    static func rectangle(for pixelBuffer: CVPixelBuffer, roi: CGRect, completion: @escaping ((Quadrilateral?) -> Void)) {
+    static func rectangle(for pixelBuffer: CVPixelBuffer, completion: @escaping ((Quadrilateral?) -> Void)) {
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
         
         let request = VNDetectRectanglesRequest(completionHandler: { (request, error) in
@@ -143,10 +143,10 @@ struct ObjectDetector {
             
             completion(biggest)
         })
-        request.regionOfInterest = roi
-//        request.minimumConfidence = 0.7
-//        request.maximumObservations = 15
-//        request.minimumAspectRatio = 0.3
+//        request.regionOfInterest = roi
+        request.minimumConfidence = 0.7
+        request.maximumObservations = 15
+        request.minimumAspectRatio = 0.3
         
         do {
             try requestHandler.perform([request])
@@ -201,8 +201,8 @@ struct ObjectDetector {
         }catch { print(error )}
     }
     
-    static func horizon(for pixelBuffer: CVPixelBuffer, completion: @escaping (((CGAffineTransform, CGFloat)?) -> Void)) {
-        let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+    static func horizon(for ciImage: CIImage, completion: @escaping (((CGAffineTransform, CGFloat)?) -> Void)) {
+        let requestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: .up, options: [:])
         
         let request = VNDetectHorizonRequest { (x, err) in
             guard let results = x.results as? [VNHorizonObservation] else {
@@ -387,6 +387,7 @@ class TextRequest: VNRecognizeTextRequest {
         super.init(completionHandler: completionHandler)
         usesLanguageCorrection = true
         revision = VNRecognizeTextRequestRevision1
+        recognitionLevel = .accurate
     }
 }
 

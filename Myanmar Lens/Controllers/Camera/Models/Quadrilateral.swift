@@ -1,9 +1,9 @@
 //
 //  Quadrilateral.swift
-//  WeScan
+//  Myanmar Lens
 //
-//  Created by Boris Emorine on 2/8/18.
-//  Copyright © 2018 WeTransfer. All rights reserved.
+//  Created by Aung Ko Min on 25/11/19.
+//  Copyright © 2019 Aung Ko Min. All rights reserved.
 //
 
 import UIKit
@@ -21,7 +21,7 @@ struct Quadrilateral: Transformable {
     var bottomLeft: CGPoint
     
     var id: UUID?
-    
+    var cgImage: CGImage?
     init(_ x: CIRectangleFeature) {
         topLeft = x.topLeft
         topRight = x.topRight
@@ -110,8 +110,8 @@ struct Quadrilateral: Transformable {
     var cornersPath: UIBezierPath {
         let rect = frame.insetBy(dx: -10, dy: -10)
         let thickness: CGFloat = 2
-        let length: CGFloat = min(rect.height, rect.width) / 8
-        let radius: CGFloat = length/5
+        let length: CGFloat = min(rect.height, rect.width) / 3
+        let radius: CGFloat = 0
         let t2 = thickness / 2
         let path = UIBezierPath()
         
@@ -144,7 +144,6 @@ struct Quadrilateral: Transformable {
     }
     
     var labelRect: CGRect {
-    
         let rect = frame
         let size = CGSize(width: 90, height: UIFont.preferredFont(forTextStyle: .title2).pointSize)
         return CGRect(origin: CGPoint(x: rect.midX - size.width/2, y: rect.minY-size.height), size: size)
