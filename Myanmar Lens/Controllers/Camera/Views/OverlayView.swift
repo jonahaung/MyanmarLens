@@ -18,6 +18,7 @@ final class OverlayView: UIView {
     var focusRectangle: FocusRectangleView?
     let imageView: UIImageView = {
         $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
         return $0
     }(UIImageView())
     
@@ -30,10 +31,15 @@ final class OverlayView: UIView {
     override class var layerClass: AnyClass { return CameraPriviewLayer.self }
     var videoPreviewLayer: CameraPriviewLayer { return layer as! CameraPriviewLayer }
     
-    let quadView: QuadrilateralView = {
-        $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    private let pathAnimation: CABasicAnimation = {
+        $0.duration = 0.2
         return $0
-    }(QuadrilateralView())
+    }(CABasicAnimation(keyPath: "path"))
+    
+//    let quadView: QuadrilateralView = {
+//        $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+//        return $0
+//    }(QuadrilateralView())
     
     var image: UIImage? {
         get {
@@ -42,28 +48,28 @@ final class OverlayView: UIView {
         set {
             guard newValue != image else { return }
             imageView.image = newValue
-            zoomGestureController.image = newValue
-            panGesture?.isEnabled = newValue != nil
-            quadView.displayingResults = newValue != nil
+//            zoomGestureController.image = newValue
+//            panGesture?.isEnabled = newValue != nil
+//            quadView.displayingResults = newValue != nil
             
         }
     }
     
-    var zoomGestureController: ZoomGestureController!
-    private var panGesture: UILongPressGestureRecognizer?
+//    var zoomGestureController: ZoomGestureController!
+//    private var panGesture: UILongPressGestureRecognizer?
     override init(frame: CGRect) {
         super.init(frame: frame)
         imageView.frame = bounds
-        quadView.frame = bounds
+//        quadView.frame = bounds
         addSubview(imageView)
-        addSubview(quadView)
+//        addSubview(quadView)
         imageView.layer.addSublayer(trackLayer)
-        zoomGestureController = ZoomGestureController(image: nil, quadView: quadView)
+//        zoomGestureController = ZoomGestureController(image: nil, quadView: quadView)
         
-        panGesture = UILongPressGestureRecognizer(target: zoomGestureController, action: #selector(zoomGestureController.handle(pan:)))
-        panGesture?.isEnabled = false
-        panGesture?.delegate = self
-        quadView.addGestureRecognizer(panGesture!)
+//        panGesture = UILongPressGestureRecognizer(target: zoomGestureController, action: #selector(zoomGestureController.handle(pan:)))
+//        panGesture?.isEnabled = false
+//        panGesture?.delegate = self
+//        quadView.addGestureRecognizer(panGesture!)
     }
     
     required init?(coder: NSCoder) {
@@ -71,9 +77,9 @@ final class OverlayView: UIView {
     }
     
     deinit {
-        if let gesture = panGesture {
-            removeGestureRecognizer(gesture)
-        }
+//        if let gesture = panGesture {
+//            removeGestureRecognizer(gesture)
+//        }
     }
     
     override func layoutSubviews() {
@@ -85,30 +91,43 @@ final class OverlayView: UIView {
         videoPreviewLayer.layerTransform = scaleT.concatenating(translateT)
         videoPreviewLayer.containerSize = imageView.bounds.size
     }
-    
+    var currentFrame = CGRect.zero
     
     func apply(_ quad: Quadrilateral?, isStable: Bool = false) {
         
         guard let quad = quad else {
-            quadView.removeQuadrilateral()
+            trackLayer.path = nil
             return
         }
-        let canfoucs = isStable != quadView.isStable
+        currentFrame = quad.frame
+        trackLayer.path = quad.rectanglePath.cgPath
+//        trackLayer.add(pathAnimation, forKey: "path")
         
-        quadView.drawQuadrilateral(quad: quad, animated: !canfoucs)
-        quadView.isStable = isStable
-        if canfoucs {
-            let location = quad.frame.center
-            focusRectangle = FocusRectangleView(touchPoint: location)
-            imageView.addSubview(focusRectangle!)
-            SoundManager.vibrate(vibration: .light)
-        }
+//        let location = quad.frame.center
+//        focusRectangle = FocusRectangleView(touchPoint: location)
+//        imageView.addSubview(focusRectangle!)
+//        SoundManager.vibrate(vibration: .light)
+        
+//        guard let quad = quad else {
+//            quadView.removeQuadrilateral()
+//            return
+//        }
+//        let canfoucs = true
+//
+//        quadView.drawQuadrilateral(quad: quad, animated: !canfoucs)
+//        quadView.isStable = isStable
+//        if canfoucs {
+//            let location = quad.frame.center
+//            focusRectangle = FocusRectangleView(touchPoint: location)
+//            imageView.addSubview(focusRectangle!)
+//            SoundManager.vibrate(vibration: .light)
+//        }
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         SoundManager.playSound(tone: .Tock)
-        guard let touch = touches.first, !quadView.editable else { return }
+        guard let touch = touches.first else { return }
         
         let canReset = image != nil
         delegate?.overlayView(didTapScreen: self, canreset: canReset)
@@ -154,10 +173,10 @@ final class OverlayView: UIView {
 extension OverlayView: UIGestureRecognizerDelegate {
     override func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         let location = gestureRecognizer.location(in: self)
-        if gestureRecognizer == panGesture, quadView.isStable {
-            
-            return quadView.quad?.frame.insetBy(dx: -10, dy: -10).contains(location) == true
-        }
+//        if gestureRecognizer == panGesture, quadView.isStable {
+//            
+//            return quadView.quad?.frame.insetBy(dx: -10, dy: -10).contains(location) == true
+//        }
         return OcrService.regionOfInterest.applying(videoPreviewLayer.layerTransform).contains(location)
     }
 }

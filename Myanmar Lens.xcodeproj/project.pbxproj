@@ -28,7 +28,6 @@
 		471E66FA238FD7ED008302E5 /* MyanmarPhetsot.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 471E66F9238FD7ED008302E5 /* MyanmarPhetsot.ttf */; };
 		471F237B23B72F1E005D9070 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471F237A23B72F1E005D9070 /* CameraView.swift */; };
 		4729DF7C23CCC9AA009BE23D /* UIImageColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4729DF7B23CCC9AA009BE23D /* UIImageColors.swift */; };
-		472C1628243E1BCF00EC019F /* ResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472C1627243E1BCF00EC019F /* ResultsView.swift */; };
 		472C162A243E1BF000EC019F /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472C1629243E1BF000EC019F /* ControlsView.swift */; };
 		4733A29024206D40006EE2D0 /* SelectedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4733A28F24206D40006EE2D0 /* SelectedButton.swift */; };
 		47348068241FF07C00B7505C /* CameraPreviewLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47348067241FF07C00B7505C /* CameraPreviewLayer.swift */; };
@@ -53,6 +52,7 @@
 		476BC56F23A2C7230012386B /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 476BC56E23A2C7230012386B /* PreviewView.swift */; };
 		476FA25D23BB961300B6DF49 /* MyanmarSansPro.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 476FA25C23BB961300B6DF49 /* MyanmarSansPro.ttf */; };
 		476FA26123BBC5C300B6DF49 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 476FA26023BBC5C300B6DF49 /* LaunchScreen.storyboard */; };
+		476FC35E255A6361008549A8 /* CurrentSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 476FC35D255A6361008549A8 /* CurrentSession.swift */; };
 		4789C93723A2BBF800CCCD85 /* MyanmarTagu.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4789C93423A2BBF800CCCD85 /* MyanmarTagu.ttf */; };
 		4789C93923A2BD6C00CCCD85 /* MyanmarAngoun.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4789C93823A2BD6C00CCCD85 /* MyanmarAngoun.ttf */; };
 		478DCFAB243EDD4F00903A4D /* PreviewMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478DCFAA243EDD4F00903A4D /* PreviewMetalView.swift */; };
@@ -172,6 +172,7 @@
 		476BC56E23A2C7230012386B /* PreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		476FA25C23BB961300B6DF49 /* MyanmarSansPro.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarSansPro.ttf; sourceTree = "<group>"; };
 		476FA26023BBC5C300B6DF49 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		476FC35D255A6361008549A8 /* CurrentSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CurrentSession.swift; sourceTree = "<group>"; };
 		47762C2D238A073F009AF2DD /* ObjectTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectTracker.swift; sourceTree = "<group>"; };
 		4789C93423A2BBF800CCCD85 /* MyanmarTagu.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarTagu.ttf; sourceTree = "<group>"; };
 		4789C93823A2BD6C00CCCD85 /* MyanmarAngoun.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MyanmarAngoun.ttf; sourceTree = "<group>"; };
@@ -308,6 +309,7 @@
 				47EAC49B243DDCA000B30164 /* LiveOcrService.swift */,
 				47BDDABC23A4769D0039A401 /* TranslateService.swift */,
 				47323D8A23BD4106004EFE64 /* Async.swift */,
+				476FC35D255A6361008549A8 /* CurrentSession.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -608,6 +610,7 @@
 			buildConfigurationList = 4750E36123845FEA00438805 /* Build configuration list for PBXNativeTarget "Myanmar Lens" */;
 			buildPhases = (
 				248BF43469F2A23544F1F881 /* [CP] Check Pods Manifest.lock */,
+				E7214245C8FB3C2D8BE97435 /* [CP] Prepare Artifacts */,
 				4750E33023845FE700438805 /* Sources */,
 				4750E33123845FE700438805 /* Frameworks */,
 				4750E33223845FE700438805 /* Resources */,
@@ -618,8 +621,6 @@
 			dependencies = (
 			);
 			name = "Myanmar Lens";
-			packageProductDependencies = (
-			);
 			productName = "Myanmar Lens";
 			productReference = 4750E33423845FE700438805 /* Myanmar Lens.app */;
 			productType = "com.apple.product-type.application";
@@ -667,7 +668,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1120;
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "Aung Ko Min";
 				TargetAttributes = {
 					4750E33323845FE700438805 = {
@@ -692,8 +693,6 @@
 				Base,
 			);
 			mainGroup = 4750E32B23845FE700438805;
-			packageReferences = (
-			);
 			productRefGroup = 4750E33523845FE700438805 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -779,6 +778,23 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Myanmar Lens/Pods-Myanmar Lens-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		E7214245C8FB3C2D8BE97435 /* [CP] Prepare Artifacts */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Myanmar Lens/Pods-Myanmar Lens-artifacts-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Prepare Artifacts";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Myanmar Lens/Pods-Myanmar Lens-artifacts-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Myanmar Lens/Pods-Myanmar Lens-artifacts.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -790,6 +806,7 @@
 				47CD088D241DD88F006BB8FA /* TextTheme.swift in Sources */,
 				4798A5DF2416A89C00D6462B /* Quadrilateral.swift in Sources */,
 				471B5763238E363300378E0A /* StartUpManager.swift in Sources */,
+				476FC35E255A6361008549A8 /* CurrentSession.swift in Sources */,
 				471E55B72384BC6E00AB6A95 /* MainView.swift in Sources */,
 				47976F4923FBABC000381AC1 /* ServiceManager.swift in Sources */,
 				4750E375238465CD00438805 /* Extensions.swift in Sources */,
@@ -813,7 +830,6 @@
 				4798A5CB2416A89C00D6462B /* RectangleFeaturesFunnel.swift in Sources */,
 				4760676B239BFF5900274A07 /* Pickers+Ext.swift in Sources */,
 				47CD088F241DE29E006BB8FA /* ObjectDetector.swift in Sources */,
-				472C1628243E1BCF00EC019F /* ResultsView.swift in Sources */,
 				47BDDAC423A4769E0039A401 /* TranslateService.swift in Sources */,
 				4798A5E02416A89C00D6462B /* CaptureDevice.swift in Sources */,
 				47606768239BFF1B00274A07 /* PickerViewController.swift in Sources */,
@@ -925,6 +941,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -985,6 +1002,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;

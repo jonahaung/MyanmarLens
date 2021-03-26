@@ -29,7 +29,7 @@ final class TranslateService {
     
         textRects.forEach { x in
             if x.translatedText == nil {
-                if let found = (cached.filter{ $0 == x && $0.translatedText != nil}).first {
+                if let found = (cached.filter{ $0.text == x._text && $0.translatedText != nil}).first {
                     x.translatedText = found.translatedText
                    
                 }else if let existing = existing(x._text.lowercased(), language: pair.target.rawValue){

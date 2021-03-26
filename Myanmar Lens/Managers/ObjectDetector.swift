@@ -110,10 +110,9 @@ struct ObjectDetector {
                 return
             }
             
-            let rect = textRects.map{ $0.1 }.reduce(CGRect.null, {$0.union($1)}).insetBy(dx: -0.02, dy: -0.02)
+            let rect = textRects.map{ $0.1 }.reduce(CGRect.null, {$0.union($1)})
             var quad = Quadrilateral(rect)
             quad.textRects = textRects
-            quad.text = textRects.map{ $0.0 }.joined(separator: " ").lowercased()
             completion(quad)
             
         })

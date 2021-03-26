@@ -31,7 +31,6 @@ class ServiceManager: ObservableObject {
     }
     @Published var isStopped = false {
         willSet {
-            
             objectWillChange.send()
         }
         didSet {
@@ -39,7 +38,7 @@ class ServiceManager: ObservableObject {
         }
     }
     
-    @Published var fps: Int = 3 {
+    @Published var fps: Int = 5 {
         didSet {
             
             videoService.fps = self.fps
@@ -69,6 +68,8 @@ class ServiceManager: ObservableObject {
             objectWillChange.send()
         }
     }
+    
+    private(set) var currentPixelBuffer: CVPixelBuffer?
     
     private let videoService: VideoService
     private let ocrService: OcrService
@@ -115,24 +116,61 @@ class ServiceManager: ObservableObject {
 // Video Service
 extension ServiceManager: VideoServiceDelegate {
     
-    func videoService(_ service: VideoService, willCapturePhoto cvPixelBuffer: CVPixelBuffer) {
+    func videoService(_ service: VideoService, captureFrame cvPixelBuffer: CVImageBuffer) {
+        
+        
+        
         let ciImage = cvPixelBuffer.ciImage
+        
         if let cgImage = CIContext().createCGImage(ciImage, from: ciImage.extent) {
+            
+//            let imageRect = CGRect(origin: .zero, size: CurrentSession.videoSize)
+//
+//            let croppingRect = OcrService.regionOfInterest.normalized().viewRect(for: imageRect.size)
+//
+//            guard let cropped = cgImage.cropping(to: croppingRect) else {
+//                return
+//            }
+//
+//
+//            let uiImage = UIImage(cgImage: cropped)
+//
+//            let renderer = UIGraphicsImageRenderer(size: imageRect.size)
+//
+//            let result = renderer.image { ctx in
+//                // fill the background with white so that translucent colors get lighter
+//                UIColor.black.set()
+//                ctx.fill(imageRect)
+//                uiImage.draw(in: croppingRect, blendMode: .normal, alpha: 1)
+//            }
+            
+            
             DispatchQueue.main.async {
+                
                 self.showLoading = true
                 self.displayingResults = true
                 self.overlayView.flashToBlack(isCapture: true)
-                self.overlayView.image = UIImage(cgImage: cgImage, scale: 2, orientation: .up)
+                self.overlayView.image = UIImage(cgImage: cgImage)
+                self.ocrService.handle(with: cvPixelBuffer)
             }
+            
+            
         }
-    }
-    
-    func videoService(_ service: VideoService, captureFrame cvPixelBuffer: CVImageBuffer) {
-        ocrService.handle(with: cvPixelBuffer)
+        
     }
     
     func videoService(_ service: VideoService, didOutput sampleBuffer: CVImageBuffer) {
-        guard isTracking else { return }
+        currentPixelBuffer = sampleBuffer
+        guard isTracking else {
+            ObjectDetector.text(for: sampleBuffer) { [weak self] quad in
+                guard let self = self, let quad = quad else { return }
+                DispatchQueue.main.async {
+                    self.boxService.handle(quad)
+                }
+            }
+            return
+
+        }
         SoundManager.vibrate(vibration: .selection)
         perspectiveService.handle(sampleBuffer)
     }
@@ -149,7 +187,8 @@ extension ServiceManager: OcrServiceDelegate {
     }
     
     func ocrService(_ service: OcrService, didGetTextRects textRects: [TextRect]) {
-        translateService.handle(textRects: textRects)
+        boxService.handle(textRects)
+//        translateService.handle(textRects: textRects)
     }
 }
 
@@ -207,7 +246,22 @@ extension ServiceManager {
     func didTapActionButton() {
         SoundManager.vibrate(vibration: .light)
         overlayView.flashToBlack(isCapture: true)
-        videoService.capturePhoto()
+        
+        guard let cvPixelBuffer = currentPixelBuffer else { return }
+        let ciImage = cvPixelBuffer.ciImage
+        
+        guard let cgImage = CIContext().createCGImage(ciImage, from: ciImage.extent) else { return }
+        self.showLoading = true
+        self.displayingResults = true
+        self.overlayView.flashToBlack(isCapture: true)
+        self.overlayView.image = UIImage(cgImage: cgImage)
+        
+        videoService.stop {
+            DispatchQueue.main.async {
+                self.ocrService.handle(with: cvPixelBuffer)
+            }
+        }
+        
     }
     
     func reset() {
@@ -215,12 +269,12 @@ extension ServiceManager {
         ocrService.cancel()
         boxService.reset()
         overlayView.image = nil
-        overlayView.zoomGestureController.image = nil
+//        overlayView.zoomGestureController.image = nil
         showLoading = false
         displayingResults = false
         overlayView.apply(nil)
         subjectAreaDidChange()
-        
+        videoService.start()
     }
     
     @objc private func subjectAreaDidChange() {
@@ -239,7 +293,7 @@ extension ServiceManager {
                 DispatchQueue.main.async {
                     if let quad = quad {
                         self.overlayView.apply(quad.applying(self.overlayView.videoPreviewLayer.layerTransform))
-                        self.overlayView.quadView.editable = true
+//                        self.overlayView.quadView.editable = true
                     } else {
                         ObjectDetector.attention(for: buffer.ciImage) {[weak self] quad in
                             guard let self = self else {
@@ -248,7 +302,7 @@ extension ServiceManager {
                             DispatchQueue.main.async {
                                 if let quad = quad {
                                     self.overlayView.apply(quad.applying(self.overlayView.videoPreviewLayer.layerTransform))
-                                    self.overlayView.quadView.editable = true
+//                                    self.overlayView.quadView.editable = true
                                 }
                             }
                         }

@@ -26,7 +26,7 @@ struct CameraView: View {
                 
                 if serviceManager.displayingResults {
                     // Results
-                    ResultsView(serviceManager: serviceManager)
+//                    ResultsView(serviceManager: serviceManager)
                 }else {
                     // Controls
                     ControlsView(serviceManager: serviceManager)

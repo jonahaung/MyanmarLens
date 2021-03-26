@@ -28,8 +28,8 @@ struct BoundingBox {
     }
     
     func addToLayer(_ parent: OverlayView) {
-        parent.imageView.layer.addSublayer(shapeLayer)
-        parent.layer.addSublayer(textLayer)
+        parent.trackLayer.addSublayer(shapeLayer)
+        parent.imageView.layer.addSublayer(textLayer)
     }
     
     
@@ -51,7 +51,7 @@ struct BoundingBox {
 
         textLayer.setAffineTransform(textRect.transform())
         textLayer.frame.origin.x = textRect._rect.origin.x
-        let path = CGPath(rect: textRect._rect.insetBy(dx: 0, dy: -4), transform: nil)
+        let path = CGPath(rect: textRect._rect.insetBy(dx: 0, dy: -2), transform: nil)
         shapeLayer.shadowPath = path
         textLayer.string = textRect.text
     }

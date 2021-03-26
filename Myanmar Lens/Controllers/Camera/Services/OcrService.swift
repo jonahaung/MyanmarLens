@@ -17,16 +17,18 @@ protocol OcrServiceDelegate: class {
 }
 final class OcrService: NSObject {
     
-    typealias Result = (text: String, visionRect: CGRect, imageRect: CGRect, image: UIImage)
-    typealias FinalResult = (text: String, visionRect: CGRect, image: UIImage)
+    private lazy var textRequest: VNRecognizeTextRequest = {
+        $0.recognitionLevel = .accurate
+        $0.usesLanguageCorrection = true
+        return $0
+    }(VNRecognizeTextRequest(completionHandler: textsHandler(request:error:)))
     
-    private var textRequest: VNRecognizeTextRequest!
-    private let tessrect: SwiftyTesseract = {
+    private lazy var tessrect: SwiftyTesseract = {
         $0.preserveInterwordSpaces = true
         return $0
     }(SwiftyTesseract(language: .burmese))
 
-    static var regionOfInterest = CGRect(x: 0, y: 0.15, width: 1, height: 0.80)
+    static var regionOfInterest = CGRect(x: 0, y: 0.2, width: 1, height: 0.70)
     weak var delegate: OcrServiceDelegate?
     
     private let context = CIContext(options: nil)
@@ -37,9 +39,6 @@ final class OcrService: NSObject {
     init(_ _overlayView: OverlayView) {
         videoLayer = _overlayView.videoPreviewLayer
         super.init()
-        textRequest = VNRecognizeTextRequest()
-        textRequest.recognitionLevel = .accurate
-        textRequest.usesLanguageCorrection = true
     }
     
     deinit {
@@ -50,20 +49,55 @@ final class OcrService: NSObject {
 
 extension OcrService {
     
-    func handle(with cvPixelBuffer: CVPixelBuffer) {
-        textRequest.cancel()
-        currentPixelBuffer = cvPixelBuffer
-        let handler = VNImageRequestHandler(cvPixelBuffer: cvPixelBuffer, orientation: .up)
+    private func handleBurmese(with cvPixelBuffer: CVPixelBuffer) {
+        let ciImage = cvPixelBuffer.ciImage
+        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+        let image = UIImage(cgImage: cgImage)
+        let color = image.getColors()
         
-        do {
-            try handler.perform([textRequest])
-        }catch {
-            print(error.localizedDescription)
-        }
-        if textRequest.results != nil {
-            textsHandler(request: textRequest, error: nil)
+        
+        _ = tessrect.performOCR(on: image)
+        let blocks = try! tessrect.recognizedBlocks(for: .textline).get()
+        let scaleTransform = CGAffineTransform(scaleX: self.videoLayer.containerSize.width/image.size.width, y: self.videoLayer.containerSize.height/image.size.height)
+    
+        let textRects = blocks.map{ TextRect($0.text.cleanUpMyanmarTexts(), $0.boundingBox.applying(scaleTransform), _isMyanmar: true, _colors: color) }
+        delegate?.ocrService(self, didGetTextRects: textRects)
+        
+//        switch tessrect.performOCR(on: image) {
+//            case let .success(string):
+//                print(string.cleanUpMyanmarTexts())
+//                switch tessrect.recognizedBlocks(for: .textline) {
+//                case let .success(blocks):
+//                    let textRects = blocks.map{ TextRect($0.text.cleanUpMyanmarTexts(), $0.boundingBox.applying(scaleTransform), _isMyanmar: true, _colors: color) }
+//
+//                    DispatchQueue.main.async {
+//                        self.delegate?.ocrService(self, didGetTextRects: textRects)
+//                    }
+//                case let .failure(error):
+//                    print(error)
+//                }
+//
+//            case .failure:
+//                print("Error")
+//        }
+        
+    }
+    
+    func handle(with cvPixelBuffer: CVPixelBuffer) {
+        currentPixelBuffer = cvPixelBuffer
+        if userDefaults.sourceLanguage == .burmese {
+            handleBurmese(with: cvPixelBuffer)
+        } else {
+            textRequest.cancel()
+            let handler = VNImageRequestHandler(cvPixelBuffer: cvPixelBuffer, orientation: .up)
+            do {
+                try handler.perform([textRequest])
+            }catch {
+                print(error.localizedDescription)
+            }
         }
     }
+    
     private func textsHandler(request: VNRequest, error: Error?) {
         guard
             let ciImage = currentPixelBuffer?.ciImage,
@@ -74,65 +108,32 @@ extension OcrService {
                 return
         }
         
-        let imageRect = CGRect(origin: .zero, size: CGSize(width: cgImage.width, height: cgImage.height))
-    
-        var results = [Result]()
+        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
+        let containerSize = videoLayer.containerSize
+        
+        var textRects = [TextRect]()
+        
         for result in observations {
             guard let top = result.topCandidates(1).first else {
                 continue
             }
             let visionRect = result.boundingBox
-            guard OcrService.regionOfInterest.contains(visionRect) else {
-                continue
-            }
+            
             let text = top.string
             
-            let imageRect = visionRect.normalized().viewRect(for: imageRect.size).insetBy(dx: 0, dy: -6)
+            let imageRect = visionRect.normalized().viewRect(for: imageSize).insetBy(dx: 0, dy: -6)
+            
             guard let cropped = cgImage.cropping(to: imageRect) else {
                 continue
             }
-            let uiImage = UIImage(cgImage: cropped)
             
-            let finalResult = Result(text, visionRect, imageRect, uiImage)
-            results.append(finalResult)
-        }
-        var finalResults = [FinalResult]()
-        if userDefaults.sourceLanguage == .burmese {
-            let dispatchQroup = DispatchGroup()
-            for object in results {
-                dispatchQroup.enter()
-                let image = object.image
-                tessrect.performOCR(on: image) { result in
-                    
-                    if let txt = result?.cleanUpMyanmarTexts() {
-                        let finalResult = FinalResult(txt, object.visionRect, image)
-                        finalResults.append(finalResult)
-                    }
-                    dispatchQroup.leave()
-                }
-            }
-            dispatchQroup.notify(queue: .main) { [weak self] in
-                guard let self = self else { return }
-                self.displayTextRects(finalResults)
-            }
-        }else {
-            finalResults = results.map{ FinalResult($0.text, $0.visionRect, $0.image )}
-            self.displayTextRects(finalResults)
-        }
-    }
-    
-    private func displayTextRects(_ finalResults: [FinalResult]) {
-        let containerSize = videoLayer.containerSize
-        var textRects = [TextRect]()
-        let isMyanar = userDefaults.sourceLanguage == .burmese
-        for finalResut in finalResults {
-            let viewRect = finalResut.visionRect.normalized().viewRect(for: containerSize).trashole(trashold: 5)
-            let colors = finalResut.image.getColors()
-            let textRect = TextRect(finalResut.text, viewRect, _isMyanmar: isMyanar, _colors: colors)
+            let uiImage = UIImage(cgImage: cropped)
+            let textRect = TextRect(text, visionRect.normalized().viewRect(for: containerSize), _isMyanmar: false, _colors: uiImage.getColors())
             textRects.append(textRect)
         }
-        self.delegate?.ocrService(self, didGetTextRects: textRects)
+        delegate?.ocrService(self, didGetTextRects: textRects)
     }
+    
     private func displayNoResults() {
         delegate?.ocrService(displayNoResult: self)
     }

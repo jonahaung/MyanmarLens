@@ -37,7 +37,7 @@ enum FilterType {
 
 class VideoFilterRenderer: FilterRenderer {
     
-    var filterType: FilterType = .CIPhotoEffectChrome {
+    var filterType: FilterType = .CIHighlightShadowAdjust {
         didSet {
             guard oldValue != self.filterType else {
                 return

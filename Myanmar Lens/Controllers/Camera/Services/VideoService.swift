@@ -13,7 +13,6 @@ import UIKit
 protocol VideoServiceDelegate: class {
     func videoService(_ service: VideoService, didOutput cvPixelBuffer: CVPixelBuffer)
     func videoService(_ service: VideoService, captureFrame cvPixelBuffer: CVPixelBuffer)
-    func videoService(_ service: VideoService, willCapturePhoto cvPixelBuffer: CVPixelBuffer)
 }
 
 class VideoService: NSObject {
@@ -21,7 +20,6 @@ class VideoService: NSObject {
     weak var delegate: VideoServiceDelegate?
     private let sessionQueue = DispatchQueue(queueLabel: .session)
     private let videoOutputQueue = DispatchQueue(queueLabel: .videoOutput)
-    private(set) var currentPixelBuffer: CVPixelBuffer?
     private let videoLayer: CameraPriviewLayer
     var captureSession = AVCaptureSession()
     let captureDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
@@ -35,22 +33,15 @@ class VideoService: NSObject {
             suspendQueueAndConfigureSession()
         }
     }
-    private var canOutputBuffer = false
+    
     private var lastTimestamp = CMTime()
-    var fps = 3
+    var fps = 10
     private let shadowFilter = VideoFilterRenderer()
     
     init(_ _overlayView: OverlayView) {
         videoLayer = _overlayView.videoPreviewLayer
-        shadowFilter.filterType = .CIHighlightShadowAdjust
     }
 
-    func refresh() {
-        sessionQueue.suspend()
-        captureSession = AVCaptureSession()
-        configure()
-        sessionQueue.resume()
-    }
     
     func configure() {
         guard
@@ -106,7 +97,6 @@ extension VideoService {
     }
     
     private func requestPermission(for mediaType: AVMediaType) {
-        
         sessionQueue.suspend()
         AVCaptureDevice.requestAccess(for: mediaType) { [weak self] granted in
             guard let self = self else { return }
@@ -121,21 +111,14 @@ extension VideoService {
 extension VideoService {
     
     func start(_ completion: (()->Void)? = nil) {
-        sessionQueue.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.canOutputBuffer = true
-            
-            guard completion != nil else { return }
+        perform {
+            self.captureSession.startRunning()
             completion?()
         }
     }
     func stop(_ completion: (()->Void)? = nil) {
-        sessionQueue.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.canOutputBuffer = false
-            guard completion != nil else { return }
+        perform {
+            self.captureSession.stopRunning()
             completion?()
         }
     }
@@ -168,38 +151,28 @@ extension VideoService {
 extension VideoService: AVCaptureVideoDataOutputSampleBufferDelegate {
     
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard canOutputBuffer else { return }
         let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         let deltaTime = timestamp - self.lastTimestamp
         if  deltaTime >= CMTimeMake(value: 1, timescale: Int32(self.fps)) {
-            self.lastTimestamp = timestamp
-            if let filteredBuffer = self.applyFilter(sampleBuffer, with: shadowFilter) {
-                currentPixelBuffer = filteredBuffer
-                self.delegate?.videoService(self, didOutput: filteredBuffer)
+            lastTimestamp = timestamp
+            if let filteredBuffer = applyFilter(sampleBuffer, with: shadowFilter) {
+                delegate?.videoService(self, didOutput: filteredBuffer)
             }
         }
     }
     
     private func applyFilter(_ sampleBuffer: CMSampleBuffer, with filter: VideoFilterRenderer) -> CVPixelBuffer? {
-        if let cvBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-            let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) {
-            
-            if !filter.isPrepared {
+        if !filter.isPrepared {
+            if let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer)  {
                 filter.prepare(with: formatDescription, retainHint: 3)
+            }
+            
+        } else if let cvBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+            if CurrentSession.videoSize == .zero {
+                CurrentSession.videoSize = CGSize(width: CVPixelBufferGetWidth(cvBuffer), height: CVPixelBufferGetHeight(cvBuffer))
             }
             return filter.render(pixelBuffer: cvBuffer)
         }
-        
         return nil
-    }
-    
-    func capturePhoto() {
-        sessionQueue.async {[weak self] in
-            guard let self = self else { return }
-            if let filteredBuffer = self.currentPixelBuffer {
-                self.delegate?.videoService(self, willCapturePhoto: filteredBuffer)
-                self.delegate?.videoService(self, captureFrame: filteredBuffer)
-            }
-        }
     }
 }

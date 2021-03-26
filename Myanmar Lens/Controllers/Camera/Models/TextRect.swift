@@ -46,15 +46,15 @@ final class TextRect {
     }
 }
 
-extension TextRect: Hashable {
-    static func == (lhs: TextRect, rhs: TextRect) -> Bool {
-        return lhs.text == rhs.text
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        id.hashValue.hash(into: &hasher)
-    }
-}
+//extension TextRect: Hashable {
+//    static func == (lhs: TextRect, rhs: TextRect) -> Bool {
+//        return lhs.text == rhs.text
+//    }
+//    
+//    func hash(into hasher: inout Hasher) {
+//        id.hashValue.hash(into: &hasher)
+//    }
+//}
 extension CGRect {
     
     func trashole(trashold: CGFloat) ->CGRect {
